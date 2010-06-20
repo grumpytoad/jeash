@@ -453,7 +453,9 @@ class Lib
 
 	function Step () {
 
-		mManager.clear(mStage.backgroundColor);
+
+		mStage.Clear();
+		//mManager.clear(mStage.backgroundColor);
 
 		// Process pending timers ...
 		flash.Timer.CheckTimers();

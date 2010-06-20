@@ -211,6 +211,7 @@ class Manager
 		return untyped  __scr.getContext('2d');
 	}
 
+	/*
 	public function clear( color : Int )
 	{
 		var ctx = Manager.getScreen();
@@ -220,7 +221,7 @@ class Manager
 		ctx.fillStyle = '#' + StringTools.hex( color );
 		ctx.fillRect( 0, 0, stage.GetStageWidth(), stage.GetStageHeight() );
 	}
-
+	*/
 
 	public function lastKey() : Int
 	{

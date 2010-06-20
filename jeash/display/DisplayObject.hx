@@ -1,5 +1,6 @@
 package jeash.display;
 
+import Html5Dom;
 import flash.display.Stage;
 import flash.events.EventDispatcher;
 import flash.events.Event;
@@ -63,13 +64,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	static var mNameID = 0;
 
 
-	private var mScaleX:Float;
-	private var mScaleY:Float;
-	private var mTransformed:Bool;
-	private var mRotation:Float;
-	private var mParent:DisplayObjectContainer;
-	private var mScrollRect:Rectangle;
-	private var mOpaqueBackground:Null<Int>;
+	var mScaleX:Float;
+	var mScaleY:Float;
+	var mTransformed:Bool;
+	var mRotation:Float;
+	var mParent:DisplayObjectContainer;
+	var mScrollRect:Rectangle;
+	var mOpaqueBackground:Null<Int>;
 
 	var mMask:DisplayObject;
 	var mMaskingObj:DisplayObject;
@@ -87,16 +88,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mCCRight:Bool;
 	var mCCTop:Bool;
 	var mCCBottom:Bool;
-#if js
-	public var mChanged:Bool;
-#end
 
-	private var mMatrix:Matrix;
+	public var mChanged(default,null):Bool;
+
+	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
+	var mCanvas:HtmlCanvasElement;
 
-	public static var TRANSLATE_CHANGE     = 0x01;
-	public static var NON_TRANSLATE_CHANGE = 0x02;
-	public static var GRAPHICS_CHANGE      = 0x04;
+	static var TRANSLATE_CHANGE     = 0x01;
+	static var NON_TRANSLATE_CHANGE = 0x02;
+	static var GRAPHICS_CHANGE      = 0x04;
 
 	public function new()
 	{
@@ -123,9 +124,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mMaskHandle = null;
 		mCCLeft = mCCRight = mCCTop = mCCBottom = false;
 		name = "DisplayObject " + mNameID++;
-#if js
 		mChanged = true;
-#end
+		mCanvas = cast js.Lib.document.createElement("canvas");
+		mCanvas.id = name;
 
 		visible = true;
 	}
@@ -137,12 +138,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		if (inObj==this)
 		{
-			var evt = new Event(Event.ADDED, true, false);
+			var evt = new flash.events.Event(flash.events.Event.ADDED, true, false);
 			evt.target = inObj;
 			dispatchEvent(evt);
 		}
 
-		var evt = new Event(Event.ADDED_TO_STAGE, false, false);
+		var evt = new flash.events.Event(flash.events.Event.ADDED_TO_STAGE, false, false);
 		evt.target = inObj;
 		dispatchEvent(evt);
 	}
@@ -151,11 +152,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		if (inObj==this)
 		{
-			var evt = new Event(Event.REMOVED, true, false);
+			var evt = new flash.events.Event(flash.events.Event.REMOVED, true, false);
 			evt.target = inObj;
 			dispatchEvent(evt);
 		}
-		var evt = new Event(Event.REMOVED_FROM_STAGE, false, false);
+		var evt = new flash.events.Event(flash.events.Event.REMOVED_FROM_STAGE, false, false);
 		evt.target = inObj;
 		dispatchEvent(evt);
 	}
@@ -182,6 +183,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 		else
 			mParent = inParent;
+
 	}
 
 
@@ -390,6 +392,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mScaleY *= inHeight/h;
 			UpdateMatrix();
 		}
+		mCanvas.height = Std.int(inHeight);
 		return inHeight;
 	}
 
@@ -411,6 +414,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mScaleX *= inWidth/w;
 			UpdateMatrix();
 		}
+		mCanvas.width = Std.int(inWidth);
 		return inWidth;
 	}
 
@@ -433,54 +437,42 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	public function __RenderGfx(inTarget:BitmapData,inScrollRect:Rectangle,
-			inMask:Dynamic,inTX:Float,inTY:Float)
+			inMask:HtmlCanvasElement,inTX:Float,inTY:Float)
 	{
 		var gfx = GetGraphics();
 
+		var handle = inTarget==null ? mCanvas : inTarget.handle();
 		if (gfx!=null)
 		{
 			var blend:Int = __BlendIndex();
 			Graphics.setBlendMode(blend);
-			var handle = inTarget==null ? null : inTarget.handle();
 
 			if (inScrollRect!=null || inTarget!=null)
 			{
 				var m = mFullMatrix.clone();
 				m.tx -= inTX;
 				m.ty -= inTY;
-				gfx.render(m,handle,inMask,inScrollRect);
+				gfx.__Render(m,handle,inMask,inScrollRect);
 			}
 			else
-				gfx.render(mFullMatrix,handle,inMask,null);
+				gfx.__Render(mFullMatrix,handle,inMask,null);
 		}
+
+		// merge into parent canvas context
+		if (inMask != null)
+		{
+			//var imageData = handle.getContext('2d').getImageData(0, 0, handle.width, handle.height);
+			var maskCtx = inMask.getContext('2d');
+			maskCtx.drawImage(handle, 0, 0);
+		}
+
+		return handle;
 
 	}
 
-	public function __Render(inParentMask:Dynamic,inScrollRect:Rectangle,inTX:Int,inTY:Int):Dynamic
+	public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int):HtmlCanvasElement
 	{
-		var mask_handle:Dynamic = inParentMask!=null ? inParentMask :
-			(mMask!=null ? mMask.GetMaskHandle() : null);
-
-		if (mOpaqueBackground!=null)
-		{
-			// todo - mask background
-			var bg = GetBackgroundRect();
-			if (bg!=null)
-			{
-				var gfx = Manager.graphics;
-				Graphics.immediateMatrix = mFullMatrix;
-				Graphics.immediateMask = mask_handle;
-				gfx.beginFill( mOpaqueBackground );
-				gfx.drawRect( bg.x, bg.y, bg.width, bg.height );
-				gfx.endFill();
-				gfx.flush();
-				Graphics.immediateMatrix = null;
-				Graphics.immediateMask = null;
-			}
-		}
-		__RenderGfx(null,inScrollRect,inParentMask,inTX,inTY );
-
-		return mask_handle;
+		return __RenderGfx(null,inScrollRect,inParentMask,inTX,inTY );
 	}
 
 	public function drawToSurface(inSurface : Dynamic,
@@ -523,29 +515,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (mMask!=null)
 			mMask.mMaskingObj = this;
 		return mMask;
-	}
-
-	function AppendMask(inMask:Dynamic)
-	{
-		var gfx = GetGraphics();
-		if (gfx!=null)
-			gfx.AddToMask(inMask,mFullMatrix);
-	}
-
-	function GetMaskHandle() : Dynamic
-	{
-		if (mMaskingObj==null)
-			throw("mask object mismatch");
-
-		if (mMaskHandle==null)
-		{
-			var gfx = GetGraphics();
-			if (gfx!=null)
-			{
-				mMaskHandle = gfx.CreateMask(mFullMatrix);
-			}
-		}
-		return mMaskHandle;
 	}
 
 	// Bitmap caching

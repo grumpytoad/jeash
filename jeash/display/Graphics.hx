@@ -109,7 +109,7 @@ typedef Drawable =
 
 typedef Texture =
 {
-    var texture_buffer:#if js Image #else Dynamic #end;
+    var texture_buffer:HtmlCanvasElement;
     var matrix:Matrix;
     var flags:Int;
 }
@@ -271,128 +271,129 @@ class Graphics
         return gradient;
     }
   
-    public function render(?inMatrix:Matrix,inSurface:Dynamic,?inMaskHandle:Void,?inScrollRect:Rectangle)
+    public function __Render(?inMatrix:Matrix,inSurface:HtmlCanvasElement,?inMaskHandle:HtmlCanvasElement,?inScrollRect:Rectangle)
     {
-        ClosePolygon(true);
+	    ClosePolygon(true);
 
-        var ctx : CanvasRenderingContext2D = inSurface == null ? Manager.getScreen() : 
-		inSurface.getContext('2d');
+	    var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
+	    //var ctx = jeash.Lib.canvas.getContext('2d');
 
-        ctx.save();
-        ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
-	
-        var len : Int = mDrawList.length;
-        for ( i in 0...len ) {
-            var d = mDrawList[(len-1)-i];
-            ctx.save();
-            ctx.beginPath();
+	    ctx.save();
+	    ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
 
-            if (d.lineJobs.length > 0) {
-                //TODO lj.pixel_hinting and lj.scale_mode
-                for (lj in d.lineJobs) {
-                    ctx.lineWidth = lj.thickness;
-            
-                    switch(lj.joints)
-                    {
-                    case CORNER_ROUND:
-                        ctx.lineJoin = "round";
-                    case CORNER_MITER:
-                        ctx.lineJoin = "miter";
-                    case CORNER_BEVEL:
-                        ctx.lineJoin = "bevel";
-                    }
-                    
-                    switch(lj.caps) {
-                    case END_ROUND:
-                        ctx.lineCap = "round";
-                    case END_SQUARE:
-                        ctx.lineCap = "square";
-                    case END_NONE:
-                        ctx.lineCap = "butt";
-                    }
-            
-                    ctx.miterLimit = lj.miter_limit;
-          
-                    if (lj.grad != null) {
-                        ctx.strokeStyle = createCanvasGradient(ctx, lj.grad);
-                    } else {
-                        ctx.strokeStyle = createCanvasColor(lj.colour, lj.alpha);
-                    }
-                    
-                    ctx.beginPath();
-                    for (i in lj.point_idx0...lj.point_idx1 + 1) {
-                        var p = d.points[i];
-                        switch (p.type) {
-                        case MOVE:
-                            ctx.moveTo(p.x , p.y);
-                        case CURVE:
-                            ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
-                        default:
-                            ctx.lineTo(p.x, p.y);
-                        }
-                        
-                    }
-                    ctx.stroke();
-                }
-            } else {
-                for ( p in d.points ) {
-                    switch (p.type) {
-                    case MOVE:
-                        ctx.moveTo(p.x , p.y);
-                    case CURVE:
-                        ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
-                    default:
-                        ctx.lineTo(p.x, p.y);
-                    }
-                }
-            }
-            
-            var fillColour = d.fillColour;
-            var fillAlpha = d.fillAlpha;
-            if (  fillAlpha >= 0. && fillAlpha <= 1.) {
-                var g = d.solidGradient;
-                if (g != null)
-			ctx.fillStyle = createCanvasGradient(ctx, g);
-                else 
-			ctx.fillStyle = createCanvasColor(fillColour, fillAlpha);
-            }
-            ctx.fill();
+	    var len : Int = mDrawList.length;
+	    for ( i in 0...len ) {
+		    var d = mDrawList[(len-1)-i];
+		    ctx.save();
+		    ctx.beginPath();
 
-            ctx.restore();
+		    if (d.lineJobs.length > 0) {
+			    //TODO lj.pixel_hinting and lj.scale_mode
+			    for (lj in d.lineJobs) {
+				    ctx.lineWidth = lj.thickness;
 
-            var bitmap = d.bitmap;
-            if ( bitmap != null) {
-                ctx.save();
-                ctx.clip();
-                var img = bitmap.texture_buffer;
-                var matrix = bitmap.matrix;
+				    switch(lj.joints)
+				    {
+					    case CORNER_ROUND:
+						    ctx.lineJoin = "round";
+					    case CORNER_MITER:
+						    ctx.lineJoin = "miter";
+					    case CORNER_BEVEL:
+						    ctx.lineJoin = "bevel";
+				    }
 
-                try {
-                    if(matrix != null) {
-                        ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
-                    }
-                    ctx.drawImage( img, 0, 0 );
-	  
-                    ctx.restore();
-                } catch (e:Dynamic) {
-                    try {
-                        // fallback - should work for most canvas-browsers
+				    switch(lj.caps) {
+					    case END_ROUND:
+						    ctx.lineCap = "round";
+					    case END_SQUARE:
+						    ctx.lineCap = "square";
+					    case END_NONE:
+						    ctx.lineCap = "butt";
+				    }
 
-                        var svd = Decompose.singularValueDecomposition( matrix );   
-                        ctx.translate( svd.dx , svd.dy  );
-                        ctx.rotate( -svd.angle1 );
-                        ctx.scale( svd.sx, svd.sy );
-                        ctx.rotate( -svd.angle2 );
+				    ctx.miterLimit = lj.miter_limit;
 
-                        ctx.drawImage( img, 0,0 );
-                        ctx.restore();
-                    } catch (e2:Dynamic) {
-                        ctx.restore();
-                    }
-                }
-            }
-        }
-        ctx.restore();
+				    if (lj.grad != null) {
+					    ctx.strokeStyle = createCanvasGradient(ctx, lj.grad);
+				    } else {
+					    ctx.strokeStyle = createCanvasColor(lj.colour, lj.alpha);
+				    }
+
+				    ctx.beginPath();
+				    for (i in lj.point_idx0...lj.point_idx1 + 1) {
+					    var p = d.points[i];
+					    switch (p.type) {
+						    case MOVE:
+							    ctx.moveTo(p.x , p.y);
+						    case CURVE:
+							    ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
+						    default:
+							    ctx.lineTo(p.x, p.y);
+					    }
+
+				    }
+				    ctx.stroke();
+			    }
+		    } else {
+			    for ( p in d.points ) {
+				    switch (p.type) {
+					    case MOVE:
+						    ctx.moveTo(p.x , p.y);
+					    case CURVE:
+						    ctx.quadraticCurveTo(p.cx, p.cy, p.x, p.y);
+					    default:
+						    ctx.lineTo(p.x, p.y);
+				    }
+			    }
+		    }
+
+		    var fillColour = d.fillColour;
+		    var fillAlpha = d.fillAlpha;
+		    if (  fillAlpha >= 0. && fillAlpha <= 1.) {
+			    var g = d.solidGradient;
+			    if (g != null)
+				    ctx.fillStyle = createCanvasGradient(ctx, g);
+			    else 
+				    ctx.fillStyle = createCanvasColor(fillColour, fillAlpha);
+		    }
+		    ctx.fill();
+
+		    ctx.restore();
+
+		    var bitmap = d.bitmap;
+		    if ( bitmap != null) {
+			    ctx.save();
+			    ctx.clip();
+			    var img = bitmap.texture_buffer;
+			    var matrix = bitmap.matrix;
+
+			    try {
+				    if(matrix != null) {
+					    ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
+				    }
+				    ctx.drawImage( img, 0, 0 );
+
+				    ctx.restore();
+			    } catch (e:Dynamic) {
+				    try {
+					    // fallback - should work for most canvas-browsers
+
+					    var svd = Decompose.singularValueDecomposition( matrix );   
+					    ctx.translate( svd.dx , svd.dy  );
+					    ctx.rotate( -svd.angle1 );
+					    ctx.scale( svd.sx, svd.sy );
+					    ctx.rotate( -svd.angle2 );
+
+					    ctx.drawImage( img, 0,0 );
+					    ctx.restore();
+				    } catch (e2:Dynamic) {
+					    ctx.restore();
+				    }
+			    }
+		    }
+	    }
+	    ctx.restore();
+
     }
 
     public function HitTest(inX:Int,inY:Int) : Bool
@@ -898,19 +899,6 @@ class Graphics
             mBitmap = null;
             mFilling = false;
         }
-    }
-
-    public function AddToMask(ioMask:Void,inMatrix:Matrix,?inSurface:Void)
-    {
-        if (mDrawList.length>0)
-        {
-            throw "Not implemented: AddToMask";
-        }
-    }
-
-    public function CreateMask(inMatrix:Matrix):Void
-    {
-        throw "Not implemented: CreateMask";
     }
 
 }

@@ -1,5 +1,6 @@
 package jeash.display;
 
+import Html5Dom;
 import flash.events.Event;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
@@ -27,16 +28,9 @@ class DisplayObjectContainer extends InteractiveObject
 		name = "DisplayObjectContainer " +  flash.display.DisplayObject.mNameID++;
 	}
 
-	override function AppendMask(inMask:Dynamic)
-	{
-		super.AppendMask(inMask);
-		for(obj in mObjs)
-			obj.AppendMask(inMask);
-	}
-
 	override public function AsContainer() { return this; }
 
-	public function Broadcast(inEvent:Event)
+	public function Broadcast(inEvent:flash.events.Event)
 	{
 		dispatchEvent(inEvent);
 		for(obj in mObjs)
@@ -132,20 +126,6 @@ class DisplayObjectContainer extends InteractiveObject
    }
 
 
-	override function GetMaskHandle() : Dynamic
-	{
-		if (mMaskHandle==null)
-		{
-			var handle = super.GetMaskHandle();
-			if (handle!=null)
-			{
-				for(obj in mObjs)
-					obj.AppendMask(handle);
-			}
-		}
-		return mMaskHandle;
-	}
-
 	public override function GetNumChildren() {
 		return mObjs.length;
 	}
@@ -167,13 +147,12 @@ class DisplayObjectContainer extends InteractiveObject
 		return super.GetObj(inX,inY,this);
 	}
 
-	override public function __Render(inMask:Dynamic,inScrollRect:Rectangle,inTX:Int, inTY:Int) : Dynamic
+	override public function __Render(inMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int, inTY:Int) : HtmlCanvasElement
 	{
 
 		if (!visible || mMaskingObj!=null) return null;
 
-		inMask = super.__Render(inMask,inScrollRect,inTX,inTY);
-
+		super.__Render(inMask,inScrollRect,inTX,inTY);
 		for(obj in mObjs)
 		{
 			if (obj.visible && obj.mMaskingObj==null)
@@ -201,10 +180,13 @@ class DisplayObjectContainer extends InteractiveObject
 					}
 				}
 				else
+				{
 					obj.__Render(inMask,inScrollRect,inTX,inTY);
+				}
 
 			}
 		}
+
 		return inMask;
 	}
 

@@ -18,7 +18,7 @@ import haxe.xml.Check;
 
 class BitmapData implements IBitmapDrawable
 {
-	private var mTextureBuffer:Dynamic;
+	private var mTextureBuffer:HtmlCanvasElement;
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
@@ -28,13 +28,19 @@ class BitmapData implements IBitmapDrawable
 			?inTransparent:Bool = true,
 			?inFillColour:Int)
 	{
-		var el = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
+
+		// TODO: this was a hack in the canvas-nme days in order to
+		// load embedded resources, in order to emulate the embed tag
+		// in flex. IMO this sort of feature should be replaced by
+		// supporting the -resource haXe compiler flag.
+
+		var el : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
 		if ( el != null ) {
 			mTextureBuffer = el;
 		} else if (inWidth<1 || inHeight<1) {
 			mTextureBuffer = null;
 		} else {
-			mTextureBuffer = js.Lib.document.createElement('canvas');
+			mTextureBuffer = cast js.Lib.document.createElement('canvas');
 			mTextureBuffer.width = inWidth;
 			mTextureBuffer.height = inHeight;
 		}
@@ -181,11 +187,11 @@ class BitmapData implements IBitmapDrawable
 		if ( inLoader != null ) {
 			var me = this;
 			image.addEventListener( "load", function (_) {
-				me.mTextureBuffer = js.Lib.document.createElement('canvas');
+				me.mTextureBuffer = cast js.Lib.document.createElement('canvas');
 				me.mTextureBuffer.width = image.width;
 				me.mTextureBuffer.height = image.height;
 				var ctx : CanvasRenderingContext2D = me.mTextureBuffer.getContext('2d');
-				ctx.drawImage(image, 0, 0);
+				ctx.drawImage(untyped image, 0, 0);
 				var e = new flash.events.Event( flash.events.Event.COMPLETE );
 				e.target = inLoader;
 				inLoader.dispatchEvent( e );
@@ -195,7 +201,7 @@ class BitmapData implements IBitmapDrawable
 	}
 
 
-	static public function CreateFromHandle(inHandle:Void) : BitmapData
+	static public function CreateFromHandle(inHandle:HtmlCanvasElement) : BitmapData
 	{
 		var result = new BitmapData(0,0);
 		result.mTextureBuffer = inHandle;
