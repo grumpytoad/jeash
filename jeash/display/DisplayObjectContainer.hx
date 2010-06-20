@@ -55,14 +55,14 @@ class DisplayObjectContainer extends InteractiveObject
 			{
 				if (obj.visible)
 				{
-				var r = obj.GetScreenBounds();
-				if (r.width!=0 || r.height!=0)
-				{
-					if (mBoundsRect.width==0 && mBoundsRect.height==0)
-						mBoundsRect = r.clone();
-					else
-						mBoundsRect.extendBounds(r);
-				}
+					var r = obj.GetScreenBounds();
+					if (r.width!=0 || r.height!=0)
+					{
+						if (mBoundsRect.width==0 && mBoundsRect.height==0)
+							mBoundsRect = r.clone();
+						else
+							mBoundsRect.extendBounds(r);
+					}
 				}
 			}
 		}

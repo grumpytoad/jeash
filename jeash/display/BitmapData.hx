@@ -29,10 +29,10 @@ class BitmapData implements IBitmapDrawable
 			?inFillColour:Int)
 	{
 
-		// TODO: this was a hack in the canvas-nme days in order to
-		// load embedded resources, in order to emulate the embed tag
-		// in flex. IMO this sort of feature should be replaced by
-		// supporting the -resource haXe compiler flag.
+		// TODO: the following was a hack in the canvas-nme days in
+		// order to load embedded resources, in order to emulate the
+		// embed tag in flex. This sort of feature should be
+		// replaced by supporting the -resource haXe compiler flag.
 
 		var el : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
 		if ( el != null ) {
@@ -43,6 +43,14 @@ class BitmapData implements IBitmapDrawable
 			mTextureBuffer = cast js.Lib.document.createElement('canvas');
 			mTextureBuffer.width = inWidth;
 			mTextureBuffer.height = inHeight;
+			if ( inFillColour != null )
+			{
+				// TODO: need support for inTransparent
+				graphics.beginFill(inFillColour);
+				graphics.drawRect(0,0,inWidth,inHeight);
+				graphics.endFill();
+				var imgdata = mTextureBuffer.getContext("2d").getImageData(0,0,inWidth,inHeight);
+			}
 		}
 	}
 
@@ -108,14 +116,14 @@ class BitmapData implements IBitmapDrawable
 	{
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(x, y, 1, 1);
-		return imagedata.data[3] << 6 | imagedata.data[0] << 4 | imagedata.data[1] << 2 | imagedata.data[2];
+		return (imagedata.data[0] << 16) | (imagedata.data[1] << 8) | (imagedata.data[2]);
 	}
 
 	public function getPixel32(x:Int, y:Int) 
 	{
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(x, y, 1, 1);
-		return imagedata.data[0] << 4 | imagedata.data[1] << 2 | imagedata.data[2];
+		return (imagedata.data[3] << 24) | (imagedata.data[0] << 16) | imagedata.data[1] << 8 | imagedata.data[2];
 	}
 
 	public function setPixel(x:Int, y:Int, color:UInt) 

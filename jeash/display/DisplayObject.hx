@@ -93,7 +93,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
-	var mCanvas:HtmlCanvasElement;
 
 	static var TRANSLATE_CHANGE     = 0x01;
 	static var NON_TRANSLATE_CHANGE = 0x02;
@@ -125,8 +124,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mCCLeft = mCCRight = mCCTop = mCCBottom = false;
 		name = "DisplayObject " + mNameID++;
 		mChanged = true;
-		mCanvas = cast js.Lib.document.createElement("canvas");
-		mCanvas.id = name;
 
 		visible = true;
 	}
@@ -392,7 +389,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mScaleY *= inHeight/h;
 			UpdateMatrix();
 		}
-		mCanvas.height = Std.int(inHeight);
+		//gfx.mCanvas.height = Std.int(inHeight);
 		return inHeight;
 	}
 
@@ -414,7 +411,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mScaleX *= inWidth/w;
 			UpdateMatrix();
 		}
-		mCanvas.width = Std.int(inWidth);
+		//gfx.mCanvas.width = Std.int(inWidth);
 		return inWidth;
 	}
 
@@ -441,10 +438,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		var gfx = GetGraphics();
 
-		var handle = inTarget==null ? mCanvas : inTarget.handle();
 		if (gfx!=null)
 		{
 			var blend:Int = __BlendIndex();
+			var handle = inTarget==null ? gfx.mSurface : inTarget.handle();
+
 			Graphics.setBlendMode(blend);
 
 			if (inScrollRect!=null || inTarget!=null)
@@ -456,17 +454,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			}
 			else
 				gfx.__Render(mFullMatrix,handle,inMask,null);
+			return handle;
 		}
 
-		// merge into parent canvas context
-		if (inMask != null)
-		{
-			//var imageData = handle.getContext('2d').getImageData(0, 0, handle.width, handle.height);
-			var maskCtx = inMask.getContext('2d');
-			maskCtx.drawImage(handle, 0, 0);
-		}
-
-		return handle;
+		return null;
 
 	}
 
