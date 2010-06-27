@@ -45,6 +45,16 @@ typedef HtmlCanvasElement = { > HtmlDom,
 	function dispatchEvent( event:Event ):Void;
 }
 
+typedef Html5Node = { > HtmlDom,
+	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
+	function dispatchEvent( event:Event ):Void;
+}
+
+typedef NamedNodeMap = {
+	function item(index:Int):Html5Node;
+	var length:Int;
+}
+
 typedef ImageData = {
 	var width:Int;
 	var height:Int;
