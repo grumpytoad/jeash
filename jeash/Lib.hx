@@ -584,7 +584,7 @@ class Lib
 					}
 				}
 
-				mStage.backgroundColor = if (tgt.style.backgroundColor != null)
+				mStage.backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
 					parseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
 							return switch (pos) {
 							case 0: res | (cur << 16);
