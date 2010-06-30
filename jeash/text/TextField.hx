@@ -39,332 +39,306 @@ import flash.text.KeyCode;
 import flash.text.TextFormat;
 import flash.text.TextFieldType;
 
-import js.Dom;
+import Html5Dom;
 
 import flash.Manager;
 
 class TextField extends flash.display.InteractiveObject
 {
-   public var htmlText(GetHTMLText,SetHTMLText):String;
-   public var text(GetText,SetText):String;
-   public var textColor(GetTextColour,SetTextColour):Int;
-   public static var mDefaultFont = "Times";
+	public var htmlText(GetHTMLText,SetHTMLText):String;
+	public var text(GetText,SetText):String;
+	public var textColor(GetTextColour,SetTextColour):Int;
+	public static var mDefaultFont = "Times";
 
-   private var mHTMLText:String;
-   private var mText:String;
-   private var mTextColour:Int;
-   private var mType:String;
+	private var mHTMLText:String;
+	private var mText:String;
+	private var mType:String;
 
-   public var autoSize(default,SetAutoSize) : String;
-   public var selectable : Bool;
-   public var multiline : Bool;
-   public var embedFonts : Bool;
-   public var borderColor(default,SetBorderColor) : Int;
-   public var background(default,SetBackground) : Bool;
-   public var backgroundColor(default,SetBackgroundColor) : Int;
-   public var displayAsPassword : Bool;
-   public var border(default,SetBorder) : Bool;
-   public var wordWrap(default,SetWordWrap) : Bool;
-   public var maxChars : Int;
-   public var restrict : String;
-   public var type(GetType,SetType) : String;
-   public var antiAliasType : String;
-   public var sharpness : Float;
-   public var gridFitType : String;
-   public var length(default,null) : Int;
-   public var mTextHeight:Int;
-   public var mFace:String;
-   public var mDownChar:Int;
+	public var autoSize(default,SetAutoSize) : String;
+	public var selectable : Bool;
+	public var multiline : Bool;
+	public var embedFonts : Bool;
+	public var borderColor(default,SetBorderColor) : Int;
+	public var background(default,SetBackground) : Bool;
+	public var backgroundColor(default,SetBackgroundColor) : Int;
+	public var displayAsPassword : Bool;
+	public var border(default,SetBorder) : Bool;
+	public var wordWrap(default,SetWordWrap) : Bool;
+	public var maxChars : Int;
+	public var restrict : String;
+	public var type(GetType,SetType) : String;
+	public var antiAliasType : String;
+	public var sharpness : Float;
+	public var gridFitType : String;
+	public var length(default,null) : Int;
+	public var mDownChar:Int;
 
-   public var defaultTextFormat : TextFormat;
+	public var defaultTextFormat : TextFormat;
+	var mTextFormat : TextFormat;
 
-   public var selectionBeginIndex : Int;
-   public var selectionEndIndex : Int;
-   public var caretIndex : Int;
-   //public var mParagraphs:Paragraphs;
-   public var mTryFreeType:Bool;
+	public var selectionBeginIndex : Int;
+	public var selectionEndIndex : Int;
+	public var caretIndex : Int;
+	//public var mParagraphs:Paragraphs;
+	public var mTryFreeType:Bool;
 
-   //var mLineInfo:Array<LineInfo>;
+	//var mLineInfo:Array<LineInfo>;
 
-   static var sSelectionOwner:TextField = null;
+	static var sSelectionOwner:TextField = null;
 
-   var mAlign:String;
-   var mHTMLMode:Bool;
-   var mSelStart:Int;
-   var mSelEnd:Int;
-   var mInsertPos:Int;
-   var mSelectDrag:Int;
-   var mInput:Bool;
+	var mAlign:String;
+	var mHTMLMode:Bool;
+	var mSelStart:Int;
+	var mSelEnd:Int;
+	var mInsertPos:Int;
+	var mSelectDrag:Int;
+	var mInput:Bool;
+	var mUnderline:Bool;
 
-   var mWidth:Float;
-   var mHeight:Float;
+	var mWidth:Float;
+	var mHeight:Float;
 
-   var mSelectionAnchored:Bool;
-   var mSelectionAnchor:Int;
+	var mSelectionAnchored:Bool;
+	var mSelectionAnchor:Int;
 
-   var mScrollH:Int;
-   var mScrollV:Int;
+	var mScrollH:Int;
+	var mScrollV:Int;
 
-   var mGraphics:Graphics;
-   var mCaretGfx:HtmlDom;
+	var mGraphics:Graphics;
+	public var mSurface(default,null):HtmlCanvasElement;
 
-			var mOffsetTop:Int;
-			var mOffsetLeft:Int;
+	public function new()
+	{
+		super();
+		mChanged = true;
+		mSurface = cast js.Lib.document.createElement("canvas");
 
-   public function new()
-   {
-      super();
-      mChanged = true;
-						/*
-      mWidth = 40;
-      mHeight = 20;
-						*/
-      mHTMLMode = false;
-      multiline = false;
-      mGraphics = new Graphics();
+		mHTMLMode = false;
+		multiline = false;
 
-      mCaretGfx = js.Lib.document.createElement('div');
-      var scr = untyped Manager.__scr;
-      scr.parentNode.appendChild( mCaretGfx );
-      mCaretGfx.style.position = 'absolute';
-      mOffsetTop = scr.offsetTop;
-      mOffsetLeft = scr.offsetLeft;
+		mSelStart = -1;
+		mSelEnd = -1;
+		mScrollH = 0;
+		mScrollV = 1;
 
-      var ctx = Manager.getScreen();
-      // FIXME: [offset*] probably not cross-browser
-      mCaretGfx.style.left = Std.string( scr.offsetLeft );
-      mCaretGfx.style.top = Std.string( scr.offsetTop );
-      mCaretGfx.style.lineHeight = '20px';
+		mType = flash.text.TextFieldType.DYNAMIC;
+		autoSize = flash.text.TextFieldAutoSize.NONE;
 
-      mFace = mDefaultFont;
-      mAlign = flash.text.TextFormatAlign.LEFT;
-      defaultTextFormat = new TextFormat();
-      //mParagraphs = new Paragraphs();
-      mSelStart = -1;
-      mSelEnd = -1;
-      mScrollH = 0;
-      mScrollV = 1;
-
-      mType = flash.text.TextFieldType.DYNAMIC;
-      autoSize = flash.text.TextFieldAutoSize.NONE;
-      mTextHeight = 12;
-      mHTMLText = " ";
-      mText = " ";
-      mTextColour = 0x000000;
-      tabEnabled = false;
-      mFace = mDefaultFont;
-      mTryFreeType = true;
-      selectable = true;
-      mInsertPos = 0;
-      mInput = false;
-      mDownChar = 0;
-      mSelectDrag = -1;
-
-      //mLineInfo = [];
+		defaultTextFormat = new TextFormat( mDefaultFont, 12, 0x000000, false, false, false, null, null, flash.text.TextFormatAlign.LEFT );
+		mHTMLText = " ";
+		mText = " ";
+		tabEnabled = false;
+		selectable = true;
+		mInsertPos = 0;
+		mInput = false;
+		mDownChar = 0;
+		mSelectDrag = -1;
 
 
+		borderColor = 0x000000;
+		border = false;
+		backgroundColor = 0xffffff;
+		background = false;
+	}
 
-      borderColor = 0x000000;
-      border = false;
-      backgroundColor = 0xffffff;
-      background = false;
-   }
+	override public function GetWidth() : Float { return mWidth; }
+	override public function GetHeight() : Float { return mHeight; }
+	override public function SetWidth(inWidth:Float) : Float
+	{
+		mChanged = true;
+		if (inWidth!=mWidth)
+		{
+			mWidth = inWidth;
+		}
+		return mWidth;
+	}
 
-   override public function GetWidth() : Float { return mWidth; }
-   override public function GetHeight() : Float { return mHeight; }
-   override public function SetWidth(inWidth:Float) : Float
-   {
-      mChanged = true;
-      if (inWidth!=mWidth)
-      {
-         mWidth = inWidth;
-      }
-      return mWidth;
-   }
+	override public function SetHeight(inHeight:Float) : Float
+	{
+		mChanged = true;
+		if (inHeight!=mHeight)
+		{
+			mHeight = inHeight;
+		}
+		return mHeight;
+	}
 
-   override public function SetHeight(inHeight:Float) : Float
-   {
-      mChanged = true;
-      if (inHeight!=mHeight)
-      {
-         mHeight = inHeight;
-      }
-      return mHeight;
-   }
+	public function GetType() { return mType; }
+	public function SetType(inType:String) : String
+	{
+		mChanged = true;
+		mType = inType;
 
-   public function GetType() { return mType; }
-   public function SetType(inType:String) : String
-   {
-      mChanged = true;
-      mType = inType;
+		mInput = mType == TextFieldType.INPUT;
+		if (mInput && mHTMLMode)
+			ConvertHTMLToText(true);
 
-      mInput = mType == TextFieldType.INPUT;
-      if (mInput && mHTMLMode)
-         ConvertHTMLToText(true);
+		tabEnabled = type == TextFieldType.INPUT;
+		return inType;
+	}
 
-      tabEnabled = type == TextFieldType.INPUT;
-      return inType;
-   }
+	public function getCharBoundaries( a:Int ) : Rectangle {
+		// TODO
+		return null;
+	}
 
-   public function getCharBoundaries( a:Int ) : Rectangle {
-     // TODO
-     return null;
-   }
+	private function CheckChanged() : Bool
+	{
+		var result = mChanged;
+		mChanged = false;
+		return result;
+	}
 
-   private function CheckChanged() : Bool
-   {
-      var result = mChanged;
-      mChanged = false;
-      return result;
-   }
+	override public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int):HtmlCanvasElement
+	{
+		//mGraphics.clear();
 
-   public function Render(inMask:Dynamic,inScrollRect:Rectangle,inTX:Int,inTY:Int):Dynamic
-  {
-    mGraphics.clear();
+		if (CheckChanged()) {
+			var ctxt = mSurface.getContext("2d");
 
-    if ( mCaretGfx.innerHTML != mHTMLText && CheckChanged() ) {
-      mCaretGfx.innerHTML = mHTMLText;
+			ctxt.save();
 
-      // TODO: support -moz-transform / -webkit-transform and IE equivalent
-      // and apply mFullMatrix to this mCaretGfx
-      mCaretGfx.style.left = Std.string( mX + mOffsetLeft + inTX ) + 'px';
-      mCaretGfx.style.top = Std.string( mY + mOffsetTop + inTY ) + 'px';
+			untyped console.log( mTextFormat );
+			var textFormat = mTextFormat != null ? mTextFormat : defaultTextFormat;
+			var size = textFormat.size;
+			var font = textFormat.font;
+			var bold = textFormat.bold == false ? 100 : 400;
+			var align = textFormat.align;
+			var color = textFormat.color;
 
-      if ( mWidth != null && autoSize == flash.text.TextFieldAutoSize.NONE )
-	mCaretGfx.style.width = Std.string( mWidth ) + 'px';
+			untyped console.log( defaultTextFormat.color );
 
-      if ( mHeight != null && autoSize == flash.text.TextFieldAutoSize.NONE ) {
-	mCaretGfx.style.lineHeight = Std.string( mHeight ) + 'px';
-      }
+			ctxt.font = bold + " " + size + "px " + font;
+			ctxt.textAlign = mAlign;
+			//ctxt.textBaseline = "baseline";
+			ctxt.fillStyle = '#' + StringTools.hex(color);
+			ctxt.fillText(mHTMLText, 2, 1 + size);
+			if ( textFormat.underline )
+			{
+				//ctxt.beginPath();
+				//ctxt.moveTo(
+			}
+			
+			ctxt.restore();
 
-      mCaretGfx.style.fontFamily = mFace;
-      mCaretGfx.style.textAlign = mAlign;
-      mCaretGfx.style.fontSize = Std.string( mTextHeight ) + 'px';
-      mCaretGfx.style.color = mTextColour;
+		}
 
-      if ( border ) 
-	mCaretGfx.style.border = 'solid 1px #' + StringTools.lpad( StringTools.hex( borderColor ), '0', 6 );
+		// merge into parent canvas context
+		if (inParentMask != null)
+		{
+			var maskCtx = inParentMask.getContext('2d');
+			maskCtx.drawImage(mSurface, inTX, inTY);
+		}
 
-      if ( background ) 
-	mCaretGfx.style.backgroundColor = '#' + StringTools.lpad( StringTools.hex( backgroundColor ), '0', 6 );
+		return mSurface;
 
-    }
+	}
 
-  }
+	public function GetTextColour() { return mTextFormat.color; }
+	public function SetTextColour(inCol)
+	{
+		mTextFormat.color = inCol;
+		return inCol;
+	}
 
-   public function GetTextColour() { return mTextColour; }
-   public function SetTextColour(inCol)
-   {
-      mTextColour = inCol;
-      return inCol;
-   }
+	public function GetText()
+	{
+		if (mHTMLMode)
+			ConvertHTMLToText(false);
+		return mText;
+	}
 
-   public function GetText()
-   {
-      if (mHTMLMode)
-         ConvertHTMLToText(false);
-      return mText;
-   }
+	public function SetText(inText:String)
+	{
+		mText = inText;
+		mHTMLText = inText;
+		mHTMLMode = false;
+		return mText;
+	}
 
-   public function SetText(inText:String)
-   {
-      mText = inText;
-      mHTMLText = inText;
-      mHTMLMode = false;
-      return mText;
-   }
+	public function ConvertHTMLToText(inUnSetHTML:Bool)
+	{
 
-   public function ConvertHTMLToText(inUnSetHTML:Bool)
-   {
+		var reg : EReg = ~/<\/?[^>]*>/;
+		mText = reg.replace( mHTMLText, '' );
 
-     var reg : EReg = ~/<\/?[^>]*>/;
-     mText = reg.replace( mHTMLText, '' );
+		if (inUnSetHTML)
+		{
+			mHTMLMode = false;
+		}
+	}
 
-     if (inUnSetHTML)
-     {
-       mHTMLMode = false;
-     }
-   }
+	public function SetAutoSize(inAutoSize:String) : String
+	{
+		mChanged = true;
+		autoSize = inAutoSize;
+		return inAutoSize;
+	}
 
-   public function SetAutoSize(inAutoSize:String) : String
-   {
-      mChanged = true;
-      autoSize = inAutoSize;
-      return inAutoSize;
-   }
+	public function SetWordWrap(inWordWrap:Bool) : Bool
+	{
+		mChanged = true;
+		wordWrap = inWordWrap;
+		return wordWrap;
+	}
 
-   public function SetWordWrap(inWordWrap:Bool) : Bool
-   {
-      mChanged = true;
-      wordWrap = inWordWrap;
-      return wordWrap;
-   }
+	public function SetBorder(inBorder:Bool) : Bool
+	{
+		mChanged = true;
+		border = inBorder;
+		return inBorder;
+	}
 
-   public function SetBorder(inBorder:Bool) : Bool
-   {
-      mChanged = true;
-      border = inBorder;
-      return inBorder;
-   }
+	public function SetBorderColor(inBorderCol:Int) : Int
+	{
+		mChanged = true;
+		borderColor = inBorderCol;
+		return inBorderCol;
+	}
 
-   public function SetBorderColor(inBorderCol:Int) : Int
-   {
-      mChanged = true;
-      borderColor = inBorderCol;
-      return inBorderCol;
-   }
+	public function SetBackgroundColor(inCol:Int) : Int
+	{
+		mChanged = true;
+		backgroundColor = inCol;
+		return inCol;
+	}
 
-   public function SetBackgroundColor(inCol:Int) : Int
-   {
-      mChanged = true;
-      backgroundColor = inCol;
-      return inCol;
-   }
-
-   public function SetBackground(inBack:Bool) : Bool
-   {
-      mChanged = true;
-      background = inBack;
-      return inBack;
-   }
+	public function SetBackground(inBack:Bool) : Bool
+	{
+		mChanged = true;
+		background = inBack;
+		return inBack;
+	}
 
 
-   public function GetHTMLText() { return mHTMLText; }
+	public function GetHTMLText() { return mHTMLText; }
 
-   public function SetHTMLText(inHTMLText:String)
-   {
-      mChanged = true;
-      //mParagraphs = new Paragraphs();
-      mHTMLText = inHTMLText;
-      mHTMLMode = true;
-      if (mInput)
-         ConvertHTMLToText(true);
-      return mHTMLText;
-   }
+	public function SetHTMLText(inHTMLText:String)
+	{
+		mChanged = true;
+		//mParagraphs = new Paragraphs();
+		mHTMLText = inHTMLText;
+		mHTMLMode = true;
+		if (mInput)
+			ConvertHTMLToText(true);
+		return mHTMLText;
+	}
 
-   public function setSelection(beginIndex : Int, endIndex : Int)
-   {
-      // TODO:
-   }
+	public function setSelection(beginIndex : Int, endIndex : Int)
+	{
+		// TODO:
+	}
 
-   public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat
-   {
-     return new TextFormat();
-   }
+	public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat
+	{
+		return mTextFormat;
+	}
 
-   public function setTextFormat(inFmt:TextFormat)
-   {
-     mChanged = true;
-     if (inFmt.font!=null)
-       mFace = inFmt.font;
-     if (inFmt.size!=null)
-       mTextHeight = inFmt.size;
-     if (inFmt.align!=null)
-       mAlign = inFmt.align;
-     if (inFmt.color!=null)
-       mTextColour = inFmt.color;
-
-   }
+	public function setTextFormat(inFmt:TextFormat, ?beginIndex:Int, ?endIndex:Int)
+	{
+		mChanged = true;
+		mTextFormat = inFmt;
+	}
 
 }
 

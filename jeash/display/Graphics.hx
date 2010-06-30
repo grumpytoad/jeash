@@ -300,14 +300,9 @@ class Graphics
 		ClosePolygon(true);
 
 		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
-		//var ctx = jeash.Lib.canvas.getContext('2d');
 
 		ctx.save();
 		ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
-
-		//var len : Int = mDrawList.length;
-		//for ( i in 0...len ) {
-		//}
 
 		// merge into parent canvas context
 		if (inMaskHandle != null)

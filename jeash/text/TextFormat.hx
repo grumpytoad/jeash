@@ -28,39 +28,39 @@ package jeash.text;
 
 class TextFormat
 {
-   public var align : Null<String>;
-   public var blockIndent : Dynamic;
-   public var bold : Dynamic;
-   public var bullet : Dynamic;
-   public var color : Dynamic;
-   public var display : Null<String>;
-   public var font : Null<String>;
-   public var indent : Dynamic;
-   public var italic : Dynamic;
-   public var kerning : Dynamic;
-   public var leading : Dynamic;
-   public var leftMargin : Dynamic;
-   public var letterSpacing : Dynamic;
-   public var rightMargin : Dynamic;
-   public var size : Dynamic;
-   public var tabStops : Array<Int>;
+   public var align : String;
+   public var blockIndent : Int;
+   public var bold : Bool;
+   public var bullet : Bool;
+   public var color : Int;
+   public var display : String;
+   public var font : String;
+   public var indent : Int;
+   public var italic : Bool;
+   public var kerning : Bool;
+   public var leading : Int;
+   public var leftMargin : Int;
+   public var letterSpacing : Int;
+   public var rightMargin : Int;
+   public var size : Int;
+   public var tabStops : Int;
    public var target : String;
-   public var underline : Dynamic;
+   public var underline : Bool;
    public var url : String;
 
   public function new(?in_font : String,
-                      ?in_size : Dynamic,
-                      ?in_color : Dynamic,
-                      ?in_bold : Dynamic,
-                      ?in_italic : Dynamic,
-                      ?in_underline : Dynamic,
+                      ?in_size : Int,
+                      ?in_color : Int,
+                      ?in_bold : Bool,
+                      ?in_italic : Bool,
+                      ?in_underline : Bool,
                       ?in_url : String,
                       ?in_target : String,
                       ?in_align : String,
-                      ?in_leftMargin : Dynamic,
-                      ?in_rightMargin : Dynamic,
-                      ?in_indent : Dynamic,
-                      ?in_leading : Dynamic)
+                      ?in_leftMargin : Int,
+                      ?in_rightMargin : Int,
+                      ?in_indent : Int,
+                      ?in_leading : Int)
    {
       font = in_font;
       size = in_size;
