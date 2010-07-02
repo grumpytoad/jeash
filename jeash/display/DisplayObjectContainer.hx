@@ -327,7 +327,11 @@ class DisplayObjectContainer extends InteractiveObject
 	{
 		if ( obj == this ) return true;
 		for ( i in mObjs )
+		{
 			if ( obj == i ) return true;
+			if ( Std.is(i,DisplayObjectContainer) )
+				if ( cast(i,DisplayObjectContainer).contains(obj) ) return true;
+		}
 		return false;
 	}
 
