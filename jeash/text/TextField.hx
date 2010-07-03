@@ -73,7 +73,7 @@ class TextField extends flash.display.InteractiveObject
 	public var length(default,null) : Int;
 	public var mDownChar:Int;
 
-	public var defaultTextFormat : TextFormat;
+	public var defaultTextFormat (default,SetDefaultTextFormat): TextFormat;
 	var mTextFormat : TextFormat;
 
 	public var selectionBeginIndex : Int;
@@ -189,6 +189,18 @@ class TextField extends flash.display.InteractiveObject
 		return result;
 	}
 
+	function EvaluateTextFormat( tf:TextFormat, dtf:TextFormat )
+	{
+		if ( tf == null ) return dtf;
+		if ( tf.size == null ) tf.size = dtf.size;
+		if ( tf.font == null ) tf.font = dtf.font;
+		if ( tf.bold == null ) tf.bold = dtf.bold;
+		if ( tf.align == null ) tf.align = dtf.align;
+		if ( tf.color == null ) tf.color = dtf.color;
+		if ( tf.underline == null ) tf.underline = dtf.underline;
+		return tf;
+	}
+
 	override public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int):HtmlCanvasElement
 	{
 		//mGraphics.clear();
@@ -198,28 +210,60 @@ class TextField extends flash.display.InteractiveObject
 
 			ctxt.save();
 
-			untyped console.log( mTextFormat );
-			var textFormat = mTextFormat != null ? mTextFormat : defaultTextFormat;
+			var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
 			var size = textFormat.size;
 			var font = textFormat.font;
-			var bold = textFormat.bold == false ? 100 : 400;
+			var bold = textFormat.bold == false ? 400 : 700;
 			var align = textFormat.align;
 			var color = textFormat.color;
 
-			untyped console.log( defaultTextFormat.color );
+			// smaller flash fonts seem to be bolder than in HTML
+			if ( size < 18 ) bold += 300;
+
+			var posX = null, posY = null;
+			if ( border == false )
+			{
+				posX = 2.;
+				posY = 1. + size;
+			} else {
+				posX = 12.;
+				posY = 11. + size;
+			}
 
 			ctxt.font = bold + " " + size + "px " + font;
+
 			ctxt.textAlign = mAlign;
-			//ctxt.textBaseline = "baseline";
 			ctxt.fillStyle = '#' + StringTools.hex(color);
-			ctxt.fillText(mHTMLText, 2, 1 + size);
-			if ( textFormat.underline )
+			var pos = 0;
+			var str = mHTMLText;
+			while (pos < mHTMLText.length - 1)
 			{
-				//ctxt.beginPath();
-				//ctxt.moveTo(
+				var index = mHTMLText.indexOf(" ", pos);
+				var c = (index < 0 ) ? mHTMLText.substr(pos) : mHTMLText.substr(pos, index - pos) + " ";
+				pos += c.length;
+				var estX = ctxt.measureText(c).width;
+				if ( wordWrap && posX + estX > mWidth )
+				{
+					if ( posY + 12 + size > mHeight ) break;
+					posX = border ? 12 : 2;
+					if ( wordWrap )
+						posY += 8 + size;
+				}
+
+				ctxt.fillText(c, posX, posY);
+				posX += estX;
+
 			}
 			
 			ctxt.restore();
+			ctxt.save();
+
+			if ( border )
+			{
+				ctxt.beginPath();
+				ctxt.strokeStyle = '#' + StringTools.hex(color);
+				ctxt.strokeRect(10, 10, mWidth+2, mHeight+2 );
+			}
 
 		}
 
@@ -232,6 +276,12 @@ class TextField extends flash.display.InteractiveObject
 
 		return mSurface;
 
+	}
+
+	function SetDefaultTextFormat( tf:TextFormat )
+	{
+		this.defaultTextFormat = EvaluateTextFormat( tf, this.defaultTextFormat );
+		return this.defaultTextFormat;
 	}
 
 	public function GetTextColour() { return mTextFormat.color; }
