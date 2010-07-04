@@ -232,7 +232,9 @@ class TextField extends flash.display.InteractiveObject
 
 			ctxt.font = bold + " " + size + "px " + font;
 
-			ctxt.textAlign = mAlign;
+			if ( mAlign != null )
+				ctxt.textAlign = mAlign;
+
 			ctxt.fillStyle = '#' + StringTools.hex(color);
 			var pos = 0;
 			var str = mHTMLText;
@@ -264,6 +266,8 @@ class TextField extends flash.display.InteractiveObject
 				ctxt.strokeStyle = '#' + StringTools.hex(color);
 				ctxt.strokeRect(10, 10, mWidth+2, mHeight+2 );
 			}
+
+			ctxt.restore();
 
 		}
 

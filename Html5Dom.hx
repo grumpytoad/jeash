@@ -225,3 +225,4 @@ extern class MutationEvent extends Event {
 	function initMutationEvent(typeArg:String, canBubbleArg:Bool, cancelableArg:Bool, relatedNodeArg:Dynamic, prevValueArg:String, newValueArg:String, attrNameArg:String, attrChangeArg:Int):Void;
 
 }
+
