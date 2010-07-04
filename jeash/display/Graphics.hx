@@ -458,10 +458,8 @@ class Graphics
 		ClosePolygon(true);
 	}
 
-	public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float)
+	function DrawEllipse(x:Float,y:Float,rx:Float,ry:Float)
 	{
-		ClosePolygon(false);
-
 		moveTo(x+rx, y);
 		curveTo(rx+x        ,-0.4142*ry+y,0.7071*rx+x ,-0.7071*ry+y);
 		curveTo(0.4142*rx+x ,-ry+y       ,x           ,-ry+y);
@@ -471,13 +469,24 @@ class Graphics
 		curveTo(-0.4142*rx+x,ry+y        ,x           ,ry+y);
 		curveTo(0.4142*rx+x ,ry+y        ,0.7071*rx+x ,0.7071*ry+y) ;
 		curveTo(rx+x        ,0.4142*ry+y ,rx+x        ,y);
+	}
+	public function drawEllipse(x:Float,y:Float,rx:Float,ry:Float)
+	{
+		ClosePolygon(false);
+
+		rx /= 2; ry /= 2;
+		DrawEllipse(x+rx,y+ry,rx,ry);
 
 		ClosePolygon(false);
 	}
 
 	public function drawCircle(x:Float,y:Float,rad:Float)
 	{
-		drawEllipse(x,y,rad,rad);
+		ClosePolygon(false);
+
+		DrawEllipse(x,y,rad,rad);
+
+		ClosePolygon(false);
 	}
 
 	public function drawRect(x:Float,y:Float,width:Float,height:Float)
