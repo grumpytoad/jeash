@@ -31,8 +31,7 @@ import flash.events.IOErrorEvent;
 import flash.net.URLRequest;
 import flash.net.URLLoader;
 
-
-private typedef NmeSound = nme.Sound;
+import Html5Dom;
 
 /**
 * @author	Russell Weir
@@ -51,9 +50,8 @@ class Sound extends flash.events.EventDispatcher {
 	private static var s_channels : IntHash<SoundChannel>;
 	private static var s_channelsToStart : List<SoundChannel>;
 
-	private var m_sound : NmeSound;
+	private var m_sound : HtmlAudioElement;
 	private var m_loaded : Bool;
-	private var m_loader : URLLoader;
 
 	public function new(?stream : URLRequest, ?context : SoundLoaderContext) : Void {
 		super( this );
@@ -63,7 +61,7 @@ class Sound extends flash.events.EventDispatcher {
 		isBuffering = false;
 		length = 0;
 		url = null;
-		m_sound = new NmeSound();
+		m_sound = cast js.Lib.document.createElement("audio");
 		m_loaded = false;
 		if(stream != null)
 			load(stream, context);
@@ -89,17 +87,32 @@ class Sound extends flash.events.EventDispatcher {
 	**/
 	public function load(stream : URLRequest, ?context : SoundLoaderContext) : Void
 	{
-		if(m_loader != null)
-			throw "Already loading";
-		#if js
-		DispatchCompleteEvent();
-		#else
-		m_loader = new URLLoader();
-		m_loader.dataFormat = flash.net.URLLoaderDataFormat.BINARY;
-		m_loader.addEventListener(Event.COMPLETE, __onSoundLoaded);
-		m_loader.addEventListener(IOErrorEvent.IO_ERROR, __onSoundLoadError);
-		m_loader.load( stream );
-		#end
+
+		//m_sound.addEventListener("audiowritten", TODO, false);
+		//m_sound.addEventListener("loadstart", TODO, false);
+		//m_sound.addEventListener("progress", TODO, false);
+		//m_sound.addEventListener("stalled", TODO, false);
+		//m_sound.addEventListener("suspend", TODO, false);
+		//m_sound.addEventListener("durationchange", TODO, false);
+		//m_sound.addEventListener("loadedmetadata", TODO, false);
+		//m_sound.addEventListener("emptied", TODO, false);
+		//m_sound.addEventListener("timeupdate", TODO, false);
+		//m_sound.addEventListener("loadeddata", TODO, false);
+		//m_sound.addEventListener("waiting", TODO, false);
+		//m_sound.addEventListener("playing", TODO, false);
+		//m_sound.addEventListener("play", TODO, false);
+		//m_sound.addEventListener("canplaythrough", TODO, false);
+		//m_sound.addEventListener("ratechange", TODO, false);
+		//m_sound.addEventListener("pause", TODO, false);
+		//m_sound.addEventListener("seeking", TODO, false);
+		//m_sound.addEventListener("seeked", TODO, false);
+
+		m_sound.addEventListener("canplay", cast __onSoundLoaded, false);
+		m_sound.addEventListener("ended", cast __onSoundChannelFinished, false);
+		m_sound.addEventListener("error", cast __onSoundLoadError, false);
+		m_sound.addEventListener("abort", cast __onSoundLoadError, false);
+		m_sound.src = stream.url;
+
 	}
 
 	public function play(startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel {
@@ -140,14 +153,11 @@ class Sound extends flash.events.EventDispatcher {
 
 	private function __onSoundLoaded(evt : Event)
 	{
-		m_loader.removeEventListener(Event.COMPLETE, __onSoundLoaded);
-		m_loader.removeEventListener(IOErrorEvent.IO_ERROR, __onSoundLoadError);
+		m_sound.removeEventListener("canplay", cast __onSoundLoaded, false);
+		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
+		m_sound.removeEventListener("error", cast __onSoundLoadError, false);
+		m_sound.removeEventListener("abort", cast __onSoundLoadError, false);
 		m_loaded = true;
-
-		if(!Std.is(m_loader.data,nme.utils.ByteArray))
-			throw "Improper data in loader";
-		// mutex acquired here and in StartSoundChannel
-		m_sound.loadFromByteArray(m_loader.data);
 
 		// start up any channels which were queued to play
 		for(sc in s_channelsToStart)
@@ -159,8 +169,11 @@ class Sound extends flash.events.EventDispatcher {
 
 	private function __onSoundLoadError(evt : IOErrorEvent)
 	{
-		m_loader.removeEventListener(Event.COMPLETE, __onSoundLoaded);
-		m_loader.removeEventListener(IOErrorEvent.IO_ERROR, __onSoundLoadError);
+		m_sound.removeEventListener("canplay", cast __onSoundLoaded, false);
+		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
+		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
+		m_sound.removeEventListener("error", cast __onSoundLoadError, false);
+		m_sound.removeEventListener("abort", cast __onSoundLoadError, false);
 		DispatchIOErrorEvent();
 	}
 
@@ -176,8 +189,7 @@ class Sound extends flash.events.EventDispatcher {
 
 	private static function __init__()
 	{
-		nme.Sound.onChannelFinished = __onSoundChannelFinished;
-		nme.Sound.maxChannels = 32;
+		//nme.Sound.maxChannels = 32;
 		s_channels = new IntHash();
 		s_channelsToStart = new List();
 	}

@@ -28,7 +28,7 @@ package jeash.media;
 
 import flash.events.Event;
 
-private typedef NmeSound = nme.Sound;
+import Html5Dom;
 
 /**
 * @author	Russell Weir
@@ -43,7 +43,7 @@ class SoundChannel extends flash.events.EventDispatcher {
 	public var soundTransform(default,__setSoundTransform) : SoundTransform;
 
 	private var m_started : Bool;
-	private var m_sound : NmeSound;
+	private var m_sound : HtmlAudioElement;
 	private var m_parentSound : Sound;
 	private var m_startTime : Int;
 	private var m_loops : Int;
@@ -72,17 +72,18 @@ class SoundChannel extends flash.events.EventDispatcher {
 		if(m_started)
 			throw "Can not restart a SoundChannel";
 		m_started = true;
-		ChannelId = m_sound.play( m_loops );
-		if( m_startTime != 0 )
-			nme.Sound.setChannelPosition(ChannelId, m_startTime);
+		m_sound.play();
+		ChannelId++;
+		//if( m_startTime != 0 )
+		//	Sound.setChannelPosition(ChannelId, m_startTime);
 		return ChannelId;
 	}
 
-	public static function Create(parent:Sound, nmeSoundObj:NmeSound, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel
+	public static function Create(parent:Sound, soundObj:HtmlAudioElement, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel
 	{
 		var snd = new SoundChannel();
 		snd.m_parentSound = parent;
-		snd.m_sound = nmeSoundObj;
+		snd.m_sound = soundObj;
 		snd.m_startTime = Std.int(startTime);
 		snd.m_loops = loops;
 		snd.soundTransform = sndTransform;

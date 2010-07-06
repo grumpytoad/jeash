@@ -42,11 +42,13 @@ typedef HtmlCanvasElement = { > HtmlDom,
 	function toDataURL( ?type:String ):String;
 	function getContext( contextId:String ):CanvasRenderingContext2D;
 	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
+	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
 	function dispatchEvent( event:Event ):Void;
 }
 
 typedef Html5Node = { > HtmlDom,
 	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
+	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
 	function dispatchEvent( event:Event ):Void;
 }
 
@@ -160,12 +162,13 @@ typedef Image = { > HtmlDom,
 	var lowsrc : String;
 
 	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
+	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
 	function dispatchEvent( event:js.Event ):Void;
 }
 
 typedef EventTarget = {
 	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
-	function removeListener( type:String, listener:EventListener, useCapture:Bool ):Void;
+	function removeEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
 	function dispatchEvent( evt:Event ):Bool;
 }
 
@@ -226,3 +229,74 @@ extern class MutationEvent extends Event {
 
 }
 
+extern class HtmlAudioElement extends HtmlMediaElement {
+	public function new(?src:String):Void;
+}
+extern class HtmlMediaElement {
+
+	// error state
+	var error(default, null):MediaError;
+
+	// network state
+	var src:String;
+	var currentSrc(default, null):String;
+	static var NETWORK_EMPTY = 0;
+	static var NETWORK_IDLE = 1;
+	static var NETWORK_LOADING = 2;
+	static var NETWORK_NO_SOURCE = 3;
+
+	var networkState(default, null):Int;
+	var preload:String;
+	var buffered:TimeRanges;
+	function load():Void;
+	function canPlayType(type:String):String;
+
+	// ready state
+	static var HAVE_NOTHING = 0;
+	static var HAVE_METADATA = 1;
+	static var HAVE_CURRENT_DATA = 2;
+	static var HAVE_FUTURE_DATA = 3;
+	static var HAVE_ENOUGH_DATA = 4;
+
+	var readyState(default, null):Int;
+	var seeking:Bool;
+
+	// playback state
+	var currentTime:Float;
+	var startTime(default, null):Float;
+	var duration(default, null):Float;
+	var paused(default, null):Bool;
+	var defaultPlaybackRate:Float;
+	var playbackRate:Float;
+	var played(default, null):TimeRanges;
+	var seekable(default, null):TimeRanges;
+	var ended(default, null):Bool;
+	var loop:Bool;
+
+	function play():Void;
+	function pause():Void;
+
+	// controls
+	var controls:Bool;
+	var volume:Float;
+	var muted:Bool;
+
+	// HtmlElement - @TODO: put this in a super class
+	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
+	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
+	function dispatchEvent( evt:Event ):Bool;
+}
+
+extern class MediaError {
+	static var MEDIA_ERR_ABORTED = 1;
+	static var MEDIA_ERR_NETWORK = 2;
+	static var MEDIA_ERR_DECODE = 3;
+	static var MEDIA_ERR_SRC_NOT_SUPPORTED = 4;
+	var code(default, null):Int;
+}
+
+typedef TimeRanges = {
+	var length(default, null):Int;
+	function start(index:Int):Float;
+	function end(index:Int):Float;
+}

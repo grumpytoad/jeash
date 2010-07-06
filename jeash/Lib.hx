@@ -307,11 +307,7 @@ class Lib
 
 	function DragObject(inX:Float, inY:Float)
 	{
-#if !js
-		var pos = new nme.geom.Point(inX,inY);
-#else
 		var pos = new Point(inX,inY);
-#end
 		var p = mDragObject.parent;
 		if (p!=null)
 			pos = p.globalToLocal(pos);
