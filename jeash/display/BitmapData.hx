@@ -115,23 +115,16 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public function fillRect(rect: Rectangle, color: Int) : Void {
-		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-
-		var r:Float;
-		var g:Float;
-		var b:Float;
-		r = (0xFF0000 & color) >> 16;
-		g = (0x00FF00 & color) >> 8; b = (0x0000FF & color);
-		ctx.fillStyle = 'rgba' + '(' + r + ',' + g + ',' + b + ',' + 1 + ')';
-		ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-
+		graphics.beginFill(color);
+		graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
+		graphics.endFill();
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
 	{
 		var bytes = haxe.io.Bytes.alloc(cast(3 * rect.width * rect.height, Int));
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
+		var imagedata = ctx.getImageData(rect.x + graphics.mSurfaceOffset, rect.y + graphics.mSurfaceOffset, rect.width, rect.height);
 		for (i in 0...imagedata.data.length) {
 			bytes.set(i, imagedata.data[i]);
 		}
@@ -141,14 +134,14 @@ class BitmapData implements IBitmapDrawable
 	public function getPixel(x:Int, y:Int) : Int
 	{
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData(x, y, 1, 1);
+		var imagedata = ctx.getImageData(x + graphics.mSurfaceOffset, y + graphics.mSurfaceOffset, 1, 1);
 		return (imagedata.data[0] << 16) | (imagedata.data[1] << 8) | (imagedata.data[2]);
 	}
 
 	public function getPixel32(x:Int, y:Int) 
 	{
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData(x, y, 1, 1);
+		var imagedata = ctx.getImageData(x + graphics.mSurfaceOffset, y + graphics.mSurfaceOffset, 1, 1);
 		return (imagedata.data[3] << 24) | (imagedata.data[0] << 16) | imagedata.data[1] << 8 | imagedata.data[2];
 	}
 
@@ -160,7 +153,7 @@ class BitmapData implements IBitmapDrawable
 		imageData.data[1] = (color & 0x00FF00) >>> 8;
 		imageData.data[2] = (color & 0x0000FF) ;
 		imageData.data[3] = 0xFF;
-		ctx.putImageData(imageData, x, y);
+		ctx.putImageData(imageData, x + graphics.mSurfaceOffset, y + graphics.mSurfaceOffset);
 	}
 
 	public function setPixel32(x:Int, y:Int, color:UInt) 
@@ -171,7 +164,7 @@ class BitmapData implements IBitmapDrawable
 		imageData.data[1] = (color & 0x00FF00) >>> 8;
 		imageData.data[2] = (color & 0x0000FF) ;
 		imageData.data[3] = 0xFF;
-		ctx.putImageData(imageData, x, y);
+		ctx.putImageData(imageData, x + graphics.mSurfaceOffset, y + graphics.mSurfaceOffset);
 	}
 
 	public function clone() : BitmapData {
@@ -225,7 +218,7 @@ class BitmapData implements IBitmapDrawable
 				me.mTextureBuffer.width = image.width;
 				me.mTextureBuffer.height = image.height;
 				var ctx : CanvasRenderingContext2D = me.mTextureBuffer.getContext('2d');
-				ctx.drawImage(untyped image, 0, 0);
+				ctx.drawImage(image, 0, 0);
 				var e = new flash.events.Event( flash.events.Event.COMPLETE );
 				e.target = inLoader;
 				inLoader.dispatchEvent( e );

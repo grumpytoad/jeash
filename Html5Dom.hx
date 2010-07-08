@@ -137,7 +137,7 @@ typedef CanvasRenderingContext2D = {
 	function measureText( text:String ):TextMetrics;
 
 	// drawing images
-	function drawImage( image:HtmlCanvasElement, sx:Float, sy:Float, ?sw:Float, ?sh:Float, ?dx:Float, ?dy:Float, ?dw:Float, ?dh:Float):Void;
+	function drawImage( image:Html5Node, sx:Float, sy:Float, ?sw:Float, ?sh:Float, ?dx:Float, ?dy:Float, ?dw:Float, ?dh:Float):Void;
 
 	// pixel manipulation
 	function createImageData(sw:Float, sh:Float):ImageData;
@@ -145,7 +145,7 @@ typedef CanvasRenderingContext2D = {
 	function putImageData( imagedata:ImageData, dx:Float, dy:Float, ?dirtyX:Float, ?dirtyY:Float, ?dirtyWidth:Float, ?dirtyHeight:Float):Void;
 }
 
-typedef Image = { > HtmlDom,
+typedef Image = { > Html5Node,
 	var align : String;
 	var alt : String;
 	var border : String;
@@ -161,9 +161,6 @@ typedef Image = { > HtmlDom,
 	var complete : Bool;
 	var lowsrc : String;
 
-	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
-	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
-	function dispatchEvent( event:js.Event ):Void;
 }
 
 typedef EventTarget = {

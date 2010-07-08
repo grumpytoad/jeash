@@ -238,6 +238,8 @@ class Graphics
 	private var mPenY:Float;
 	private var mLastMoveID:Int;
 
+	public var mSurfaceOffset:Int;
+
 	public function new(?inSurface:HtmlCanvasElement)
 	{
 		mChanged = false;
@@ -249,6 +251,14 @@ class Graphics
 			mSurface = inSurface;
 		}
 
+
+		if( mSurface != jeash.Lib.canvas ) 
+		{
+			mSurfaceOffset = Std.int(mSurface.width / 2);
+			mSurface.width *= 2;
+			mSurface.height *= 2;
+			mSurface.getContext("2d").translate(mSurfaceOffset,mSurfaceOffset);
+		}
 		mLastMoveID = 0;
 		clear();
 	}
@@ -302,13 +312,13 @@ class Graphics
 		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
 
 		ctx.save();
-		ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
-
+		ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, 0, 0);
 		// merge into parent canvas context
 		if (inMaskHandle != null)
 		{
 			var maskCtx = inMaskHandle.getContext('2d');
-			maskCtx.drawImage(inSurface, 0, 0);
+			//maskCtx.drawImage(inSurface, 0, 0, inSurface.width, inSurface.height, inMatrix.tx - mSurfaceOffset, inMatrix.ty - mSurfaceOffset, inSurface.width, inSurface.height );
+			maskCtx.drawImage(inSurface, inMatrix.tx - mSurfaceOffset, inMatrix.ty - mSurfaceOffset );
 		}
 
 		ctx.restore();
@@ -345,7 +355,7 @@ class Graphics
 		ClosePolygon(true);
 
 		var ctx = mSurface.getContext('2d');
-		untyped ctx.drawImage(inTexture.handle(),mPenX,mPenY);
+		ctx.drawImage(inTexture.handle(),mPenX,mPenY);
 	}
 
 
