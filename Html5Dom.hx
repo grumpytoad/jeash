@@ -36,20 +36,17 @@ extern class CanvasPixelArray implements ArrayAccess<Int> {
 	var length(default,null):Int;
 }
 
-typedef HtmlCanvasElement = { > HtmlDom,
-	var width:Int;
-	var height:Int;
-	function toDataURL( ?type:String ):String;
-	function getContext( contextId:String ):CanvasRenderingContext2D;
+typedef Html5Node = { > HtmlDom,
 	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
 	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
 	function dispatchEvent( event:Event ):Void;
 }
 
-typedef Html5Node = { > HtmlDom,
-	function addEventListener( type:String, listener:EventListener, useCapture:Bool ):Void;
-	function removeEventListener( type:String, listener:EventListener,useCapture:Bool ):Void;
-	function dispatchEvent( event:Event ):Void;
+typedef HtmlCanvasElement = { > Html5Node,
+	var width:Int;
+	var height:Int;
+	function toDataURL( ?type:String ):String;
+	function getContext( contextId:String ):CanvasRenderingContext2D;
 }
 
 typedef NamedNodeMap = {

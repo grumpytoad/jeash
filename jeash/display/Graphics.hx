@@ -317,7 +317,6 @@ class Graphics
 		if (inMaskHandle != null)
 		{
 			var maskCtx = inMaskHandle.getContext('2d');
-			//maskCtx.drawImage(inSurface, 0, 0, inSurface.width, inSurface.height, inMatrix.tx - mSurfaceOffset, inMatrix.ty - mSurfaceOffset, inSurface.width, inSurface.height );
 			maskCtx.drawImage(inSurface, inMatrix.tx - mSurfaceOffset, inMatrix.ty - mSurfaceOffset );
 		}
 

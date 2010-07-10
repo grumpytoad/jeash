@@ -115,6 +115,7 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public function fillRect(rect: Rectangle, color: Int) : Void {
+		untyped graphics.foo = 1;
 		graphics.beginFill(color);
 		graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
 		graphics.endFill();
@@ -184,7 +185,13 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public function handle() { 
-		return mTextureBuffer; 
+
+		// merge into parent canvas context
+		var handle :HtmlCanvasElement = cast js.Lib.document.createElement("canvas");
+		var maskCtx = handle.getContext('2d');
+		maskCtx.drawImage(mTextureBuffer, - graphics.mSurfaceOffset, - graphics.mSurfaceOffset );
+
+		return handle; 
 	}
 
 	public function getWidth() : Int { 
