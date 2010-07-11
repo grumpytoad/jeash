@@ -79,13 +79,9 @@ class Loader extends flash.display.DisplayObjectContainer
 		mImage = new BitmapData(0,0,transparent);
 
 		try {
-			#if !js
-				mImage.LoadFromFile(request.url);
-			#else
-				mImage.LoadFromFile(request.url, contentLoaderInfo);
-			#end
+			mImage.LoadFromFile(request.url, contentLoaderInfo);
 			content = new Bitmap(mImage);
-			untyped contentLoaderInfo.content = this.content;
+			Reflect.setField(contentLoaderInfo, "content", this.content);
 		} catch(e:Dynamic) {
 			trace("Error " + e);
 			contentLoaderInfo.DispatchIOErrorEvent();
@@ -102,10 +98,11 @@ class Loader extends flash.display.DisplayObjectContainer
 
 		#if !js
 			mShape.graphics.blit(mImage);
+			contentLoaderInfo.DispatchCompleteEvent();
 		#end
 
-		contentLoaderInfo.DispatchCompleteEvent();
 	}
+
 
 }
 

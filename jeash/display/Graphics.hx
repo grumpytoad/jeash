@@ -247,18 +247,15 @@ class Graphics
 		if ( inSurface == null ) {
 			mSurface = cast js.Lib.document.createElement("canvas");
 
-		} else {
-			mSurface = inSurface;
-		}
-
-
-		if( mSurface != jeash.Lib.canvas ) 
-		{
 			mSurfaceOffset = Std.int(mSurface.width / 2);
 			mSurface.width *= 2;
 			mSurface.height *= 2;
 			mSurface.getContext("2d").translate(mSurfaceOffset,mSurfaceOffset);
+
+		} else {
+			mSurface = inSurface;
 		}
+
 		mLastMoveID = 0;
 		clear();
 	}

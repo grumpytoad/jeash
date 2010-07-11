@@ -63,8 +63,6 @@ class BitmapData implements IBitmapDrawable
 		var el : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
 		if ( el != null ) {
 			mTextureBuffer = el;
-		} else if (inWidth<1 || inHeight<1) {
-			mTextureBuffer = null;
 		} else {
 			mTextureBuffer = cast js.Lib.document.createElement('canvas');
 			mTextureBuffer.width = inWidth;
@@ -115,7 +113,6 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public function fillRect(rect: Rectangle, color: Int) : Void {
-		untyped graphics.foo = 1;
 		graphics.beginFill(color);
 		graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
 		graphics.endFill();
@@ -184,14 +181,9 @@ class BitmapData implements IBitmapDrawable
 			graphics.flush();
 	}
 
-	public function handle() { 
-
-		// merge into parent canvas context
-		var handle :HtmlCanvasElement = cast js.Lib.document.createElement("canvas");
-		var maskCtx = handle.getContext('2d');
-		maskCtx.drawImage(mTextureBuffer, - graphics.mSurfaceOffset, - graphics.mSurfaceOffset );
-
-		return handle; 
+	public inline function handle() 
+	{
+		return mTextureBuffer;
 	}
 
 	public function getWidth() : Int { 
@@ -215,22 +207,24 @@ class BitmapData implements IBitmapDrawable
 		mTextureBuffer = null;
 	}
 
+	function OnLoad( data:{image:Image, canvas:HtmlCanvasElement, inLoader:LoaderInfo}, e)
+	{
+		data.canvas.width = data.image.width;
+		data.canvas.height = data.image.height;
+
+		var ctx : CanvasRenderingContext2D = data.canvas.getContext('2d');
+		ctx.drawImage(data.image, 0, 0);
+
+		var e = new flash.events.Event( flash.events.Event.COMPLETE );
+		e.target = data.inLoader;
+		data.inLoader.dispatchEvent( e );
+	}
+
 	public function LoadFromFile(inFilename:String, ?inLoader:LoaderInfo)
 	{
 		var image : Image = cast js.Lib.document.createElement("img");
-		if ( inLoader != null ) {
-			var me = this;
-			image.addEventListener( "load", function (_) {
-				me.mTextureBuffer = cast js.Lib.document.createElement('canvas');
-				me.mTextureBuffer.width = image.width;
-				me.mTextureBuffer.height = image.height;
-				var ctx : CanvasRenderingContext2D = me.mTextureBuffer.getContext('2d');
-				ctx.drawImage(image, 0, 0);
-				var e = new flash.events.Event( flash.events.Event.COMPLETE );
-				e.target = inLoader;
-				inLoader.dispatchEvent( e );
-			}, false );
-		}
+		if ( inLoader != null ) 
+			image.addEventListener( "load", callback(OnLoad,{image:image, canvas:mTextureBuffer, inLoader:inLoader}), false );
 		image.src = inFilename;
 	}
 
