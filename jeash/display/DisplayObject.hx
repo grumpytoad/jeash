@@ -366,7 +366,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var gfx = GetGraphics();
 		if (gfx!=null)
 		{
-			if (gfx.CheckChanged())
+			if (gfx.mChanged)
 			{
 				result |= DisplayObject.NON_TRANSLATE_CHANGE | DisplayObject.GRAPHICS_CHANGE;
 				mGraphicsBounds = null;

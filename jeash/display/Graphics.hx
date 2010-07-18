@@ -212,7 +212,7 @@ class Graphics
 	public static var BLEND_SHADER = 14;
 
 	public var mSurface(default,null):HtmlCanvasElement;
-	public var mChanged:Bool;
+	public var mChanged(default,null):Bool;
 
 	// Current set of points
 	private var mPoints:GfxPoints;
@@ -248,8 +248,8 @@ class Graphics
 			mSurface = cast js.Lib.document.createElement("canvas");
 
 			mSurfaceOffset = Std.int(mSurface.width / 2);
-			mSurface.width *= 2;
-			mSurface.height *= 2;
+			mSurface.width = 2*jeash.Lib.canvas.width;
+			mSurface.height = 2*jeash.Lib.canvas.height;
 			mSurface.getContext("2d").translate(mSurfaceOffset,mSurfaceOffset);
 
 		} else {
@@ -318,6 +318,8 @@ class Graphics
 		}
 
 		ctx.restore();
+
+		mChanged = false;
 
 	}
 
@@ -634,7 +636,7 @@ class Graphics
 
 	public function clear()
 	{
-		mChanged = true;
+		//mChanged = true;
 		mPenX = 0.0;
 		mPenY = 0.0;
 
@@ -751,25 +753,30 @@ class Graphics
 
 	public function flush() { ClosePolygon(true); }
 
-	public function CheckChanged() : Bool
-	{
-		ClosePolygon(true);
-		var result = mChanged;
-		mChanged = false;
-		return result;
-	}
-
 	private function AddDrawable(inDrawable:Drawable)
 	{
 		if (inDrawable==null)
 			return; // throw ?
 
+
+		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
+		// clear the canvas
+		if ( !mChanged )
+		{
+			ctx.save();
+
+			ctx.translate( 0, 0 );
+			ctx.fillStyle = 'rgba(255,255,255,1);';
+			ctx.fillRect( 0, 0, mSurface.width, mSurface.height );
+
+			ctx.restore();
+		}
+
+
 		mChanged = true;
 		mDrawList.unshift( inDrawable );
 
 		var d = inDrawable;
-
-		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
 
 		ctx.save();
 		ctx.beginPath();
