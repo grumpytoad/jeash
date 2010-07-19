@@ -126,7 +126,10 @@ class BitmapData implements IBitmapDrawable
 		for (i in 0...imagedata.data.length) {
 			bytes.set(i, imagedata.data[i]);
 		}
-		return new ByteArray(bytes);
+		var byteArray = new ByteArray();
+		for ( i in 0...bytes.length )
+			byteArray.writeByte( bytes.get(i) );
+		return byteArray;
 	}
 
 	public function getPixel(x:Int, y:Int) : Int

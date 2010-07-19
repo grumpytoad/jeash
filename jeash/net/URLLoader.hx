@@ -59,7 +59,7 @@ class URLLoader extends flash.events.EventDispatcher
 
 	public function load(request:URLRequest)
 	{
-		var h = new haxe.Http( request.url );
+		var h = new std.Http( request.url );
 		h.onData = onData;
 		h.onError = onError;
 		h.request( false );

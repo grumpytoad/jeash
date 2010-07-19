@@ -515,7 +515,7 @@ class Lib
 				DoMouse(cast evt);
 
 			default:
-				untyped console.log( "Failed to capture: " + evt);
+				
 		}
 	}
 
@@ -526,8 +526,25 @@ class Lib
 		setTimer();
 	}
 
-	static public function Run( ) {
-		mMe.MyRun();
+	static public function Run( name:String, width:Int, height:Int ) 
+	{
+		if ( js.Lib.document != null )
+		{
+			mMe = new Lib( name, width, height );
+			var tgt = js.Lib.document.getElementById(name);
+			mStage.backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
+				ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
+						return switch (pos) {
+						case 0: res | (cur << 16);
+						case 1: res | (cur << 8);
+						case 2: res | (cur);
+						}
+						});
+
+			mMe.MyRun();
+		} else {
+			haxe.Timer.delay( callback( Run, name, width, height ), 10 );
+		}
 	}
 
 	public static function close()
@@ -542,6 +559,33 @@ class Lib
 		mMe = new Lib(inName,inWidth,inHeight,inFullScreen,inResizable,cb);
 	}
 
+	static function ParseColor( str:String, cb: Int -> Int -> Int -> Int) 
+	{
+		var re = ~/rgb\(([0-9]*), ?([0-9]*), ?([0-9]*)\)/;
+		var hex = ~/#([0-9a-zA-Z][0-9a-zA-Z])([0-9a-zA-Z][0-9a-zA-Z])([0-9a-zA-Z][0-9a-zA-Z])/;
+		if ( re.match(str) )
+		{
+			var col = 0;
+			for ( pos in 1...4 )
+			{
+				var v = Std.parseInt(re.matched(pos));
+				col = cb(col,pos-1,v);
+			}
+			return col;
+		} else if ( hex.match(str) ) {
+			var col = 0;
+			for ( pos in 1...4 )
+			{
+				var v : Int = untyped ("0x" + hex.matched(pos)) & 0xFF;
+				v = cb(col,pos-1,v);
+			}
+			return col;
+		} else {
+			throw "Cannot parse color '" + str + "'.";
+		}
+	}
+
+
 	static function __init__()
 	{
 		untyped
@@ -553,44 +597,9 @@ class Lib
 				var width : Int = tgt.getAttribute('width') != null ? cast tgt.getAttribute('width') : Manager.DEFAULT_WIDTH;
 				var height : Int = tgt.getAttribute('height') != null ? cast tgt.getAttribute('height') : Manager.DEFAULT_HEIGHT;
 				var name = tgt.getAttribute('id') != null ? tgt.getAttribute('id') : 'Container';
-				mMe = new Lib( name, width, height );
-
-				var parseColor = function (str:String, cb: Int -> Int -> Int -> Int) {
-					var re = ~/rgb\(([0-9]*), ?([0-9]*), ?([0-9]*)\)/;
-					var hex = ~/#([0-9a-zA-Z][0-9a-zA-Z])([0-9a-zA-Z][0-9a-zA-Z])([0-9a-zA-Z][0-9a-zA-Z])/;
-					if ( re.match(str) )
-					{
-						var col = 0;
-						for ( pos in 1...4 )
-						{
-							var v = Std.parseInt(re.matched(pos));
-							col = cb(col,pos-1,v);
-						}
-						return col;
-					} else if ( hex.match(str) ) {
-						var col = 0;
-						for ( pos in 1...4 )
-						{
-							var v : Int = untyped ("0x" + hex.matched(pos)) & 0xFF;
-							v = cb(col,pos-1,v);
-						}
-						return col;
-					} else {
-						throw "Cannot parse color '" + str + "'.";
-					}
-				}
-
-				mStage.backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
-					parseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
-							return switch (pos) {
-							case 0: res | (cur << 16);
-							case 1: res | (cur << 8);
-							case 2: res | (cur);
-							}
-							});
 
 
-				mMe.MyRun();
+				Run(name, width, height);
 			}
 		}
 	}

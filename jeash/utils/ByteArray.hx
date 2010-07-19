@@ -30,131 +30,247 @@ import haxe.io.Input;
 import haxe.io.Bytes;
 import haxe.io.BytesData;
 import haxe.io.Eof;
+import haxe.io.Error;
 
-class ByteArray extends Input, implements ArrayAccess<Int> {
-   public  var position:Int;
-   public var bytesAvailable(default,null) : Int;
-   public var endian(__GetEndian,__SetEndian) : Endian;
-   public var objectEncoding : Int;
+import Html5Dom;
+import std.math.IEEE754;
 
-   public var length(get_length,null):Int;
+class ByteArray {
 
-   public var b : BytesData;
-   public var pos : Int;
-   public var len : Int;
+	var data : Array<Int>;
+	var bigEndian : Bool;
 
-   public function new( b : Bytes, ?pos : Int, ?len : Int ) {
-     if( pos == null ) pos = 0; if( len == null ) len = b.length - pos;
-     if( pos < 0 || len < 0 || pos + len > b.length ) throw "Out of Bounds.";
-     this.b = b.getData();
-     this.pos = pos;
-     this.len = len;
-   }
+	public var bytesAvailable(default,null) : Int;
+	public var endian(__GetEndian,__SetEndian) : Endian;
+	public var objectEncoding : Int;
 
-   public override function readByte() : Int {
-     //trace( this.len );
-     if( this.len == 0 )
-       throw new Eof();
-     len--;
-     //trace( b[pos] );
-     return b[pos++];
-   }
+	public var position : Int;
+	public var length(default,null) : Int;
 
-   override public function readInt31() {
-     var ch1,ch2,ch3,ch4;
-     if( bigEndian ) {
-       ch4 = readByte();
-       ch3 = readByte();
-       ch2 = readByte();
-       ch1 = readByte();
-     } else {
-       ch1 = readByte();
-       ch2 = readByte();
-       ch3 = readByte();
-       ch4 = readByte();
-     }
-     return ch1 | (ch2 << 8) | (ch3 << 16) | (ch4 << 24);
-   }
+	function readString( len : Int ) : String {
+		var bytes = Bytes.alloc(len);
+		readFullBytes(bytes,0,len);
+		return bytes.toString();
+	}
 
-   public function get_length():Int
-   {
-      return readAll().toString().length;
-   }
+	function readFullBytes( bytes : Bytes, pos : Int, len : Int ) {
+		for ( i in pos...pos+len )
+			data[this.position++] = bytes.get(i);
+	}
 
-   public function readUTFBytes(inLen:Int)
-   {
-      return readString(inLen);
-   }
-   public function readInt():Int
-   {
-     var x = readInt31();
-     if( (((cast x) >> 30) & 1) != ((cast x) >>> 31) ) 
-     { 
-       trace(x); 
-       trace((cast x) & 0xFF); 
-       /*
-       trace(pos); 
-       trace (b); 
-       trace( b[pos-1] ); 
-       trace( b[pos-2] ); 
-       trace( b[pos-3] ); 
-       trace( b[pos-4] ); 
-       trace( b[pos-1] << 24 );
-       trace( b[pos-2] << 16 );
-       trace( b[pos-3] << 8 );
-       trace( b[pos-4] | (b[pos-3] << 8) );
-       trace( b[pos-1] & 128 );
-       trace( b[pos-1] & 64 );
-       */
-     //return (cast x) & 0xFF;
-     }
-#if neko
-     return try untyped __i32__to_int(x) catch( e : Dynamic ) throw "Overflow"+x;
-#elseif flash9
-     return cast x;
-#else
-     return (cast x) & 0xFFFFFFFF;
-#end
-   }
-   public function readUnsignedByte():Int
-   {
-     trace( b[pos] );
-     return readByte();
-   }
-   public function readShort():Int
-   {
-     return readInt16();
-   }
-   public function readUnsignedShort():Int
-   {
-     //trace ( b[pos] );
-     //trace ( b[pos + 1] );
+	function read( nbytes : Int ) : Bytes 
+	{
+		var s = new ByteArray();
+		readBytes(s,0,nbytes);
+		return Bytes.ofData(s.data);
+	}
 
-     return readInt8();
-   }
-   public function readUnsignedInt():Int
-   {
-     return haxe.Int32.toInt( readInt32() );
-   }
+	public function new() {
+		this.position = 0;
+		this.length = 0;
+		this.data = [];
+	}
 
-   public function __GetEndian() : Endian
-   {
-     if ( bigEndian == true )
-     {
-       return Endian.BIG_ENDIAN;
-     } else {
-       return Endian.LITTLE_ENDIAN;
-     }
-   }
-   public function __SetEndian( endian : Endian ) : Endian
-   {
-     if ( endian == Endian.BIG_ENDIAN )
-     {
-       bigEndian = true;
-     } else {
-       bigEndian = false;
-     }
+	public function readByte() : Int 
+	{
+		if( this.position >= this.length )
+			throw new Eof();
+		return data[this.position++];
+	}
 
-     return endian;
-   }
+	//public function readBytes( buf : Bytes, pos, len ) : Int 
+	public function readBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt)
+	{
+		if( offset < 0 || length < 0 || offset + length > bytes.length )
+			throw Error.OutsideBounds;
+
+		if( this.length == 0 && length > 0 )
+			throw new Eof();
+
+		if( this.length < length )
+			length = this.length;
+
+		var b1 = data;
+		var b2 = bytes;
+		b2.position = offset;
+		for( i in 0...length )
+			b2.writeByte( b1[this.position+i] );
+
+		this.position += length;
+	}
+	
+	public function writeByte(value : Int)
+	{
+		data[this.position++] = value;
+	}
+
+	//override function writeBytes( buf : Bytes, pos, len ) : Int {
+	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) 
+	{
+		if( offset < 0 || length < 0 || offset + length > bytes.length ) throw Error.OutsideBounds;
+		var b2 = bytes;
+		b2.position = offset;
+		for( i in 0...length )
+			data[this.position++] = b2.readByte();
+
+	}
+
+	public function readBoolean() 
+	{
+		return this.readByte() == 1 ? true : false;
+	}
+
+	public function writeBoolean(value : Bool) 
+	{
+		this.writeByte(value?1:0);
+	}
+
+	public function readDouble() : Float 
+	{
+		return IEEE754.bytesToFloat( read(8), endian == Endian.BIG_ENDIAN );
+	}
+
+	public function writeDouble(value : Float) 
+	{
+		var bytes = IEEE754.doubleToBytes( value, endian == Endian.BIG_ENDIAN );
+		for ( i in 0...bytes.length )
+			data[ this.position++ ] = bytes.get(i);
+	}
+
+	public function readFloat() : Float 
+	{
+		return IEEE754.bytesToFloat( read(4), endian == Endian.BIG_ENDIAN );
+	}
+
+	public function writeFloat( value : Float ) 
+	{
+		var bytes = IEEE754.floatToBytes( value, endian == Endian.BIG_ENDIAN );
+
+		for ( i in 0...bytes.length )
+			data[ this.position++ ] = bytes.get(i);
+	}
+
+	public function readInt()
+	{
+		var ch1,ch2,ch3,ch4;
+		if( endian == Endian.BIG_ENDIAN ) {
+			ch4 = readByte();
+			ch3 = readByte();
+			ch2 = readByte();
+			ch1 = readByte();
+		} else {
+			ch1 = readByte();
+			ch2 = readByte();
+			ch3 = readByte();
+			ch4 = readByte();
+		}
+		return ch1 | (ch2 << 8) | (ch3 << 16) | (ch4 << 24);
+	}
+
+	public function writeInt(value : Int)
+	{
+		if( endian == Endian.BIG_ENDIAN ) {
+			writeByte(value >>> 24);
+			writeByte((value >> 16) & 0xFF);
+			writeByte((value >> 8) & 0xFF);
+			writeByte(value & 0xFF);
+		} else {
+			writeByte(value & 0xFF);
+			writeByte((value >> 8) & 0xFF);
+			writeByte((value >> 16) & 0xFF);
+			writeByte(value >>> 24);
+		}
+	}
+
+	public function readShort()
+	{
+		var ch1 = readByte();
+		var ch2 = readByte();
+		var n = endian == Endian.BIG_ENDIAN ? ch2 | (ch1 << 8) : ch1 | (ch2 << 8);
+		if( n & 0x8000 != 0 )
+			return n - 0x10000;
+		return n;
+	}
+
+	public function writeShort(value : Int)
+	{
+		if( value < -0x8000 || value >= 0x8000 ) throw Error.Overflow;
+		writeUnsignedShort(value & 0xFFFF);
+	}
+
+	public function writeUnsignedShort( value : Int ) 
+	{
+		if( value < 0 || value >= 0x10000 ) throw Error.Overflow;
+		if( endian == Endian.BIG_ENDIAN ) {
+			writeByte(value >> 8);
+			writeByte(value & 0xFF);
+		} else {
+			writeByte(value & 0xFF);
+			writeByte(value >> 8);
+		}
+	}
+
+	public function readUTF()
+	{
+		var bytes = Bytes.ofData( data );
+		return bytes.toString();
+	}
+
+	public function writeUTF(value : String)
+	{
+		var bytes = Bytes.ofString( value );
+		for ( i in 0...bytes.length )
+			data[this.position++] = bytes.get(i);
+	}
+
+	public function writeUTFBytes(value : String)
+	{
+		writeUTF(value);
+	}
+
+	public function readUTFBytes(inLen:Int)
+	{
+		return readString(inLen);
+	}
+
+	public function readUnsignedByte():Int
+	{
+		return readByte();
+	}
+
+	public function readUnsignedShort():Int
+	{
+		return readShort();
+	}
+
+	public function readUnsignedInt():Int
+	{
+		return readInt();
+	}
+
+	public function writeUnsignedInt( value : Int )
+	{
+		writeInt( value );
+	}
+
+	public function __GetEndian() : Endian
+	{
+		if ( bigEndian == true )
+		{
+			return Endian.BIG_ENDIAN;
+		} else {
+			return Endian.LITTLE_ENDIAN;
+		}
+	}
+	public function __SetEndian( endian : Endian ) : Endian
+	{
+		if ( endian == Endian.BIG_ENDIAN )
+		{
+			bigEndian = true;
+		} else {
+			bigEndian = false;
+		}
+
+		return endian;
+	}
 }
