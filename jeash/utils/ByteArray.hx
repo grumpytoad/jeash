@@ -45,7 +45,7 @@ class ByteArray {
 	public var objectEncoding : Int;
 
 	public var position : Int;
-	public var length(default,null) : Int;
+	public var length(GetLength,null) : Int;
 
 	function readString( len : Int ) : String {
 		var bytes = Bytes.alloc(len);
@@ -65,9 +65,13 @@ class ByteArray {
 		return Bytes.ofData(s.data);
 	}
 
+	function GetLength()
+	{
+		return data.length;
+	}
+
 	public function new() {
 		this.position = 0;
-		this.length = 0;
 		this.data = [];
 	}
 
@@ -78,23 +82,23 @@ class ByteArray {
 		return data[this.position++];
 	}
 
-	//public function readBytes( buf : Bytes, pos, len ) : Int 
 	public function readBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt)
 	{
-		if( offset < 0 || length < 0 || offset + length > bytes.length )
+		if( offset < 0 || length < 0 || offset + length > data.length )
 			throw Error.OutsideBounds;
 
-		if( this.length == 0 && length > 0 )
+		if( data.length == 0 && length > 0 )
 			throw new Eof();
 
-		if( this.length < length )
-			length = this.length;
+		if( data.length < length )
+			length = data.length;
 
 		var b1 = data;
 		var b2 = bytes;
 		b2.position = offset;
 		for( i in 0...length )
 			b2.writeByte( b1[this.position+i] );
+		b2.position = offset;
 
 		this.position += length;
 	}
@@ -104,7 +108,6 @@ class ByteArray {
 		data[this.position++] = value;
 	}
 
-	//override function writeBytes( buf : Bytes, pos, len ) : Int {
 	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) 
 	{
 		if( offset < 0 || length < 0 || offset + length > bytes.length ) throw Error.OutsideBounds;
@@ -153,7 +156,7 @@ class ByteArray {
 	public function readInt()
 	{
 		var ch1,ch2,ch3,ch4;
-		if( endian == Endian.BIG_ENDIAN ) {
+		if( bigEndian ) {
 			ch4 = readByte();
 			ch3 = readByte();
 			ch2 = readByte();
@@ -169,7 +172,8 @@ class ByteArray {
 
 	public function writeInt(value : Int)
 	{
-		if( endian == Endian.BIG_ENDIAN ) {
+		if( bigEndian ) 
+		{
 			writeByte(value >>> 24);
 			writeByte((value >> 16) & 0xFF);
 			writeByte((value >> 8) & 0xFF);
@@ -186,7 +190,7 @@ class ByteArray {
 	{
 		var ch1 = readByte();
 		var ch2 = readByte();
-		var n = endian == Endian.BIG_ENDIAN ? ch2 | (ch1 << 8) : ch1 | (ch2 << 8);
+		var n = bigEndian ? ch2 | (ch1 << 8) : ch1 | (ch2 << 8);
 		if( n & 0x8000 != 0 )
 			return n - 0x10000;
 		return n;
@@ -212,25 +216,31 @@ class ByteArray {
 
 	public function readUTF()
 	{
+		var len = readShort();
+
 		var bytes = Bytes.ofData( data );
-		return bytes.toString();
+		return bytes.readString( 2, len );
 	}
 
 	public function writeUTF(value : String)
 	{
 		var bytes = Bytes.ofString( value );
+		writeShort( bytes.length );
 		for ( i in 0...bytes.length )
 			data[this.position++] = bytes.get(i);
 	}
 
 	public function writeUTFBytes(value : String)
 	{
-		writeUTF(value);
+		var bytes = Bytes.ofString( value );
+		for ( i in 0...bytes.length )
+			data[this.position++] = bytes.get(i);
 	}
 
-	public function readUTFBytes(inLen:Int)
+	public function readUTFBytes(len:Int)
 	{
-		return readString(inLen);
+		var bytes = Bytes.ofData( data );
+		return bytes.readString( 0, len );
 	}
 
 	public function readUnsignedByte():Int

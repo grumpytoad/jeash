@@ -183,7 +183,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	public function RenderAll()
 	{
 		//mManager.clear(backgroundColor);
-		//Clear();
+		Clear();
 
 		SetupRender(mStageMatrix);
 
