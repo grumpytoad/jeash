@@ -31,6 +31,11 @@ import flash.events.EventDispatcher;
 import flash.events.IOErrorEvent;
 import flash.utils.ByteArray;
 
+import Html5Dom;
+import js.Dom;
+import js.Lib;
+import js.XMLHttpRequest;
+
 /**
 * @author	Hugh Sanderson
 * @author	Niel Drummond
@@ -40,6 +45,7 @@ import flash.utils.ByteArray;
 **/
 class URLLoader extends flash.events.EventDispatcher
 {
+	var http:Http;
 	public var bytesLoaded:Int;
 	public var bytesTotal:Int;
 	public var data:Dynamic;
@@ -59,19 +65,25 @@ class URLLoader extends flash.events.EventDispatcher
 
 	public function load(request:URLRequest)
 	{
-		var h = new std.Http( request.url );
-		h.onData = onData;
-		h.onError = onError;
-		h.request( false );
+		http = new Http( request.url );
+		http.onData = onData;
+		http.onError = onError;
+		// TODO: make dataFormat uniform with the flash API
+		http.requestUrl( STREAM( (dataFormat == URLLoaderDataFormat.TEXT) ? TEXT : BINARY ) );
 
 	}
 
-	function onData (data:String) {
+	function onData (_) {
+		var content = http.getData();
 		switch(dataFormat) {
 		case BINARY:
-			this.data = new ByteArray( haxe.io.Bytes.ofString( data ) );
+			this.data = new ByteArray();
+			for( i in 0...content.length ) {
+				var c : Int = untyped content["cca"](i) & 0xFF;
+				this.data.writeByte(c);
+			}
 		case TEXT:
-			this.data = data;
+			this.data = content;
 		case VARIABLES:
 			throw "Not complete";
 		}
@@ -86,3 +98,105 @@ class URLLoader extends flash.events.EventDispatcher
 
 }
 
+private enum HttpType
+{
+	IMAGE;
+	VIDEO;
+	AUDIO;
+	STREAM( format:DataFormat );
+}
+
+private enum DataFormat
+{
+	BINARY;
+	TEXT;
+}
+
+private class Http extends haxe.Http
+{
+
+	public function new( url:String )
+	{
+		super(url);
+	}
+
+	function registerEvents( subject:EventTarget )
+	{
+		subject.addEventListener( "load", cast onData, false );
+		subject.addEventListener( "error", cast onError, false );
+	}
+
+	// Always GET, always async
+	public function requestUrl( type:HttpType ) : Void
+	{
+		var self = this;
+
+		switch (type) 
+		{
+			case STREAM( dataFormat ):
+				var xmlHttpRequest = new XMLHttpRequest();
+
+				switch (dataFormat) {
+					case BINARY: untyped xmlHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+					default:
+				}
+				
+				registerEvents(cast xmlHttpRequest);
+
+				var uri = null;
+				for( p in params.keys() )
+					uri = StringTools.urlDecode(p)+"="+StringTools.urlEncode(params.get(p));
+
+				try {
+					if( uri != null ) {
+						var question = url.split("?").length <= 1;
+						xmlHttpRequest.open("GET",url+(if( question ) "?" else
+									"&")+uri,true);
+						uri = null;
+					} else
+						xmlHttpRequest.open("GET",url,true);
+				} catch( e : Dynamic ) {
+					throw e.toString();
+				}
+
+				xmlHttpRequest.send(uri);
+				getData = function () { return xmlHttpRequest.responseText; };
+			case IMAGE:
+				var image : Image = cast Lib.document.createElement("img");
+				registerEvents(cast image);
+
+				image.src = url;
+				#if debug
+				image.style.display = "none";
+				Lib.document.body.appendChild(image);
+				#end
+
+				getData = function () { return image; };
+				
+			case AUDIO:
+				var audio : {src:String, style:Style} = cast Lib.document.createElement("audio");
+				registerEvents(cast audio);
+
+				audio.src = url;
+				#if debug
+				Lib.document.body.appendChild(cast audio);
+				#end
+
+				getData = function () { return audio; }
+				
+			case VIDEO:
+				var video : {src:String, style:Style} = cast Lib.document.createElement("video");
+				registerEvents(cast video);
+
+				video.src = url;
+				#if debug
+				video.style.display = "none";
+				Lib.document.body.appendChild(cast video);
+				#end
+				
+				getData = function () { return video; }
+		}
+
+	}
+	public dynamic function getData () : Dynamic { }
+}
