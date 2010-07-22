@@ -130,24 +130,24 @@ class ByteArray {
 
 	public function readDouble() : Float 
 	{
-		return IEEE754.bytesToFloat( read(8), endian == Endian.BIG_ENDIAN );
+		return IEEE754.bytesToFloat( read(8), bigEndian );
 	}
 
 	public function writeDouble(value : Float) 
 	{
-		var bytes = IEEE754.doubleToBytes( value, endian == Endian.BIG_ENDIAN );
+		var bytes = IEEE754.doubleToBytes( value, bigEndian );
 		for ( i in 0...bytes.length )
 			data[ this.position++ ] = bytes.get(i);
 	}
 
 	public function readFloat() : Float 
 	{
-		return IEEE754.bytesToFloat( read(4), endian == Endian.BIG_ENDIAN );
+		return IEEE754.bytesToFloat( read(4), bigEndian );
 	}
 
 	public function writeFloat( value : Float ) 
 	{
-		var bytes = IEEE754.floatToBytes( value, endian == Endian.BIG_ENDIAN );
+		var bytes = IEEE754.floatToBytes( value, bigEndian );
 
 		for ( i in 0...bytes.length )
 			data[ this.position++ ] = bytes.get(i);
@@ -806,155 +806,27 @@ private class IEEE754 {
 
 		var decValue : Float = val * Math.pow(2, this.BinaryPower);
 
-		/* NOTE: commented out due to invalid results in TestIO.hx,
-		   may need to revisit later.
-		   if (this.Size == 32)
-		   {
-		   s = 8;
-		   if (val > 0)
-		   {
-		   var power = Math.floor( Math.log(decValue) / LN10 );
-		   decValue += 0.5 * Math.pow(10, power - s + 1);
-		   val += 5E-8;
-		   }
-		   }
-		   else s = 17;
-		 */
-		s = 17;
+		/*
+		if (this.Size == 32)
+		{
+			s = 8;
+			if (val > 0)
+			{
+				var power = Math.floor( Math.log(decValue) / LN10 );
+				decValue += 0.5 * Math.pow(10, power - s + 1);
+				val += 5E-8;
+			}
+		}
+		else s = 17;
+		*/
+		if (this.Size == 32) s = 8; else s = 17;
 
 		if (this.Result[0] == 1)
 		{
 			decValue = - decValue;
 		}
-		decValue = Std.parseFloat(numStrClipOff(Std.string(decValue),s));
-		return decValue;
+		return Std.parseFloat(Std.string(decValue).substr(0,s));
 	}
-
-	function numStrClipOff(input : String, precision : Int)
-	{
-		var result = "";
-		var numerals = "0123456789";
-		var tempstr = input.toUpperCase();
-		var expstr = "";
-		var signstr = "";
-
-		var stop : Int = 0;
-		var expnum : Int = 0;
-
-		var locE = tempstr.indexOf("E");
-		if (locE != -1)
-		{
-			stop = locE;
-			expstr = input.substr(locE + 1, input.length);
-			expnum = Std.parseInt(expstr);
-		}
-		else
-		{
-			stop = input.length;
-			expnum = 0;
-		}
-
-		if (input.indexOf(".") == -1)
-		{
-			tempstr = input.substr(0, stop);
-			tempstr += ".";
-			if (input.length != stop)
-				tempstr += input.substr(locE, input.length);
-
-			input = tempstr;
-
-			locE = locE + 1;
-			stop = stop + 1;
-		}
-
-		var locDP = input.indexOf(".");
-
-		var start = 0;
-		if (input.charAt(start) == "-")
-		{
-			start++;
-			signstr = "-";
-		}
-		else
-			signstr = "";
-
-		var MSD = start;
-		var MSDfound = false;
-		while ((MSD < stop) && !MSDfound)
-		{
-			var index = 1;
-			while (index < numerals.length)
-			{
-				if (input.charAt(MSD) == numerals.charAt(index))
-				{
-					MSDfound = true;
-					break;
-				}
-				index++;
-			}
-			MSD++;
-		}
-		MSD--;
-
-		var expdelta : Int = 0;
-		if (MSDfound)
-		{
-			expdelta = locDP - MSD;
-			if (expdelta > 0)
-				expdelta = expdelta - 1;
-
-			expnum = expnum + expdelta;
-
-			expstr = "e" + expnum;
-		}
-		else  //No significant digits found, value is zero
-			MSD = start;
-
-		var digits = stop - MSD;
-
-		tempstr = input.substr(MSD, stop);
-
-		if (tempstr.indexOf(".") != -1)
-			digits = digits - 1;
-
-		var number = digits;
-		if (precision < digits)
-			number = precision;
-
-		tempstr = input.substr(MSD, MSD + number + 1);
-
-		if ( (MSD != start) || (tempstr.indexOf(".") == -1) )
-		{
-			result = signstr;
-			result += input.substr(MSD, MSD + 1);
-			result += ".";
-			result += input.substr(MSD + 1, MSD + number);
-
-			while (digits < precision)
-			{
-				result += "0";
-				digits += 1;
-			}
-
-			result += expstr;
-		}
-		else
-		{
-			result = input.substr(0, start + number + 1);
-
-			while (digits < precision)
-			{
-				result += "0";
-				digits += 1;
-			}
-
-			if (input.length != stop)
-				result += input.substr(locE, input.length);
-		}
-
-		return result;
-	}
-
 
 	///////////////////////////////////////////
 	//           Static Methods              //

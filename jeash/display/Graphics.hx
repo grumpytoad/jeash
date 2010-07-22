@@ -310,6 +310,7 @@ class Graphics
 
 		ctx.save();
 		ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, 0, 0);
+
 		// merge into parent canvas context
 		if (inMaskHandle != null)
 		{
