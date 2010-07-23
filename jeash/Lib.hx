@@ -97,9 +97,26 @@ class Lib
 		mResizePending = false;
 
 		mManager = new Manager( inWidth, inHeight, inName, cb );
-		var evTypes = [ 'onscroll', 'onresize', 'onmouseup', 'onmouseover', 'onmouseout', 'onmousemove', 'onmousedown', 'onkeyup', 'onkeypress', 'onkeydown', 'onfocus', 'ondblclick', 'onclick', 'onblur' ];
+		var evTypes = [ 
+			'scroll', 
+			'resize', 
+			'mouseup', 
+			'mouseover', 
+			'mouseout', 
+			'mousemove', 
+			'mousedown', 
+			'keyup', 
+			'keypress', 
+			'keydown', 
+			'focus', 
+			'dblclick', 
+			'click', 
+			'blur' 
+			];
 		var tgt = Lib.canvas;
-		for (type in evTypes) tgt.addEventListener(type, CaptureEvent, false);
+		for (type in evTypes) 
+			tgt.addEventListener(type, CaptureEvent, false);
+
 		var listener = function (_)
 		{ 
 			var evt : Html5Dom.MouseEvent = cast _; 
@@ -186,13 +203,13 @@ class Lib
 			inMouse:Html5Dom.MouseEvent,inType:String): flash.events.MouseEvent
 	{
 		var bubble = inType!=flash.events.MouseEvent.ROLL_OUT && inType!=flash.events.MouseEvent.ROLL_OVER;
-		var pos = new flash.geom.Point(Reflect.field(inMouse, "localX"),Reflect.field(inMouse, "localY"));
+		var pos = new flash.geom.Point(inMouse.clientX,inMouse.clientY);
 		if (inObj!=null)
 			pos = inObj.globalToLocal(pos);
 
 		var result =  new flash.events.MouseEvent(inType,
 				bubble, false,
-				Reflect.field(inMouse, "localX"),Reflect.field(inMouse, "localY"),
+				inMouse.clientX,inMouse.clientY,
 				inRelatedObj,
 				inMouse.ctrlKey,
 				inMouse.altKey,
@@ -200,10 +217,8 @@ class Lib
 				true, // buttonDown = left mouse button, 
 				2);
 
-		//result.stageX = inMouse.stageX/mStage.scaleX;
-		//result.stageY = inMouse.stageY/mStage.scaleY;
-		result.stageX = Reflect.field(inMouse, "localX")/mStage.scaleX;
-		result.stageY = Reflect.field(inMouse, "localY")/mStage.scaleY;
+		result.stageX = inMouse.clientX/mStage.scaleX;
+		result.stageY = inMouse.clientY/mStage.scaleY;
 		result.target = inObj;
 		return result;
 	}
@@ -328,18 +343,18 @@ class Lib
 
 	function DoMouse(evt:Html5Dom.MouseEvent)
 	{
-		var x = Std.int(Reflect.field(evt, "x"));
-		var y = Std.int(Reflect.field(evt, "y"));
+		var x = Std.int(evt.clientX);
+		var y = Std.int(evt.clientY);
 
 		mLastMouse.x  = x;
 		mLastMouse.y =  y;
 
 		var type = switch (evt.type) {
-			case "on" + flash.events.MouseEvent.MOUSE_DOWN.toLowerCase(): flash.events.MouseEvent.MOUSE_DOWN;
-			case "on" + flash.events.MouseEvent.MOUSE_MOVE.toLowerCase(): flash.events.MouseEvent.MOUSE_MOVE;
-			case "on" + flash.events.MouseEvent.MOUSE_UP.toLowerCase(): flash.events.MouseEvent.MOUSE_UP;
-			case "on" + flash.events.MouseEvent.MOUSE_OVER.toLowerCase(): flash.events.MouseEvent.MOUSE_OVER;
-			case "on" + flash.events.MouseEvent.MOUSE_OUT.toLowerCase(): flash.events.MouseEvent.MOUSE_OUT;
+			case flash.events.MouseEvent.MOUSE_DOWN.toLowerCase(): flash.events.MouseEvent.MOUSE_DOWN;
+			case flash.events.MouseEvent.MOUSE_MOVE.toLowerCase(): flash.events.MouseEvent.MOUSE_MOVE;
+			case flash.events.MouseEvent.MOUSE_UP.toLowerCase(): flash.events.MouseEvent.MOUSE_UP;
+			case flash.events.MouseEvent.MOUSE_OVER.toLowerCase(): flash.events.MouseEvent.MOUSE_OVER;
+			case flash.events.MouseEvent.MOUSE_OUT.toLowerCase(): flash.events.MouseEvent.MOUSE_OUT;
 		}
 
 		if (mDragObject!=null)
@@ -493,25 +508,25 @@ class Lib
 	{
 		switch(evt.type)
 		{
-			case 'on' + flash.events.KeyboardEvent.KEY_DOWN.toLowerCase():
+			case flash.events.KeyboardEvent.KEY_DOWN.toLowerCase():
 				var code = mManager.lastKey();
 				ProcessKeys( code, true,
 						mManager.lastChar(),
 						mManager.lastKeyCtrl(), mManager.lastKeyAlt(),
 						mManager.lastKeyShift() );
-			case 'on' + flash.events.KeyboardEvent.KEY_UP.toLowerCase():
+			case flash.events.KeyboardEvent.KEY_UP.toLowerCase():
 				var code = mManager.lastKey();
 				ProcessKeys( code, false,
 						mManager.lastChar(),
 						mManager.lastKeyCtrl(), mManager.lastKeyAlt(),
 						mManager.lastKeyShift() );
 
-			case 'on' + flash.events.MouseEvent.MOUSE_MOVE.toLowerCase():
+			case flash.events.MouseEvent.MOUSE_MOVE.toLowerCase():
 				DoMouse(cast evt);
-			case 'on' + flash.events.MouseEvent.MOUSE_DOWN.toLowerCase():
+			case flash.events.MouseEvent.MOUSE_DOWN.toLowerCase():
 				DoMouse(cast evt);
 
-			case 'on' + flash.events.MouseEvent.MOUSE_UP.toLowerCase():
+			case flash.events.MouseEvent.MOUSE_UP.toLowerCase():
 				DoMouse(cast evt);
 
 			default:
