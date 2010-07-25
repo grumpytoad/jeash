@@ -173,10 +173,10 @@ class DisplayObjectContainer extends InteractiveObject
 		return super.GetObj(inX,inY,this);
 	}
 
-	override public function __Render(inMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int, inTY:Int) : HtmlCanvasElement
+	override public function __Render(inMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int, inTY:Int)
 	{
 
-		if (!visible || mMaskingObj!=null) return null;
+		if (!visible || mMaskingObj!=null) return;
 
 		super.__Render(inMask,inScrollRect,inTX,inTY);
 		for(obj in mObjs)
@@ -213,15 +213,16 @@ class DisplayObjectContainer extends InteractiveObject
 			}
 		}
 
-		return inMask;
 	}
 
-	override function RenderContentsToCache(inBitmap:BitmapData,inTX:Float,inTY:Float)
+	/*
+	function RenderContentsToCache(inBitmap:BitmapData,inTX:Float,inTY:Float)
 	{
 		super.RenderContentsToCache(inBitmap,inTX,inTY);
 		for(obj in mObjs)
 			obj.RenderContentsToCache(inBitmap,inTX,inTY);
 	}
+	*/
 
 	override public function SetupRender(inParentMatrix:Matrix) : Int
 	{

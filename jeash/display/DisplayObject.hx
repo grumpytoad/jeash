@@ -364,6 +364,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			result |= DisplayObject.TRANSLATE_CHANGE;
 
 		var gfx = GetGraphics();
+		/*
 		if (gfx!=null)
 		{
 			if (gfx.mChanged)
@@ -372,6 +373,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				mGraphicsBounds = null;
 			}
 		}
+		*/
+		result |= DisplayObject.NON_TRANSLATE_CHANGE | DisplayObject.GRAPHICS_CHANGE;
+		mGraphicsBounds = null;
 
 		if ( (result & DisplayObject.NON_TRANSLATE_CHANGE) !=0)
 			mBoundsDirty = true;
@@ -459,7 +463,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mGraphicsBounds;
 	}
 
-	public function __RenderGfx(inTarget:BitmapData,inScrollRect:Rectangle,
+	public function __RenderGfx(inScrollRect:Rectangle,
 			inMask:HtmlCanvasElement,inTX:Float,inTY:Float)
 	{
 		var gfx = GetGraphics();
@@ -467,29 +471,25 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (gfx!=null)
 		{
 			var blend:Int = __BlendIndex();
-			var handle = inTarget==null ? gfx.mSurface : inTarget.handle();
 
 			Graphics.setBlendMode(blend);
 
-			if (inScrollRect!=null || inTarget!=null)
+			if (inScrollRect!=null)
 			{
 				var m = mFullMatrix.clone();
 				m.tx -= inTX;
 				m.ty -= inTY;
-				gfx.__Render(m,handle,inMask,inScrollRect);
+				gfx.__Render(m,inMask,inScrollRect);
 			}
 			else
-				gfx.__Render(mFullMatrix,handle,inMask,null);
-			return handle;
+				gfx.__Render(mFullMatrix,inMask,null);
 		}
-
-		return null;
 
 	}
 
-	public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int):HtmlCanvasElement
+	public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
 	{
-		return __RenderGfx(null,inScrollRect,inParentMask,inTX,inTY );
+		__RenderGfx(inScrollRect,inParentMask,inTX,inTY );
 	}
 
 	public function drawToSurface(inSurface : Dynamic,
@@ -501,7 +501,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		if (matrix==null) matrix = new Matrix();
 		SetupRender(matrix);
-		RenderContentsToCache(inSurface,0,0);
+		// TODO
+		//RenderContentsToCache(inSurface,0,0);
 	}
 
 
@@ -589,12 +590,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		BuildBounds();
 		return mBoundsRect.clone();
-	}
-
-	function RenderContentsToCache(inBitmap:BitmapData,inTX:Float,inTY:Float)
-	{
-		// trace("RenderContentsToCache " + toString() + ":" + inBitmap.width + "," + inBitmap.height );
-		__RenderGfx(inBitmap,null,null,inTX,inTY );
 	}
 
 	// We have detected that a cached bitmap has been hit - check to

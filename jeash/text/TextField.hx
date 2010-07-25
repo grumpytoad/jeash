@@ -105,7 +105,7 @@ class TextField extends flash.display.InteractiveObject
 	var mScrollV:Int;
 
 	var mGraphics:Graphics;
-	public var mSurface(default,null):HtmlCanvasElement;
+	var mSurface(default,null):HtmlCanvasElement;
 
 	public function new()
 	{
@@ -201,7 +201,7 @@ class TextField extends flash.display.InteractiveObject
 		return tf;
 	}
 
-	override public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int):HtmlCanvasElement
+	override public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
 	{
 		//mGraphics.clear();
 
@@ -277,8 +277,6 @@ class TextField extends flash.display.InteractiveObject
 			var maskCtx = inParentMask.getContext('2d');
 			maskCtx.drawImage(mSurface, inTX, inTY);
 		}
-
-		return mSurface;
 
 	}
 

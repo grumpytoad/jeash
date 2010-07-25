@@ -140,6 +140,17 @@ class Lib
 		mStage.OnResize(inW,inH);
 	}
 
+	static public function trace( arg:Dynamic ) 
+	{
+		untyped
+		{
+			if ( window.console != null )
+				window.console.log( arg );
+			else
+				trace( arg );
+		}
+	}
+
 	static public function SetTextCursor(inText:Bool)
 	{
 		if (inText)
@@ -260,6 +271,7 @@ class Lib
 			while(i>=0)
 			{
 				var obj = inList[i];
+				trace(inEvt.type);
 				inEvt.currentTarget = obj;
 				obj.dispatchEvent(inEvt);
 				if (inEvt.IsCancelled())
@@ -355,6 +367,7 @@ class Lib
 			case flash.events.MouseEvent.MOUSE_UP.toLowerCase(): flash.events.MouseEvent.MOUSE_UP;
 			case flash.events.MouseEvent.MOUSE_OVER.toLowerCase(): flash.events.MouseEvent.MOUSE_OVER;
 			case flash.events.MouseEvent.MOUSE_OUT.toLowerCase(): flash.events.MouseEvent.MOUSE_OUT;
+			case "scroll": flash.events.MouseEvent.MOUSE_WHEEL;
 		}
 
 		if (mDragObject!=null)
@@ -451,8 +464,7 @@ class Lib
 		}
 
 
-		if (nl>0 && (type==flash.events.MouseEvent.MOUSE_DOWN || type==flash.events.MouseEvent.MOUSE_UP) ||
-				type==flash.events.MouseEvent.MOUSE_MOVE )
+		if (nl>0 && (type==flash.events.MouseEvent.MOUSE_DOWN || type==flash.events.MouseEvent.MOUSE_UP) || type==flash.events.MouseEvent.MOUSE_MOVE || type==flash.events.MouseEvent.MOUSE_WHEEL)
 		{
 			var evt = CreateMouseEvent(obj, null, evt, type);
 			FireEvents(evt, new_list);
@@ -506,6 +518,7 @@ class Lib
 
 	function CaptureEvent(evt:Event)
 	{
+			trace(evt.type);
 		switch(evt.type)
 		{
 			case flash.events.KeyboardEvent.KEY_DOWN.toLowerCase():
@@ -527,6 +540,9 @@ class Lib
 				DoMouse(cast evt);
 
 			case flash.events.MouseEvent.MOUSE_UP.toLowerCase():
+				DoMouse(cast evt);
+
+			case "scroll":
 				DoMouse(cast evt);
 
 			default:

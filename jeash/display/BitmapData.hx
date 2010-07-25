@@ -70,9 +70,8 @@ class BitmapData implements IBitmapDrawable
 			if ( inFillColour != null )
 			{
 				// TODO: need support for inTransparent
-				graphics.beginFill(inFillColour);
-				graphics.drawRect(0,0,inWidth,inHeight);
-				graphics.endFill();
+				var rect = new Rectangle(0,0,inWidth,inHeight);
+				fillRect(rect,inFillColour);
 				var imgdata = mTextureBuffer.getContext("2d").getImageData(0,0,inWidth,inHeight);
 			}
 		}
@@ -116,6 +115,7 @@ class BitmapData implements IBitmapDrawable
 		graphics.beginFill(color);
 		graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
 		graphics.endFill();
+		graphics.__Render();
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
@@ -134,6 +134,7 @@ class BitmapData implements IBitmapDrawable
 
 	public function getPixel(x:Int, y:Int) : Int
 	{
+
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(x + graphics.mSurfaceOffset, y + graphics.mSurfaceOffset, 1, 1);
 		return (imagedata.data[0] << 16) | (imagedata.data[1] << 8) | (imagedata.data[2]);
@@ -177,11 +178,6 @@ class BitmapData implements IBitmapDrawable
 		if (graphics==null)
 			graphics = new Graphics(mTextureBuffer);
 		return graphics;
-	}
-	public function flushGraphics()
-	{
-		if (graphics!=null)
-			graphics.flush();
 	}
 
 	public inline function handle() 

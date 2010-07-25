@@ -93,8 +93,8 @@ class Loader extends flash.display.DisplayObjectContainer
 			mShape = new Shape();
 			addChild(mShape);
 		}
-		else
-			mShape.graphics.clear();
+		//else
+		//	mShape.graphics.clear();
 
 		#if !js
 			mShape.graphics.blit(mImage);

@@ -187,7 +187,7 @@ class Stage extends flash.display.DisplayObjectContainer
 
 		SetupRender(mStageMatrix);
 
-		return __Render(Lib.canvas,null,0,0);
+		__Render(Lib.canvas,null,0,0);
 	}
 
 	public function TabChange(inDiff:Int, inFromKey:Int)
