@@ -97,46 +97,11 @@ class Lib
 		mResizePending = false;
 
 		mManager = new Manager( inWidth, inHeight, inName, cb );
-		var evTypes = [ 
-			'scroll', 
-			'resize', 
-			'mouseup', 
-			'mouseover', 
-			'mouseout', 
-			'mousemove', 
-			'mousedown', 
-			'keyup', 
-			'keypress', 
-			'keydown', 
-			'focus', 
-			'dblclick', 
-			'click', 
-			'blur' 
-			];
-		var tgt = Lib.canvas;
-		for (type in evTypes) 
-			tgt.addEventListener(type, CaptureEvent, false);
-
-		var listener = function (_)
-		{ 
-			var evt : Html5Dom.MouseEvent = cast _; 
-			Lib.mMouseX = evt.clientX; 
-			Lib.mMouseY = evt.clientY; 
-		}
-		tgt.addEventListener("onmousemove", listener, true ); 
-
-		mStage = new flash.display.Stage(inWidth,inHeight,mManager);
-		mStage.frameRate = 100;
-		mMainClassRoot = new MovieClip();
-		mStage.addChild(mMainClassRoot);
-		mCurrent = mMainClassRoot;
-		mCurrent.name = "Root MovieClip";
-
 	}
 
 	public function OnResize(inW:Int, inH:Int)
 	{
-		mManager.OnResize(inW,inH);
+		//mManager.OnResize(inW,inH);
 		mStage.OnResize(inW,inH);
 	}
 
@@ -161,11 +126,26 @@ class Lib
 
 	static public function GetCanvas() : HtmlCanvasElement
 	{
-		return untyped Manager.__scr;
+		untyped
+		{
+			if ( Lib.canvas == null )
+			{
+				if ( document == null ) throw "Document not loaded yet, cannot create root canvas!";
+				Lib.canvas = document.createElement("canvas");
+				Bootstrap();
+			}
+			return Lib.canvas;
+		}
 	}
 
 	static public function GetCurrent() : MovieClip
 	{
+		if ( mMainClassRoot == null )
+		{
+			mMainClassRoot = new MovieClip();
+			mCurrent = mMainClassRoot;
+			mCurrent.name = "Root MovieClip";
+		}
 		return mMainClassRoot;
 	}
 
@@ -178,7 +158,17 @@ class Lib
 	static public function getTimer() :Int { return ( Std.int(haxe.Timer.stamp() - starttime )*1000); }
 
 #if !flash
-	static public function GetStage() { return mStage; }
+	static public function GetStage() 
+	{ 
+		if ( mStage == null )
+		{
+			mStage = new flash.display.Stage(Lib.canvas.width,Lib.canvas.height);
+			mStage.frameRate = 100;
+			mStage.addChild(GetCurrent());
+		}
+
+		return mStage; 
+	}
 
 	public function ProcessKeys( code:Int , pressed : Bool, inChar:Int,
 			ctrl:Bool, alt:Bool, shift:Bool )
@@ -271,7 +261,6 @@ class Lib
 			while(i>=0)
 			{
 				var obj = inList[i];
-				trace(inEvt.type);
 				inEvt.currentTarget = obj;
 				obj.dispatchEvent(inEvt);
 				if (inEvt.IsCancelled())
@@ -367,7 +356,7 @@ class Lib
 			case flash.events.MouseEvent.MOUSE_UP.toLowerCase(): flash.events.MouseEvent.MOUSE_UP;
 			case flash.events.MouseEvent.MOUSE_OVER.toLowerCase(): flash.events.MouseEvent.MOUSE_OVER;
 			case flash.events.MouseEvent.MOUSE_OUT.toLowerCase(): flash.events.MouseEvent.MOUSE_OUT;
-			case "scroll": flash.events.MouseEvent.MOUSE_WHEEL;
+			case flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase(): flash.events.MouseEvent.MOUSE_WHEEL;
 		}
 
 		if (mDragObject!=null)
@@ -440,7 +429,6 @@ class Lib
 			mDownObj.OnMouseDrag(x,y);
 		else if (type==flash.events.MouseEvent.MOUSE_UP)
 		{
-			// trace("Up :" + obj + "/" + mDownObj);
 
 			if (mDownObj!=null)
 			{
@@ -448,7 +436,6 @@ class Lib
 
 				if (obj==mDownObj)
 				{
-					//trace("CLICK!");
 					var evt = CreateMouseEvent(obj, null, evt, flash.events.MouseEvent.CLICK);
 					FireEvents(evt,new_list);
 				}
@@ -470,7 +457,6 @@ class Lib
 			FireEvents(evt, new_list);
 		}
 
-		// trace(type + " obj = " + (obj==null?"null":"something") );
 
 
 		//var event =CreateMouseEvent(inEvent,type);
@@ -518,7 +504,6 @@ class Lib
 
 	function CaptureEvent(evt:Event)
 	{
-			trace(evt.type);
 		switch(evt.type)
 		{
 			case flash.events.KeyboardEvent.KEY_DOWN.toLowerCase():
@@ -542,7 +527,7 @@ class Lib
 			case flash.events.MouseEvent.MOUSE_UP.toLowerCase():
 				DoMouse(cast evt);
 
-			case "scroll":
+			case flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase():
 				DoMouse(cast evt);
 
 			default:
@@ -557,13 +542,12 @@ class Lib
 		setTimer();
 	}
 
-	static public function Run( name:String, width:Int, height:Int ) 
+	static public function Run( tgt:HtmlCanvasElement, width:Int, height:Int ) 
 	{
-		if ( js.Lib.document != null )
-		{
-			mMe = new Lib( name, width, height );
-			var tgt = js.Lib.document.getElementById(name);
-			mStage.backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
+			mMe = new Lib( tgt.id, width, height );
+			Lib.canvas.width = width;
+			Lib.canvas.height = height;
+			GetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
 				ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
 						return switch (pos) {
 						case 0: res | (cur << 16);
@@ -572,10 +556,9 @@ class Lib
 						}
 						});
 
+
 			mMe.MyRun();
-		} else {
-			haxe.Timer.delay( callback( Run, name, width, height ), 10 );
-		}
+			return mMe;
 	}
 
 	public static function close()
@@ -616,23 +599,57 @@ class Lib
 		}
 	}
 
-
-	static function __init__()
+	static function Bootstrap()
 	{
 		untyped
 		{
-			var els = document.getElementsByTagName('canvas');
-			if ( els.length > 0 )
+			var tgt = document.getElementById('haxe:jeash');
+			var width : Int;
+			var height : Int;
+			var name : String;
+
+			// There are two ways of initialising Jeash -
+			// one is the old Canvas-NME method of placing
+			// a single canvas element in the body tag, the
+			// newer method is to have a <div> tag with id
+			// 'haxe:jeash'. Currently, neither method has
+			// any advantages over the other.
+
+			if ( tgt == null )
 			{
-				var tgt = els[0];
-				var width : Int = tgt.getAttribute('width') != null ? cast tgt.getAttribute('width') : Manager.DEFAULT_WIDTH;
-				var height : Int = tgt.getAttribute('height') != null ? cast tgt.getAttribute('height') : Manager.DEFAULT_HEIGHT;
-				var name = tgt.getAttribute('id') != null ? tgt.getAttribute('id') : 'Container';
+				var els = document.getElementsByTagName('canvas');
+				if ( els != null && els.length > 0 ) tgt = els[0];
+				else return haxe.Timer.delay( Bootstrap, 10 );
 
-
-				Run(name, width, height);
+				width = tgt.getAttribute('width') != null ? cast tgt.getAttribute('width') : Manager.DEFAULT_WIDTH;
+				height = tgt.getAttribute('height') != null ? cast tgt.getAttribute('height') : Manager.DEFAULT_HEIGHT;
+			} else {
+				width = tgt.clientWidth;
+				height = tgt.clientHeight;
 			}
+
+			var evTypes = [ 
+				'resize', 
+				'mouseup', 
+				'mouseover', 
+				'mouseout', 
+				'mousemove', 
+				'mousedown', 
+				'mousewheel', 
+				'keyup', 
+				'keypress', 
+				'keydown', 
+				'focus', 
+				'dblclick', 
+				'click', 
+				'blur' 
+					];
+			var lib = Run(tgt, width, height);
+			lib.OnResize(width, height);
+
+			for (type in evTypes) 
+				tgt.addEventListener(type, lib.CaptureEvent, false);
+			return lib;
 		}
 	}
-
 }

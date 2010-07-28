@@ -137,6 +137,7 @@ class DisplayObjectContainer extends InteractiveObject
 			obj.GetFocusObjects(outObjs);
 	}
 
+   /*
    override public function GetChildCachedObj(inX:Int,inY:Int,inObj:InteractiveObject) : InteractiveObject
    {
       // Start at end and work backwards (find topmost)
@@ -150,6 +151,7 @@ class DisplayObjectContainer extends InteractiveObject
 
       return inObj;
    }
+   */
 
 
 	public override function GetNumChildren() {

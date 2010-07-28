@@ -41,7 +41,6 @@ import flash.display.StageScaleMode;
 
 class Stage extends flash.display.DisplayObjectContainer
 {
-	var mManager:Manager;
 	var mWidth:Int;
 	var mHeight:Int;
 	var mWindowWidth:Int;
@@ -63,11 +62,10 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	private var mFocusObject : InteractiveObject;
 
-	public function new(inWidth:Int,inHeight:Int,inManager:Manager)
+	public function new(inWidth:Int,inHeight:Int)
 	{
 		super();
 		mFocusObject = null;
-		mManager = inManager;
 		mWindowWidth = mWidth = inWidth;
 		mWindowHeight = mHeight = inHeight;
 		stageFocusRect = false;
@@ -83,8 +81,8 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function OnResize(inW:Int, inH:Int)
 	{
-		mWindowWidth = inW;
-		mWindowHeight = inH;
+		mWindowWidth = mWidth = inW;
+		mWindowHeight = mHeight = inH;
 		RecalcScale();
 		var event = new Event( Event.RESIZE );
 		event.target = this;
@@ -182,7 +180,6 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function RenderAll()
 	{
-		//mManager.clear(backgroundColor);
 		Clear();
 
 		SetupRender(mStageMatrix);

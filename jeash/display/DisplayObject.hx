@@ -127,7 +127,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function new()
 	{
 		mParent = null;
-		super();
+		super(null);
 		mX = mY = 0;
 		mScaleX = mScaleY = 1.0;
 		alpha = 1.0;
@@ -595,6 +595,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	// We have detected that a cached bitmap has been hit - check to
 	//  see it it was actually one of the child objects.  This will
 	//  be overwritten by DisplayObjectContainer.
+	/*
 	public function GetChildCachedObj(inX:Int,inY:Int,inObj:InteractiveObject) : InteractiveObject
 	{
 		return inObj;
@@ -612,6 +613,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 		return null;
 	}
+	*/
 	public function GetFocusObjects(outObjs:Array<InteractiveObject>) { }
 	public inline function __BlendIndex():Int
 	{

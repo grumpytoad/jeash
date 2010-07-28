@@ -111,7 +111,7 @@ typedef RenderCallbackList = Array<RenderCallback>;
 
 class Manager
 {
-	static var __scr : HtmlCanvasElement;
+	static var __scr : Html5Node;
 	static var __evt : Dynamic;
 
 	// Set this to something else if yo do not want it...
@@ -147,6 +147,9 @@ class Manager
 	{
 		__scr = untyped document.getElementById(title);
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
+		Lib.canvas.width = width;
+		Lib.canvas.height = height;
+		__scr.appendChild( Lib.canvas );
 
 		mFrameCount = 0;
 
@@ -155,7 +158,7 @@ class Manager
 		//untyped document.onkeydown = addEvent;
 		//untyped document.onkeyup = addEvent;
 
-		graphics = new Graphics(__scr);
+		graphics = new Graphics(Lib.canvas);
 	}
 
 	public function OnResize(inW:Int, inH:Int)
@@ -201,15 +204,7 @@ class Manager
 
 	static public function getScreen() : CanvasRenderingContext2D
 	{
-
-		// TODO: A static getScreen needs to be made contextual according to the
-		// Sprite being drawn, in case of more than one root canvas instance
-
-		if ( __scr == null ) {
-			throw "Fatal error: Neash is not initiated.";
-		}
-
-		return untyped  __scr.getContext('2d');
+		return Lib.canvas.getContext('2d');
 	}
 
 	/*

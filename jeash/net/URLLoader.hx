@@ -122,8 +122,10 @@ private class Http extends haxe.Http
 
 	function registerEvents( subject:EventTarget )
 	{
-		subject.addEventListener( "load", cast onData, false );
-		subject.addEventListener( "error", cast onError, false );
+		untyped subject.onload = onData;
+		untyped subject.onerror = onError;
+		//subject.addEventListener( "load", cast onData, false );
+		//subject.addEventListener( "error", cast onError, false );
 	}
 
 	// Always GET, always async
