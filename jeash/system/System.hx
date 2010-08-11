@@ -65,7 +65,6 @@ class System
 
 	static function GetMemory() : Int
 	{
-		throw "System.totalMemory not implemented in Jeash";
 		return 0;
 	}
 }

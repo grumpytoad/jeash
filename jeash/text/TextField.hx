@@ -144,6 +144,7 @@ class TextField extends flash.display.InteractiveObject
 		mDownChar = 0;
 		mSelectDrag = -1;
 
+		mTextFormat = defaultTextFormat;
 
 		borderColor = 0x000000;
 		border = false;
