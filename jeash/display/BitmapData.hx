@@ -27,11 +27,11 @@
 package jeash.display;
 
 import Html5Dom;
+
 import flash.Lib;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
-import haxe.Int32;
 import flash.display.BlendMode;
 import flash.display.IBitmapDrawable;
 import flash.display.Loader;
@@ -39,6 +39,7 @@ import flash.display.LoaderInfo;
 import flash.events.Event;
 import flash.geom.Matrix;
 import flash.geom.ColorTransform;
+import flash.filters.BitmapFilter;
 
 import haxe.xml.Check;
 
@@ -78,6 +79,11 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public var rect : Rectangle;
+	
+	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter)
+	{
+		throw "BitmapData.applyFilter not implemented in Jeash";
+	}
 
 	public function draw( source:IBitmapDrawable,
 			matrix:Matrix = null,

@@ -33,6 +33,7 @@ class Transform
 {
    public var colorTransform( GetColorTransform, SetColorTransform ) : ColorTransform;
    public var matrix(GetMatrix,SetMatrix):Matrix;
+   public var pixelBounds(GetPixelBounds,null):Rectangle;
 
    var mObj:DisplayObject;
 
@@ -44,6 +45,11 @@ class Transform
    public function GetMatrix() : Matrix { return mObj.GetMatrix(); }
    public function SetMatrix(inMatrix:Matrix) : Matrix
        { return mObj.SetMatrix(inMatrix); }
+
+   function GetPixelBounds()
+   {
+   	return mObj.getBounds(jeash.Lib.GetStage());
+   }
 
    public function GetColorTransform() { 
 #if silverlight

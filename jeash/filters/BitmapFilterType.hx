@@ -26,9 +26,10 @@
 
 package jeash.filters;
 
-#if flash
-typedef BitmapFilterType = flash.filters.BitmapFilterType;
-#else
-typedef BitmapFilterType = nme.filters.BitmapFilterType;
-#end
+class BitmapFilterType
+{
+	public inline static var FULL = "full";
+	public inline static var INNER = "inner";
+	public inline static var OUTER = "outer";
+}
 

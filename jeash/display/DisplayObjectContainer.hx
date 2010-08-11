@@ -44,12 +44,14 @@ class DisplayObjectContainer extends InteractiveObject
 	var mLastSetupObjs : Array<DisplayObject>;
 	public var numChildren(GetNumChildren,null):Int;
 	public var mouseChildren:Bool;
+	public var tabChildren:Bool;
 
 	public function new()
 	{
 		mObjs = new Array<DisplayObject>();
 		mLastSetupObjs = new Array<DisplayObject>();
 		mouseChildren = true;
+		tabChildren = true;
 		super();
 		name = "DisplayObjectContainer " +  flash.display.DisplayObject.mNameID++;
 	}
@@ -284,7 +286,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	///////////////////////////// FLASH API ///////////////////////////////
 
-	public function addChild(inObject:DisplayObject)
+	public function addChild(inObject:DisplayObject):DisplayObject
 	{
 		if (inObject == this) {
 			throw "Adding to self";
@@ -292,7 +294,7 @@ class DisplayObjectContainer extends InteractiveObject
 		if (inObject.mParent==this)
 		{
 			setChildIndex(inObject,mObjs.length-1);
-			return;
+			return inObject;
 		}
 
 		#if debug
@@ -305,6 +307,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 		mObjs.push(inObject);
 		inObject.SetParent(this);
+		return inObject;
 	}
 
 	public function addChildAt( obj : DisplayObject, index : Int )

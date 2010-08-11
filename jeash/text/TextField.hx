@@ -35,7 +35,7 @@ import flash.text.TextFormatAlign;
 import flash.events.Event;
 import flash.events.KeyboardEvent;
 import flash.events.FocusEvent;
-import flash.text.KeyCode;
+import flash.ui.Keyboard;
 import flash.text.TextFormat;
 import flash.text.TextFieldType;
 
@@ -67,20 +67,26 @@ class TextField extends flash.display.InteractiveObject
 	public var maxChars : Int;
 	public var restrict : String;
 	public var type(GetType,SetType) : String;
+	public var alwaysShowSelection : Bool;
 	public var antiAliasType : String;
+	public var mouseWheelEnabled : Bool;
+	public var scrollH : Int;
+	public var scrollV : Int;
+	public var maxScrollH : Int;
+	public var maxScrollV : Int;
 	public var sharpness : Float;
 	public var gridFitType : String;
 	public var length(default,null) : Int;
-	public var mDownChar:Int;
+	public var numLines(GetNumLines,null) : Int;
 
 	public var defaultTextFormat (default,SetDefaultTextFormat): TextFormat;
 	var mTextFormat : TextFormat;
 
 	public var selectionBeginIndex : Int;
 	public var selectionEndIndex : Int;
+	public var selectedText(GetSelectedText,null) : String;
 	public var caretIndex : Int;
 	//public var mParagraphs:Paragraphs;
-	public var mTryFreeType:Bool;
 
 	//var mLineInfo:Array<LineInfo>;
 
@@ -101,11 +107,11 @@ class TextField extends flash.display.InteractiveObject
 	var mSelectionAnchored:Bool;
 	var mSelectionAnchor:Int;
 
-	var mScrollH:Int;
-	var mScrollV:Int;
-
 	var mGraphics:Graphics;
 	var mSurface(default,null):HtmlCanvasElement;
+
+	public var mTryFreeType:Bool;
+	public var mDownChar:Int;
 
 	public function new()
 	{
@@ -118,11 +124,15 @@ class TextField extends flash.display.InteractiveObject
 
 		mSelStart = -1;
 		mSelEnd = -1;
-		mScrollH = 0;
-		mScrollV = 1;
+		scrollH = 0;
+		scrollV = 1;
+		maxScrollH = 0;
+		maxScrollV = 1;
 
 		mType = flash.text.TextFieldType.DYNAMIC;
 		autoSize = flash.text.TextFieldAutoSize.NONE;
+		mouseWheelEnabled = true;
+		alwaysShowSelection = false;
 
 		defaultTextFormat = new TextFormat( mDefaultFont, 12, 0x000000, false, false, false, null, null, flash.text.TextFormatAlign.LEFT );
 		mHTMLText = " ";
@@ -139,6 +149,65 @@ class TextField extends flash.display.InteractiveObject
 		border = false;
 		backgroundColor = 0xffffff;
 		background = false;
+	}
+
+	public function replaceSelectedText( value:String )
+	{
+		mHTMLText = mHTMLText.substr( 0, selectionBeginIndex - 1 ) + value + mHTMLText.substr( selectionEndIndex );
+	}
+
+	public function replaceText( beginIndex:Int, endIndex:Int, newText:String )
+	{
+		mHTMLText = mHTMLText.substr( 0, beginIndex - 1 ) + newText + mHTMLText.substr( endIndex );
+	}
+
+	public function getCharIndexAtPoint(x:Float, y:Float):Int
+	{
+		throw "TextField.getCharIndexAtPoint not implemented in Jeash";
+		return 0;
+	}
+	
+	public function getLineIndexAtPoint(x:Float, y:Float):Int
+	{
+		var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
+		var size = textFormat.size;
+		if ( border == false )
+			return Math.floor( y / (1. + size) );
+		else 
+			return Math.floor( y / (11. + size) );
+	}
+
+	public function getLineIndexOfChar(charIndex:Int):Int
+	{
+		throw "TextField.getLineIndexOfChar not implemented in Jeash";
+		return 0;
+	}
+
+	public function getCharBoundaries( a:Int ) : Rectangle {
+		// TODO
+		return null;
+	}
+
+	public function setSelection(beginIndex : Int, endIndex : Int)
+	{
+		throw "TextField.setSelection not implemented in Jeash";
+	}
+
+	public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat
+	{
+		return mTextFormat;
+	}
+
+	public function setTextFormat(inFmt:TextFormat, ?beginIndex:Int, ?endIndex:Int)
+	{
+		mChanged = true;
+		mTextFormat = inFmt;
+	}
+
+	function GetNumLines()
+	{
+		throw "Textfield.numLines is not implemented in Jeash";
+		return 0;
 	}
 
 	override public function GetWidth() : Float { return mWidth; }
@@ -163,8 +232,8 @@ class TextField extends flash.display.InteractiveObject
 		return mHeight;
 	}
 
-	public function GetType() { return mType; }
-	public function SetType(inType:String) : String
+	function GetType() { return mType; }
+	function SetType(inType:String) : String
 	{
 		mChanged = true;
 		mType = inType;
@@ -177,9 +246,9 @@ class TextField extends flash.display.InteractiveObject
 		return inType;
 	}
 
-	public function getCharBoundaries( a:Int ) : Rectangle {
-		// TODO
-		return null;
+	function GetSelectedText()
+	{
+		return mHTMLText.substr( selectionBeginIndex, selectionEndIndex );
 	}
 
 	private function CheckChanged() : Bool
@@ -237,7 +306,6 @@ class TextField extends flash.display.InteractiveObject
 
 			ctxt.fillStyle = '#' + StringTools.hex(color);
 			var pos = 0;
-			var str = mHTMLText;
 			while (pos < mHTMLText.length - 1)
 			{
 				var index = mHTMLText.indexOf(" ", pos);
@@ -374,22 +442,6 @@ class TextField extends flash.display.InteractiveObject
 		if (mInput)
 			ConvertHTMLToText(true);
 		return mHTMLText;
-	}
-
-	public function setSelection(beginIndex : Int, endIndex : Int)
-	{
-		// TODO:
-	}
-
-	public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat
-	{
-		return mTextFormat;
-	}
-
-	public function setTextFormat(inFmt:TextFormat, ?beginIndex:Int, ?endIndex:Int)
-	{
-		mChanged = true;
-		mTextFormat = inFmt;
 	}
 
 }

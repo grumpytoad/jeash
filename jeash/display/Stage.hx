@@ -27,17 +27,12 @@
 package jeash.display;
 
 import flash.Lib;
-#if !js
-import nme.Manager;
-import nme.geom.Matrix;
-#else
 import flash.Manager;
 import flash.geom.Matrix;
-#end
 import flash.events.FocusEvent;
 import flash.events.Event;
 import flash.display.StageScaleMode;
-
+import flash.geom.Point;
 
 class Stage extends flash.display.DisplayObjectContainer
 {
@@ -77,6 +72,21 @@ class Stage extends flash.display.DisplayObjectContainer
 		frameRate=0;
 		SetBackgroundColour(0xffffff);
 		name = "Stage";
+		loaderInfo = LoaderInfo.create(null);
+		loaderInfo.parameters.width = Std.string(mWidth);
+		loaderInfo.parameters.height = Std.string(mHeight);
+	}
+
+	public function getObjectsUnderPoint(point:Point)
+	{
+		var l = mObjs.length-1, collection = [];
+		for(i in 0...mObjs.length)
+		{
+			var result = mObjs[l-i].GetObj( Std.int(point.x), Std.int(point.y), null);
+			if (result!=null)
+				collection.push( result );
+		}
+		return collection;
 	}
 
 	public function OnResize(inW:Int, inH:Int)

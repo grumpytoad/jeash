@@ -33,6 +33,7 @@ package jeash.display;
 class InteractiveObject extends DisplayObject
 {
 	public var doubleClickEnabled(__getDoubleClickEnabled,__setDoubleClickEnabled) : Bool;
+	public var focusRect:Dynamic;
 	public var mouseEnabled:Bool;
 	public var tabEnabled:Bool;
 	public var tabIndex(default,SetTabIndex):Int;

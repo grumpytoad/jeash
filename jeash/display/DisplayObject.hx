@@ -27,6 +27,8 @@
 package jeash.display;
 
 import Html5Dom;
+
+import flash.accessibility.AccessibilityProperties;
 import flash.display.Stage;
 import flash.events.EventDispatcher;
 import flash.events.Event;
@@ -57,8 +59,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 #if !js
 	public var scale9Grid(GetScale9Grid,SetScale9Grid):Rectangle;
 #end
+	public var accessibilityProperties:AccessibilityProperties;
 	public var alpha:Float;
 	public var name(default,default):String;
+	public var cacheAsBitmap:Bool;
 	public var width(GetWidth,SetWidth):Float;
 	public var height(GetHeight,SetHeight):Float;
 	public var visible(default,default):Bool;
@@ -67,11 +71,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mouseY(GetMouseY,null):Float;
 	public var parent(GetParent,null):DisplayObjectContainer;
 	public var stage(GetStage,null):Stage;
+	public var root(GetStage,null):Stage;
 	public var rotation(GetRotation,SetRotation):Float;
 	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
 	public var mask(GetMask,SetMask):DisplayObject;
 	public var filters(GetFilters,SetFilters):Array<Dynamic>;
 	public var blendMode : flash.display.BlendMode;
+	public var loaderInfo:LoaderInfo;
 
 
 	// This is used by the swf-code for z-sorting
@@ -154,8 +160,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		visible = true;
 	}
 
-	public function toString() { return name; }
-
+	override public function toString() { return name; }
 
 	function DoAdded(inObj:DisplayObject)
 	{
@@ -253,6 +258,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return GetScrollRect();
 	}
 
+	public function hitTestObject(obj:DisplayObject)
+	{
+		throw "DisplayObject.hitTestObject not implemented in Jeash";
+		return false;
+	}
+
 	public function hitTestPoint(x:Float, y:Float, ?shapeFlag:Bool)
 	{
 		var bounding_box:Bool = shapeFlag==null ? true : !shapeFlag;
@@ -296,13 +307,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return trans;
 	}
 
-	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle {
-		// TODO
-		return null;
-		//BuildBounds();
-		//return mBoundsRect.clone();
+	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle 
+	{
+		// TODO: map to co-ordinate space
+		BuildBounds();
+		return mBoundsRect.clone();
 	}
-	public function getRect(targetCoordinateSpace : DisplayObject) : Rectangle {
+	public function getRect(targetCoordinateSpace : DisplayObject) : Rectangle 
+	{
 		// TODO
 		return null;
 	}

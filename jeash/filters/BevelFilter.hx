@@ -24,48 +24,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.filters;
 
-import flash.events.EventDispatcher;
+import Html5Dom;
 
-/**
-* @author	Niel Drummond
-* @author	Russell Weir
-* @todo init, open, progress, unload (?) events
-**/
-class LoaderInfo extends EventDispatcher {
-
-	public var bytes(default,null) : flash.utils.ByteArray;
-	public var bytesLoaded(default,null) : Int;
-	public var bytesTotal(default,null) : Int;
-	public var childAllowsParent(default,null) : Bool;
-	public var content(default,null) : DisplayObject;
-	public var contentType(default,null) : String;
-	public var frameRate(default,null) : Float;
-	public var height(default,null) : Int;
-	public var loader(default,null) : Loader;
-	public var loaderURL(default,null) : String;
-	public var parameters(default,null) : Dynamic<String>;
-	public var parentAllowsChild(default,null) : Bool;
-	public var sameDomain(default,null) : Bool;
-	public var sharedEvents(default,null) : flash.events.EventDispatcher;
-	public var url(default,null) : String;
-	public var width(default,null) : Int;
-	//static function getLoaderInfoByDefinition(object : Dynamic) : flash.display.LoaderInfo;
-
-	private function new() {
-		super();
-		bytesLoaded = 0;
-		bytesTotal = 0;
-		childAllowsParent = true;
-		parameters = {};
-
-	}
-
-	public static function create(ldr : Loader) {
-		var li = new LoaderInfo();
-		li.loader = ldr;
-
-		return li;
+class BevelFilter extends BitmapFilter {
+	public var angle : Float;
+	public var blurX : Float;
+	public var blurY : Float;
+	public var distance : Float;
+	public var highlightAlpha : Float;
+	public var highlightColor : UInt;
+	public var knockout : Bool;
+	public var quality : Int;
+	public var shadowAlpha : Float;
+	public var shadowColor : UInt;
+	public var strength : Float;
+	public var type : BitmapFilterType;
+	public function new(?distance : Float, ?angle : Float, ?highlightColor : UInt, ?highlightAlpha : Float, ?shadowColor : UInt, ?shadowAlpha : Float, ?blurX : Float, ?blurY : Float, ?strength : Float, ?quality : Int, ?type : BitmapFilterType, ?knockout : Bool) 
+	{
+		super("BevelFilter");
+		this.distance = distance;
+		this.angle = angle;
+		this.highlightColor = highlightColor;
+		this.highlightAlpha = highlightAlpha;
+		this.shadowColor = shadowColor;
+		this.shadowAlpha = shadowAlpha;
+		this.blurX = blurX;
+		this.blurY = blurY;
+		this.strength = strength;
+		this.quality = quality;
+		this.type = type;
+		this.knockout = knockout;
 	}
 }
+

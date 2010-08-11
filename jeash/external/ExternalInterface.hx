@@ -24,48 +24,25 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.external;
 
-import flash.events.EventDispatcher;
+class ExternalInterface {
+	static var mCallbacks:Hash<Dynamic>;
+	public static inline var available : Bool = true;
 
-/**
-* @author	Niel Drummond
-* @author	Russell Weir
-* @todo init, open, progress, unload (?) events
-**/
-class LoaderInfo extends EventDispatcher {
-
-	public var bytes(default,null) : flash.utils.ByteArray;
-	public var bytesLoaded(default,null) : Int;
-	public var bytesTotal(default,null) : Int;
-	public var childAllowsParent(default,null) : Bool;
-	public var content(default,null) : DisplayObject;
-	public var contentType(default,null) : String;
-	public var frameRate(default,null) : Float;
-	public var height(default,null) : Int;
-	public var loader(default,null) : Loader;
-	public var loaderURL(default,null) : String;
-	public var parameters(default,null) : Dynamic<String>;
-	public var parentAllowsChild(default,null) : Bool;
-	public var sameDomain(default,null) : Bool;
-	public var sharedEvents(default,null) : flash.events.EventDispatcher;
-	public var url(default,null) : String;
-	public var width(default,null) : Int;
-	//static function getLoaderInfoByDefinition(object : Dynamic) : flash.display.LoaderInfo;
-
-	private function new() {
-		super();
-		bytesLoaded = 0;
-		bytesTotal = 0;
-		childAllowsParent = true;
-		parameters = {};
-
+	public static inline var objectID : String = jeash.Lib.canvas.id;
+	public static function addCallback(functionName : String, closure : Dynamic) 
+	{
+		if (mCallbacks == null) mCallbacks = new Hash();
+		mCallbacks.set(functionName, closure);
 	}
 
-	public static function create(ldr : Loader) {
-		var li = new LoaderInfo();
-		li.loader = ldr;
-
-		return li;
+	public static function call(functionName : String, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic ) : Dynamic
+	{
+		if (!mCallbacks.exists(functionName)) return null;
+		return Reflect.callMethod( null, mCallbacks.get(functionName), [p1, p2, p3, p4, p5] );
 	}
+
+	public static var marshallExceptions : Bool = false;
 }
+

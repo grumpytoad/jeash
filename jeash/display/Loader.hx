@@ -34,6 +34,7 @@ import flash.display.LoaderInfo;
 import flash.display.Shape;
 import flash.events.Event;
 import flash.events.IOErrorEvent;
+import flash.system.LoaderContext;
 
 /**
 * @author	Hugh Sanderson
@@ -55,8 +56,7 @@ class Loader extends flash.display.DisplayObjectContainer
 		contentLoaderInfo = LoaderInfo.create(this);
 	}
 
-	// No "loader context" in neash
-	public function load(request:URLRequest)
+	public function load(request:URLRequest, ?context:LoaderContext)
 	{
 		// get the file extension for the content type
 		var parts = request.url.split(".");

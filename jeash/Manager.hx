@@ -30,7 +30,7 @@ import Html5Dom;
 import flash.display.Graphics;
 import flash.text.TextField;
 import flash.events.Event;
-import flash.text.KeyCode;
+import flash.ui.Keyboard;
 import flash.Lib;
 
 enum EventType
@@ -116,8 +116,8 @@ class Manager
 
 	// Set this to something else if yo do not want it...
 	static var closeKey = 27;
-	static var pauseUpdates = KeyCode.F11;
-	static var toggleQuality = KeyCode.F12;
+	static var pauseUpdates = Keyboard.F11;
+	static var toggleQuality = Keyboard.F12;
 
 	static var FULLSCREEN = 0x0001;
 	static var OPENGL     = 0x0002;

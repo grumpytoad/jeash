@@ -26,11 +26,7 @@
 
 package jeash.filters;
 
-#if js
-typedef DropShadowFilter = flash.filters.DropShadowFilter;
-#end
-
-class GlowFilter extends nme.filters.DropShadowFilter
+class GlowFilter extends DropShadowFilter
 {
    public function new(in_color:Int = 0,
                        in_alpha:Float = 1.0, in_blurX:Float = 6.0, in_blurY:Float = 6.0,

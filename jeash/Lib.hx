@@ -38,10 +38,8 @@ import flash.display.DisplayObject;
 import flash.display.InteractiveObject;
 import flash.geom.Rectangle;
 
-#if !flash
-import flash.text.KeyCode;
+import flash.ui.Keyboard;
 import jeash.Manager;
-#end
 
 import flash.geom.Point;
 
@@ -140,6 +138,7 @@ class Lib
 
 	static public function GetCurrent() : MovieClip
 	{
+		Lib.canvas;
 		if ( mMainClassRoot == null )
 		{
 			mMainClassRoot = new MovieClip();
@@ -173,7 +172,7 @@ class Lib
 	public function ProcessKeys( code:Int , pressed : Bool, inChar:Int,
 			ctrl:Bool, alt:Bool, shift:Bool )
 	{
-		if (code== KeyCode.ESCAPE && mQuitOnEscape)
+		if (code== Keyboard.ESCAPE && mQuitOnEscape)
 		{
 			mKilled = true;
 			return;
@@ -183,7 +182,7 @@ class Lib
 		{
 			// You might want to disable this in production
 
-			case KeyCode.TAB:
+			case Keyboard.TAB:
 				mStage.TabChange( shift ? -1 : 1,code);
 
 			default:
@@ -192,8 +191,8 @@ class Lib
 						KeyboardEvent.KEY_UP,
 						true,false,
 						inChar,
-						KeyCode.ConvertCode(code),
-						KeyCode.ConvertLocation(code),
+						Keyboard.ConvertCode(code, shift),
+						Keyboard.ConvertLocation(code),
 						ctrl,alt,shift);
 
 				mStage.HandleKey(event);
@@ -208,6 +207,19 @@ class Lib
 		if (inObj!=null)
 			pos = inObj.globalToLocal(pos);
 
+		var delta = if ( inType == flash.events.MouseEvent.MOUSE_WHEEL )
+		{
+			var mouseEvent : Dynamic = inMouse;
+			if (mouseEvent.wheelDelta) { /* IE/Opera. */
+				if ( js.Lib.isOpera )
+					Std.int(mouseEvent.wheelDelta/40);
+				else
+					Std.int(mouseEvent.wheelDelta/120);
+			} else if (mouseEvent.detail) { /** Mozilla case. */
+				Std.int(-mouseEvent.detail);
+			}
+
+		} else { 2; }
 		var result =  new flash.events.MouseEvent(inType,
 				bubble, false,
 				inMouse.clientX,inMouse.clientY,
@@ -216,7 +228,7 @@ class Lib
 				inMouse.altKey,
 				inMouse.shiftKey,
 				true, // buttonDown = left mouse button, 
-				2);
+				delta);
 
 		result.stageX = inMouse.clientX/mStage.scaleX;
 		result.stageY = inMouse.clientY/mStage.scaleY;
@@ -624,8 +636,8 @@ class Lib
 				width = tgt.getAttribute('width') != null ? cast tgt.getAttribute('width') : Manager.DEFAULT_WIDTH;
 				height = tgt.getAttribute('height') != null ? cast tgt.getAttribute('height') : Manager.DEFAULT_HEIGHT;
 			} else {
-				width = tgt.clientWidth;
-				height = tgt.clientHeight;
+				width = tgt.clientWidth > 0 ? tgt.clientWidth : Manager.DEFAULT_WIDTH;
+				height = tgt.clientHeight > 0 ? tgt.clientHeight : Manager.DEFAULT_HEIGHT;
 			}
 
 			var evTypes = [ 

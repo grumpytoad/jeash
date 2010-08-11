@@ -24,13 +24,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package nme.filters;
-
 package jeash.filters;
 
-#if flash
-typedef BitmapFilterQuality = flash.filters.BitmapFilterQuality;
-#else true
-typedef BitmapFilterQuality = nme.filters.BitmapFilterQuality;
-#end
+class BitmapFilterQuality
+{
+   public static var HIGH = 3;
+   public static var MEDIUM = 2;
+   public static var LOW = 1;
+}
 
