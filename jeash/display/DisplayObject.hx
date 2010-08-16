@@ -84,6 +84,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var __swf_depth:Int;
 
 	public var transform(GetTransform,SetTransform):Transform;
+	public var mChanged(default,null):Bool;
+
+	// Variables for manipulating OpenGL co-ordinate system
+	public var mVertices:Array<Float>;
+	public var mTextureCoords:Array<Float>;
+	public var mIndices:Array<Int>;
+
+	var mVertexBuffer(default,null):WebGLBuffer;
+	var mTextureCoordsBuffer(default,null):WebGLBuffer;
+	var mIndicesBuffer(default,null):WebGLBuffer;
 
 	var mX:Float;
 	var mY:Float;
@@ -121,8 +131,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mCCTop:Bool;
 	var mCCBottom:Bool;
 
-	public var mChanged(default,null):Bool;
-
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
 
@@ -158,6 +166,51 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mChanged = true;
 
 		visible = true;
+
+		if ( jeash.Lib.mOpenGL )
+		{
+
+			// Default to a simple two polygon square face - by
+			// updating these array buffers, it is possible to have
+			// a full GPU accelerated 3D environment.
+
+			mVertices = [      
+				0.0,  1.0,  0.0,
+			       -1.0, -1.0,  0.0,
+			        1.0, -1.0,  0.0
+			];
+			mTextureCoords = [
+				0.0, 0.0,
+				1.0, 0.0,
+				1.0, 1.0,
+				0.0, 1.0,
+			];
+			mIndices = [
+				0, 1, 2,      
+				0, 2, 3
+			];
+
+			var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
+			mVertexBuffer 		= gl.createBuffer();
+			mTextureCoordsBuffer 	= gl.createBuffer();
+			mIndicesBuffer		= gl.createBuffer();
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
+			gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordsBuffer);
+			gl.bindBuffer(gl.ARRAY_BUFFER, mIndicesBuffer);
+
+			UpdateBuffers();
+		}
+	}
+
+	public function UpdateBuffers()
+	{
+		var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
+
+		gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(mVertices), gl.STATIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(mTextureCoords), gl.STATIC_DRAW);
+		gl.bufferData(gl.ARRAY_BUFFER, new WebGLUnsignedShortArray(mIndices), gl.STATIC_DRAW);
+		
 	}
 
 	override public function toString() { return name; }
@@ -476,7 +529,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	public function __RenderGfx(inScrollRect:Rectangle,
-			inMask:HtmlCanvasElement,inTX:Float,inTY:Float)
+			inMask:HTMLCanvasElement,inTX:Float,inTY:Float)
 	{
 		var gfx = GetGraphics();
 
@@ -485,6 +538,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			var blend:Int = __BlendIndex();
 
 			Graphics.setBlendMode(blend);
+
+			var gl : WebGLRenderingContext = null;
+			if (jeash.Lib.mOpenGL)
+			{
+				gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
+				gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
+				gl.enableVertexAttribArray( gl.getAttribLocation(gfx.mShaderGL, "mVertices") );
+				gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "mVertices" ), Std.int(mVertices.length / 3), gl.FLOAT, false, 0, 0 );
+				gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "mTextureCoords" ), Std.int(mTextureCoords.length / 2), gl.FLOAT, false, 0, 0 );
+				
+			}
 
 			if (inScrollRect!=null)
 			{
@@ -495,11 +559,34 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			}
 			else
 				gfx.__Render(mFullMatrix,inMask,null);
+
+			if (jeash.Lib.mOpenGL)
+			{
+
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mVertexBuffer);
+
+				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uPMatrix" ), false, new WebGLFloatArray( [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0] ) );
+				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uMVMatrix" ), false, new WebGLFloatArray( GetGLMatrix(mFullMatrix) ) );
+
+				gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
+
+			}
 		}
 
 	}
 
-	public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
+	// TODO: make this externally modify-able
+	static inline function GetGLMatrix( m:Matrix )
+	{
+		return [
+			m.a, m.b, 0, m.tx,
+			m.c, m.d, 0, m.ty,
+			0, 0, 1, 0,
+			0, 0, 0, 1
+		];
+	}
+
+	public function __Render(inParentMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
 	{
 		__RenderGfx(inScrollRect,inParentMask,inTX,inTY );
 	}

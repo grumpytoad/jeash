@@ -43,9 +43,18 @@ import flash.filters.BitmapFilter;
 
 import haxe.xml.Check;
 
+typedef TextureResource = {}
+typedef LoadData =
+{
+	var image : HTMLImageElement;
+	var texture:TextureResource;
+	var inLoader:LoaderInfo;
+}
+
 class BitmapData implements IBitmapDrawable
 {
-	private var mTextureBuffer:HtmlCanvasElement;
+	private var mTextureBuffer:HTMLCanvasElement;
+	private var mGLTextureBuffer:WebGLTexture;
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
@@ -55,6 +64,8 @@ class BitmapData implements IBitmapDrawable
 			?inTransparent:Bool = true,
 			?inFillColour:Int)
 	{
+
+		if ( Lib.mOpenGL ) mGLTextureBuffer = Lib.canvas.getContext(Lib.context).createTexture();
 
 		// TODO: the following was a hack in the canvas-nme days in
 		// order to load embedded resources, in order to emulate the
@@ -212,13 +223,26 @@ class BitmapData implements IBitmapDrawable
 		mTextureBuffer = null;
 	}
 
-	function OnLoad( data:{image:Image, canvas:HtmlCanvasElement, inLoader:LoaderInfo}, e)
+	function OnLoad( data:LoadData, e)
 	{
-		data.canvas.width = data.image.width;
-		data.canvas.height = data.image.height;
+		if ( Lib.mOpenGL )
+		{
+			var gl : WebGLRenderingContext = Lib.canvas.getContext(Lib.context);
+			gl.bindTexture(gl.TEXTURE_2D, cast data.texture);
 
-		var ctx : CanvasRenderingContext2D = data.canvas.getContext('2d');
-		ctx.drawImage(data.image, 0, 0);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data.image);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.bindTexture(gl.TEXTURE_2D, null);
+		} else {
+			var canvas : HTMLCanvasElement = cast data.texture;
+			canvas.width = data.image.width;
+			canvas.height = data.image.height;
+
+			var ctx : CanvasRenderingContext2D = canvas.getContext(Lib.context);
+			ctx.drawImage(data.image, 0, 0);
+
+		}
 
 		var e = new flash.events.Event( flash.events.Event.COMPLETE );
 		e.target = data.inLoader;
@@ -227,14 +251,18 @@ class BitmapData implements IBitmapDrawable
 
 	public function LoadFromFile(inFilename:String, ?inLoader:LoaderInfo)
 	{
-		var image : Image = cast js.Lib.document.createElement("img");
+		var image : HTMLImageElement = cast js.Lib.document.createElement("img");
 		if ( inLoader != null ) 
-			image.addEventListener( "load", callback(OnLoad,{image:image, canvas:mTextureBuffer, inLoader:inLoader}), false );
+		{
+			var texture : TextureResource = (Lib.mOpenGL) ? cast mGLTextureBuffer : cast mTextureBuffer;
+			var data : LoadData = {image:image, texture: texture, inLoader:inLoader};
+			image.addEventListener( "load", callback(OnLoad, data), false );
+		}
 		image.src = inFilename;
 	}
 
 
-	static public function CreateFromHandle(inHandle:HtmlCanvasElement) : BitmapData
+	static public function CreateFromHandle(inHandle:HTMLCanvasElement) : BitmapData
 	{
 		var result = new BitmapData(0,0);
 		result.mTextureBuffer = inHandle;

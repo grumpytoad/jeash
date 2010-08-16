@@ -177,7 +177,7 @@ class DisplayObjectContainer extends InteractiveObject
 		return super.GetObj(inX,inY,this);
 	}
 
-	override public function __Render(inMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int, inTY:Int)
+	override public function __Render(inMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int, inTY:Int)
 	{
 
 		if (!visible || mMaskingObj!=null) return;

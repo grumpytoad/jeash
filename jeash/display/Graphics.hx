@@ -135,12 +135,46 @@ typedef Drawable =
 
 typedef Texture =
 {
-	var texture_buffer:HtmlCanvasElement;
+	var texture_buffer:Dynamic;
 	var matrix:Matrix;
 	var flags:Int;
 }
 
 typedef LineJobs = Array<LineJob>;
+
+private class GLTextureShader 
+{
+
+	public static inline var mFragmentProgram = '
+		#ifdef GL_ES
+		precision highp float;
+		#endif
+
+		varying vec2 vTextureCoord;
+
+		uniform sampler2 uTexture;
+
+		void main(voi) {
+			gl_fragColor = texture2D(uTexture, vec2(vTextureCoord.s, vTextureCoord.t));
+		}
+	';
+
+	public static inline var mVertexProgram = '
+		attribute vec3 mVertices;
+		attribute vec2 mTextureCoords;
+
+		uniform mat4 uMVMatrix;
+		uniform mat4 uPMatrix;
+
+		varying vec2 vTextureCoord;
+
+		void main(void) {
+			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+			vTextureCoord = aTextureCoord;
+		}
+	';
+
+}
 
 class Graphics
 {
@@ -211,7 +245,7 @@ class Graphics
 	public static var BLEND_SUBTRACT = 13;
 	public static var BLEND_SHADER = 14;
 
-	var mSurface(default,null):HtmlCanvasElement;
+	var mSurface(default,null):HTMLCanvasElement;
 
 	// Current set of points
 	private var mPoints:GfxPoints;
@@ -240,7 +274,11 @@ class Graphics
 	public var mSurfaceOffset:Int;
 	public var mMatrix:Matrix;
 
-	public function new(?inSurface:HtmlCanvasElement)
+	// GL shader
+	public var mShaderGL:WebGLProgram;
+	static var gl:WebGLRenderingContext;
+
+	public function new(?inSurface:HTMLCanvasElement)
 	{
 		if ( inSurface == null ) {
 			mSurface = cast js.Lib.document.createElement("canvas");
@@ -270,6 +308,32 @@ class Graphics
 
 		ClearLine();
 		mLineJobs = [];
+
+		if (jeash.Lib.mOpenGL)
+		{
+			gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
+
+			// initialise shaders
+
+			mShaderGL = gl.createProgram();
+
+			// compile default fragment shader
+			var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+			gl.shaderSource(fragmentShader, GLTextureShader.mFragmentProgram);
+			gl.compileShader(fragmentShader);
+
+			// compile default vertex shader
+			var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+			gl.shaderSource(vertexShader, GLTextureShader.mVertexProgram);
+			gl.compileShader(vertexShader);
+
+			gl.attachShader( mShaderGL, fragmentShader );
+			gl.attachShader( mShaderGL, vertexShader ); 
+
+			gl.linkProgram(mShaderGL);
+			gl.useProgram(mShaderGL);
+				
+		}
 	}
 
 	public function SetSurface(inSurface:Dynamic)
@@ -314,7 +378,7 @@ class Graphics
 		return gradient;
 	}
 
-	public function __Render(?inMatrix:Matrix,?inMaskHandle:HtmlCanvasElement,?inScrollRect:Rectangle)
+	public function __Render(?inMatrix:Matrix,?inMaskHandle:HTMLCanvasElement,?inScrollRect:Rectangle)
 	{
 		ClosePolygon(true);
 
@@ -406,32 +470,41 @@ class Graphics
 
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
-				ctx.save();
-				ctx.clip();
-				var img = bitmap.texture_buffer;
-				var matrix = bitmap.matrix;
+				if (jeash.Lib.mOpenGL)
+				{
+					gl.activeTexture(gl.TEXTURE0);
+					gl.bindTexture(gl.TEXTURE_2D, bitmap.texture_buffer);
+					gl.uniform1i(gl.getUniformLocation(mShaderGL, "uTexture"), 0);
+					// TODO: what to do with bitmap.matrix ?
 
-				try {
-					if(matrix != null) {
-						ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
-					}
-					ctx.drawImage( img, 0, 0 );
+				} else {
+					ctx.save();
+					ctx.clip();
+					var img = bitmap.texture_buffer;
+					var matrix = bitmap.matrix;
 
-					ctx.restore();
-				} catch (e:Dynamic) {
 					try {
-						// fallback - should work for most canvas-browsers
+						if(matrix != null) {
+							ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
+						}
+						ctx.drawImage( img, 0, 0 );
 
-						var svd = Decompose.singularValueDecomposition( matrix );   
-						ctx.translate( svd.dx , svd.dy  );
-						ctx.rotate( -svd.angle1 );
-						ctx.scale( svd.sx, svd.sy );
-						ctx.rotate( -svd.angle2 );
+						ctx.restore();
+					} catch (e:Dynamic) {
+						try {
+							// fallback - should work for most canvas-browsers
 
-						ctx.drawImage( img, 0,0 );
-						ctx.restore();
-					} catch (e2:Dynamic) {
-						ctx.restore();
+							var svd = Decompose.singularValueDecomposition( matrix );   
+							ctx.translate( svd.dx , svd.dy  );
+							ctx.rotate( -svd.angle1 );
+							ctx.scale( svd.sx, svd.sy );
+							ctx.rotate( -svd.angle2 );
+
+							ctx.drawImage( img, 0,0 );
+							ctx.restore();
+						} catch (e2:Dynamic) {
+							ctx.restore();
+						}
 					}
 				}
 			}
@@ -439,9 +512,8 @@ class Graphics
 		}
 
 		// merge into parent canvas context
-		if (inMaskHandle != null && len > 0) {
+		if (!jeash.Lib.mOpenGL && inMaskHandle != null && len > 0) {
 			var maskCtx = inMaskHandle.getContext('2d');
-			//maskCtx.drawImage(mSurface, inMatrix.tx - mSurfaceOffset, inMatrix.ty - mSurfaceOffset );
 			maskCtx.drawImage(mSurface, 0, 0);
 		}
 
@@ -449,7 +521,9 @@ class Graphics
 
 	public function HitTest(inX:Int,inY:Int) : Bool
 	{
-		var ctx : CanvasRenderingContext2D = Manager.getScreen();
+		if (jeash.Lib.mOpenGL) return false;
+
+		var ctx : CanvasRenderingContext2D = jeash.Lib.canvas.getContext("2d");
 		ctx.save();
 		for(d in mDrawList)
 		{

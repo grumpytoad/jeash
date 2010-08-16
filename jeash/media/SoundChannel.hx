@@ -43,7 +43,7 @@ class SoundChannel extends flash.events.EventDispatcher {
 	public var soundTransform(default,__setSoundTransform) : SoundTransform;
 
 	private var m_started : Bool;
-	private var m_sound : HtmlAudioElement;
+	private var m_sound : HTMLAudioElement;
 	private var m_parentSound : Sound;
 	private var m_startTime : Int;
 	private var m_loops : Int;
@@ -79,7 +79,7 @@ class SoundChannel extends flash.events.EventDispatcher {
 		return ChannelId;
 	}
 
-	public static function Create(parent:Sound, soundObj:HtmlAudioElement, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel
+	public static function Create(parent:Sound, soundObj:HTMLAudioElement, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel
 	{
 		var snd = new SoundChannel();
 		snd.m_parentSound = parent;

@@ -50,7 +50,7 @@ class Sound extends flash.events.EventDispatcher {
 	private static var s_channels : IntHash<SoundChannel>;
 	private static var s_channelsToStart : List<SoundChannel>;
 
-	private var m_sound : HtmlAudioElement;
+	private var m_sound : HTMLAudioElement;
 	private var m_loaded : Bool;
 
 	public function new(?stream : URLRequest, ?context : SoundLoaderContext) : Void {

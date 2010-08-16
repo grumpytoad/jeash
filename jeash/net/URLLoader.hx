@@ -136,7 +136,7 @@ private class Http extends haxe.Http
 		switch (type) 
 		{
 			case STREAM( dataFormat ):
-				var xmlHttpRequest = new XMLHttpRequest();
+				var xmlHttpRequest : XMLHttpRequest = untyped __new__("XMLHttpRequest");
 
 				switch (dataFormat) {
 					case BINARY: untyped xmlHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');

@@ -180,11 +180,17 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function Clear()
 	{
-		// ideally stage should have a graphic instance
-		var ctx = Lib.canvas.getContext("2d");
-		ctx.translate( 0, 0 );
-		ctx.fillStyle = 'rgba(255,255,255,1);';
-		ctx.fillRect( 0, 0, GetStageWidth(), GetStageHeight() );
+		var ctx = Lib.canvas.getContext(Lib.context);
+		if ( Lib.mOpenGL )
+		{
+			ctx.viewport(0, 0, Std.int(mWidth), Std.int(mHeight));
+			ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
+		} else {
+			// ideally stage should have a graphic instance
+			ctx.translate( 0, 0 );
+			ctx.fillStyle = 'rgba(255,255,255,1);';
+			ctx.fillRect( 0, 0, GetStageWidth(), GetStageHeight() );
+		}
 
 	}
 

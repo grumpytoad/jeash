@@ -111,7 +111,7 @@ typedef RenderCallbackList = Array<RenderCallback>;
 
 class Manager
 {
-	static var __scr : Html5Node;
+	static var __scr : HTMLElement;
 	static var __evt : Dynamic;
 
 	// Set this to something else if yo do not want it...
@@ -201,23 +201,6 @@ class Manager
 			rightIsDown : false
 		};
 	}
-
-	static public function getScreen() : CanvasRenderingContext2D
-	{
-		return Lib.canvas.getContext('2d');
-	}
-
-	/*
-	public function clear( color : Int )
-	{
-		var ctx = Manager.getScreen();
-		var stage = Lib.current.stage;
-		//ctx.setTransform( 1, 0, 0, 1, 0, 0 );
-		ctx.translate( 0, 0 );
-		ctx.fillStyle = '#' + StringTools.hex( color );
-		ctx.fillRect( 0, 0, stage.GetStageWidth(), stage.GetStageHeight() );
-	}
-	*/
 
 	public function lastKey() : Int
 	{

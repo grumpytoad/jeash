@@ -54,9 +54,10 @@ class Lib
 {
 	var mKilled:Bool;
 	static var mMe:Lib;
-#if js
-	public static var canvas(GetCanvas,null):HtmlCanvasElement;
-#end
+	static var priority = ["webgl", "experimental-webgl", "2d", "swf"];
+	//static var priority = [ "2d", "swf"];
+	public static var context(default,null):String;
+	public static var canvas(GetCanvas,null):HTMLCanvasElement;
 	public static var current(GetCurrent,null):MovieClip;
 	public static var debug = false;
 	static var mShowCursor = true;
@@ -86,6 +87,7 @@ class Lib
 
 	var mManager : Manager;
 	var mArgs:Array<String>;
+
 
 	function new(inName:String,inWidth:Int,inHeight:Int,?inFullScreen:Null<Bool>,?inResizable:Null<Bool>,?cb:Void->Void)
 	{
@@ -122,7 +124,7 @@ class Lib
 			flash.Manager.SetCursor( mShowCursor ? 1 : 0 );
 	}
 
-	static public function GetCanvas() : HtmlCanvasElement
+	static function GetCanvas() : HTMLCanvasElement
 	{
 		untyped
 		{
@@ -130,10 +132,50 @@ class Lib
 			{
 				if ( document == null ) throw "Document not loaded yet, cannot create root canvas!";
 				Lib.canvas = document.createElement("canvas");
-				Bootstrap();
+				for (ctx in priority)
+					try
+					{
+
+						if (ctx == "swf" || Lib.canvas.getContext(ctx)!=null)
+						{
+							Lib.context = ctx;
+							if ( ctx.indexOf("webgl") >= 0 )
+								mOpenGL = true;
+							break;
+						}
+					} catch (e:Dynamic) { }
+
+				if ( Lib.context != "swf" )
+				{
+					Bootstrap();
+					if ( mOpenGL ) InitGL();
+					starttime = haxe.Timer.stamp();
+				} else {
+					LoadSwf();
+				}
 			}
 			return Lib.canvas;
 		}
+	}
+
+	static function LoadSwf()
+	{
+		
+	}
+
+	static function InitGL()
+	{
+		var gl : WebGLRenderingContext = Lib.canvas.getContext(Lib.context);
+		var stage = GetStage();
+		gl.viewport(0, 0, Std.int(stage.width), Std.int(stage.height));
+
+		// TODO: implement background color
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.enable(gl.DEPTH_TEST);
+		gl.enable(gl.BLEND);
+		gl.enable(gl.CULL_FACE);
+
+
 	}
 
 	static public function GetCurrent() : MovieClip
@@ -153,8 +195,11 @@ class Lib
 		return Std.is(v,c) ? v : null;
 	}
 
-	static var starttime : Float = haxe.Timer.stamp();
-	static public function getTimer() :Int { return ( Std.int(haxe.Timer.stamp() - starttime )*1000); }
+	static var starttime : Float;
+	static public function getTimer() :Int 
+	{ 
+		return Std.int((haxe.Timer.stamp() - starttime )*1000); 
+	}
 
 #if !flash
 	static public function GetStage() 
@@ -186,9 +231,9 @@ class Lib
 				mStage.TabChange( shift ? -1 : 1,code);
 
 			default:
-				var event = new KeyboardEvent(
-						pressed ? KeyboardEvent.KEY_DOWN:
-						KeyboardEvent.KEY_UP,
+				var event = new flash.events.KeyboardEvent(
+						pressed ? flash.events.KeyboardEvent.KEY_DOWN:
+						flash.events.KeyboardEvent.KEY_UP,
 						true,false,
 						inChar,
 						Keyboard.ConvertCode(code, shift),
@@ -481,10 +526,8 @@ class Lib
 	var frame : Int;
 	static var interval : Int;
 	function setTimer ( ?next :Int ) {
-		//if (mShowFPS)
-		mManager.RenderFPS();
 
-		if ( timer != null ) untyped window.clearInterval( timer );
+		//if ( timer != null ) untyped window.clearInterval( timer );
 		if ( next == null ) {
 			if ( mStage != null ) {
 				if ( interval == null ) interval = Std.int( 1000.0/mStage.frameRate );
@@ -494,11 +537,21 @@ class Lib
 			}
 		}
 
-		timer = untyped window.setInterval( Step, next );
+		untyped
+		{
+			if ( window.postMessage != null )
+			{
+				window.addEventListener( 'message', Step, false );
+				window.postMessage('a', window.location);
+			} else {
+				window.setInterval( Step, next );
+			}
+		}
 	}
 #end
 
-	function Step () {
+	function Step () 
+	{
 
 
 		mStage.Clear();
@@ -511,7 +564,11 @@ class Lib
 		mStage.Broadcast(event);
 		mStage.RenderAll();
 
-		setTimer();
+		//setTimer();
+		if ( untyped window.postMessage != null )
+		{
+			untyped window.postMessage('a', window.location);
+			}
 	}
 
 	function CaptureEvent(evt:Event)
@@ -554,7 +611,7 @@ class Lib
 		setTimer();
 	}
 
-	static public function Run( tgt:HtmlCanvasElement, width:Int, height:Int ) 
+	static public function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );
 			Lib.canvas.width = width;
@@ -615,7 +672,7 @@ class Lib
 	{
 		untyped
 		{
-			var tgt = document.getElementById('haxe:jeash');
+			var tgt : HTMLDivElement = cast document.getElementById('haxe:jeash');
 			var width : Int;
 			var height : Int;
 			var name : String;

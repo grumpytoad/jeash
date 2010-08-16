@@ -108,7 +108,7 @@ class TextField extends flash.display.InteractiveObject
 	var mSelectionAnchor:Int;
 
 	var mGraphics:Graphics;
-	var mSurface(default,null):HtmlCanvasElement;
+	var mSurface(default,null):HTMLCanvasElement;
 
 	public var mTryFreeType:Bool;
 	public var mDownChar:Int;
@@ -271,7 +271,7 @@ class TextField extends flash.display.InteractiveObject
 		return tf;
 	}
 
-	override public function __Render(inParentMask:HtmlCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
+	override public function __Render(inParentMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
 	{
 		//mGraphics.clear();
 
