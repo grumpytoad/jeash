@@ -385,7 +385,7 @@ class Graphics
 		if ( inMatrix == null ) inMatrix = new Matrix();
 
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
-		ctx.transform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
+		ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
 
 		var len : Int = mDrawList.length;
 		for ( i in 0...len ) {
