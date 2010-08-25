@@ -2228,6 +2228,7 @@ extern interface HTMLImageElement implements HTMLElement {
     public var useMap:          DOMString;
     public var vspace:          Int;
     public var width:           Int;
+    public var complete:	Bool; // not w3c
 }
 //Tested
 extern interface HTMLObjectElement implements HTMLElement {

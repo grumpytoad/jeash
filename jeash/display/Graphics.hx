@@ -382,6 +382,9 @@ class Graphics
 	{
 		ClosePolygon(true);
 
+		// clear the canvas
+		ClearCanvas();
+
 		if ( inMatrix == null ) inMatrix = new Matrix();
 
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
