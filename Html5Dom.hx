@@ -29,6 +29,20 @@ typedef UInt = Int;
 typedef HTMLAudioElement = Dynamic;
 typedef HTMLVideoElement = Dynamic;
 
+/*
+* <----------------- DomParser Non-Standardised ------------------>
+*/
+
+extern class DOMParser 
+{
+	function new():Void;
+	function parseFromString( input:String, type:String ):Document;
+}
+
+/*
+* <----------------- WebGL IDL Port ------------------>
+*/
+
 typedef GLenum = Int;
 typedef GLboolean = Bool;
 typedef GLbitfield = Int;
