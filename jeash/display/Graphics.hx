@@ -261,6 +261,7 @@ class Graphics
 	// Lines ...
 	private var mCurrentLine:LineJob;
 	private var mLineJobs:LineJobs;
+	private var mNoClip:Bool;
 
 	// List of drawing commands ...
 	private var mDrawList:DrawList;
@@ -274,9 +275,11 @@ class Graphics
 	public var mSurfaceOffset:Int;
 	public var mMatrix:Matrix;
 
+
 	// GL shader
 	public var mShaderGL:WebGLProgram;
-	static var gl:WebGLRenderingContext;
+
+	private static var gl:WebGLRenderingContext;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -305,6 +308,7 @@ class Graphics
 		mFillColour = 0x000000;
 		mFillAlpha = 0.0;
 		mLastMoveID = 0;
+		mNoClip = false;
 
 		ClearLine();
 		mLineJobs = [];
@@ -482,7 +486,10 @@ class Graphics
 
 				} else {
 					ctx.save();
-					ctx.clip();
+
+					if (!mNoClip)
+						ctx.clip();
+
 					var img = bitmap.texture_buffer;
 					var matrix = bitmap.matrix;
 
@@ -700,6 +707,11 @@ class Graphics
 
 	public function drawRect(x:Float,y:Float,width:Float,height:Float)
 	{
+		if (width == 0 && height == 0) 
+			mNoClip = true;
+		else
+			mNoClip = false;
+
 		ClosePolygon(false);
 
 		moveTo(x,y);
