@@ -564,7 +564,6 @@ class Lib
 		mStage.Broadcast(event);
 		mStage.RenderAll();
 
-		//setTimer();
 		if ( untyped window.postMessage != null )
 		{
 			untyped window.postMessage('a', window.location);

@@ -555,10 +555,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				var m = mFullMatrix.clone();
 				m.tx -= inTX;
 				m.ty -= inTY;
-				gfx.__Render(m,inMask,inScrollRect);
+				gfx.__Render(m,inMask,inScrollRect, alpha);
 			}
 			else
-				gfx.__Render(mFullMatrix,inMask,null);
+				gfx.__Render(mFullMatrix,inMask,null, alpha);
 
 			if (jeash.Lib.mOpenGL)
 			{

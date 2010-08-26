@@ -382,7 +382,7 @@ class Graphics
 		return gradient;
 	}
 
-	public function __Render(?inMatrix:Matrix,?inMaskHandle:HTMLCanvasElement,?inScrollRect:Rectangle)
+	public function __Render(?inMatrix:Matrix,?inMaskHandle:HTMLCanvasElement,?inScrollRect:Rectangle, alpha = 1.0)
 	{
 		ClosePolygon(true);
 
@@ -392,6 +392,8 @@ class Graphics
 		if ( inMatrix == null ) inMatrix = new Matrix();
 
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
+
+		ctx.globalAlpha = alpha;
 		ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
 
 		var len : Int = mDrawList.length;
