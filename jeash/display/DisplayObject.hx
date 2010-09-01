@@ -30,6 +30,7 @@ import Html5Dom;
 
 import flash.accessibility.AccessibilityProperties;
 import flash.display.Stage;
+import flash.display.Graphics;
 import flash.events.EventDispatcher;
 import flash.events.Event;
 import flash.display.DisplayObjectContainer;
@@ -92,8 +93,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mIndices:Array<Int>;
 
 	var mVertexBuffer(default,null):WebGLBuffer;
-	var mTextureCoordsBuffer(default,null):WebGLBuffer;
-	var mIndicesBuffer(default,null):WebGLBuffer;
+	var mTextureCoordBuffer(default,null):WebGLBuffer;
+	var mIndexBuffer(default,null):WebGLBuffer;
 
 	var mX:Float;
 	var mY:Float;
@@ -175,42 +176,31 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			// a full GPU accelerated 3D environment.
 
 			mVertices = [      
-				0.0,  1.0,  0.0,
-			       -1.0, -1.0,  0.0,
-			        1.0, -1.0,  0.0
+				1.0,  1.0,  0.0,
+			       -1.0, 1.0,  0.0,
+			        1.0, -1.0,  0.0,
+				-1.0, -1.0, 0.0
 			];
+
 			mTextureCoords = [
-				0.0, 0.0,
 				1.0, 0.0,
+				0.0, 0.0,
 				1.0, 1.0,
 				0.0, 1.0,
 			];
-			mIndices = [
-				0, 1, 2,      
-				0, 2, 3
-			];
 
 			var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
-			mVertexBuffer 		= gl.createBuffer();
-			mTextureCoordsBuffer 	= gl.createBuffer();
-			mIndicesBuffer		= gl.createBuffer();
+			mVertexBuffer = gl.createBuffer();
 			
 			gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
-			gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordsBuffer);
-			gl.bindBuffer(gl.ARRAY_BUFFER, mIndicesBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(mVertices), gl.STATIC_DRAW);
 
-			UpdateBuffers();
+			mTextureCoordBuffer = gl.createBuffer();
+			
+			gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(mTextureCoords), gl.STATIC_DRAW);
+
 		}
-	}
-
-	public function UpdateBuffers()
-	{
-		var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
-
-		gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(mVertices), gl.STATIC_DRAW);
-		gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(mTextureCoords), gl.STATIC_DRAW);
-		gl.bufferData(gl.ARRAY_BUFFER, new WebGLUnsignedShortArray(mIndices), gl.STATIC_DRAW);
-		
 	}
 
 	override public function toString() { return name; }
@@ -539,37 +529,36 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			Graphics.setBlendMode(blend);
 
-			var gl : WebGLRenderingContext = null;
-			if (jeash.Lib.mOpenGL)
-			{
-				gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
-				gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
-				gl.enableVertexAttribArray( gl.getAttribLocation(gfx.mShaderGL, "mVertices") );
-				gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "mVertices" ), Std.int(mVertices.length / 3), gl.FLOAT, false, 0, 0 );
-				gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "mTextureCoords" ), Std.int(mTextureCoords.length / 2), gl.FLOAT, false, 0, 0 );
-				
-			}
-
 			if (inScrollRect!=null)
 			{
 				var m = mFullMatrix.clone();
 				m.tx -= inTX;
 				m.ty -= inTY;
-				gfx.__Render(m,inMask,inScrollRect, alpha);
+				gfx.__Render(m,inMask,inScrollRect);
 			}
 			else
-				gfx.__Render(mFullMatrix,inMask,null, alpha);
+				gfx.__Render(mFullMatrix,inMask,null);
 
-			if (jeash.Lib.mOpenGL)
+			if (jeash.Lib.mOpenGL && gfx.mDrawList.length > 0)
 			{
+				var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
 
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mVertexBuffer);
+				gl.useProgram(gfx.mShaderGL);
 
-				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uPMatrix" ), false, new WebGLFloatArray( [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0] ) );
-				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uMVMatrix" ), false, new WebGLFloatArray( GetGLMatrix(mFullMatrix) ) );
+				gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
+				gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aVert" ), 3, gl.FLOAT, false, 0, 0 );
+				gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordBuffer);
+				gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aTexCoord" ), 2, gl.FLOAT, false, 0, 0 );
 
-				gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
 
+				gl.activeTexture(gl.TEXTURE0);
+				gl.bindTexture(gl.TEXTURE_2D, gfx.mTextureGL);
+
+				gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
+
+				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uMatrix" ), false, new WebGLFloatArray( GetGLMatrix( mFullMatrix ) ) );
+				gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+				//trace(StringTools.hex(gl.getError()));
 			}
 		}
 
@@ -582,9 +571,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			m.a, m.b, 0, m.tx,
 			m.c, m.d, 0, m.ty,
 			0, 0, 1, 0,
-			0, 0, 0, 1
+			0, 0, -1, 1
 		];
 	}
+
 
 	public function __Render(inParentMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
 	{

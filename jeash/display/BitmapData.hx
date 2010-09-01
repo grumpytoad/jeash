@@ -43,18 +43,16 @@ import flash.filters.BitmapFilter;
 
 import haxe.xml.Check;
 
-typedef TextureResource = {}
 typedef LoadData =
 {
 	var image : HTMLImageElement;
-	var texture:TextureResource;
+	var texture:HTMLCanvasElement;
 	var inLoader:LoaderInfo;
 }
 
 class BitmapData implements IBitmapDrawable
 {
 	private var mTextureBuffer:HTMLCanvasElement;
-	private var mGLTextureBuffer:WebGLTexture;
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
@@ -65,7 +63,6 @@ class BitmapData implements IBitmapDrawable
 			?inFillColour:Int)
 	{
 
-		if ( Lib.mOpenGL ) mGLTextureBuffer = Lib.canvas.getContext(Lib.context).createTexture();
 
 		// TODO: the following was a hack in the canvas-nme days in
 		// order to load embedded resources, in order to emulate the
@@ -225,24 +222,12 @@ class BitmapData implements IBitmapDrawable
 
 	function OnLoad( data:LoadData, e)
 	{
-		if ( Lib.mOpenGL )
-		{
-			var gl : WebGLRenderingContext = Lib.canvas.getContext(Lib.context);
-			gl.bindTexture(gl.TEXTURE_2D, cast data.texture);
+		var canvas : HTMLCanvasElement = cast data.texture;
+		canvas.width = data.image.width;
+		canvas.height = data.image.height;
 
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, data.image);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-		} else {
-			var canvas : HTMLCanvasElement = cast data.texture;
-			canvas.width = data.image.width;
-			canvas.height = data.image.height;
-
-			var ctx : CanvasRenderingContext2D = canvas.getContext(Lib.context);
-			ctx.drawImage(data.image, 0, 0);
-
-		}
+		var ctx : CanvasRenderingContext2D = canvas.getContext("2d");
+		ctx.drawImage(data.image, 0, 0);
 
 		var e = new flash.events.Event( flash.events.Event.COMPLETE );
 		e.target = data.inLoader;
@@ -254,8 +239,7 @@ class BitmapData implements IBitmapDrawable
 		var image : HTMLImageElement = cast js.Lib.document.createElement("img");
 		if ( inLoader != null ) 
 		{
-			var texture : TextureResource = (Lib.mOpenGL) ? cast mGLTextureBuffer : cast mTextureBuffer;
-			var data : LoadData = {image:image, texture: texture, inLoader:inLoader};
+			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:inLoader};
 			image.addEventListener( "load", callback(OnLoad, data), false );
 		}
 		image.src = inFilename;

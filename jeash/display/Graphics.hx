@@ -142,35 +142,34 @@ typedef Texture =
 
 typedef LineJobs = Array<LineJob>;
 
-private class GLTextureShader 
+class GLTextureShader 
 {
 
 	public static inline var mFragmentProgram = '
-		#ifdef GL_ES
+#ifdef GL_ES
 		precision highp float;
-		#endif
+#endif
 
-		varying vec2 vTextureCoord;
+		varying vec2 vTexCoord;
 
-		uniform sampler2 uTexture;
+		uniform sampler2D uSurface;
 
-		void main(voi) {
-			gl_fragColor = texture2D(uTexture, vec2(vTextureCoord.s, vTextureCoord.t));
+		void main(void) {
+			gl_FragColor = texture2D(uSurface, vec2(vTexCoord.s, vTexCoord.t));
 		}
 	';
 
 	public static inline var mVertexProgram = '
-		attribute vec3 mVertices;
-		attribute vec2 mTextureCoords;
+		attribute vec3 aVert;
+		attribute vec2 aTexCoord;
 
-		uniform mat4 uMVMatrix;
-		uniform mat4 uPMatrix;
+		uniform mat4 uMatrix;
 
-		varying vec2 vTextureCoord;
+		varying vec2 vTexCoord;
 
 		void main(void) {
-			gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-			vTextureCoord = aTextureCoord;
+			gl_Position = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0) * uMatrix * vec4(aVert, 1.0);
+			vTexCoord = aTexCoord;
 		}
 	';
 
@@ -256,7 +255,7 @@ class Graphics
 	private var mFillColour:Int;
 	private var mFillAlpha:Float;
 	private var mSolidGradient:Grad;
-	private var mBitmap:Texture;
+	public var mBitmap(default,null):Texture;
 
 	// Lines ...
 	private var mCurrentLine:LineJob;
@@ -264,7 +263,7 @@ class Graphics
 	private var mNoClip:Bool;
 
 	// List of drawing commands ...
-	private var mDrawList:DrawList;
+	public var mDrawList(default,null):DrawList;
 	private var mLineDraws:DrawList;
 
 	// Current position ...
@@ -277,15 +276,17 @@ class Graphics
 
 
 	// GL shader
-	public var mShaderGL:WebGLProgram;
+	public var mShaderGL(default,null):WebGLProgram;
+	public var mTextureGL(default,null):WebGLTexture;
 
 	private static var gl:WebGLRenderingContext;
 
+	static var c:Int = 0;
 	public function new(?inSurface:HTMLCanvasElement)
 	{
 		if ( inSurface == null ) {
 			mSurface = cast js.Lib.document.createElement("canvas");
-			mSurface.width = Std.int(jeash.Lib.canvas.width*1.2);
+			mSurface.width = jeash.Lib.canvas.width;
 			mSurface.height = jeash.Lib.canvas.height;
 			mSurfaceOffset = 0;
 
@@ -313,7 +314,7 @@ class Graphics
 		ClearLine();
 		mLineJobs = [];
 
-		if (jeash.Lib.mOpenGL)
+		if (jeash.Lib.mOpenGL )
 		{
 			gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
 
@@ -326,17 +327,31 @@ class Graphics
 			gl.shaderSource(fragmentShader, GLTextureShader.mFragmentProgram);
 			gl.compileShader(fragmentShader);
 
+			if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS))
+				trace( gl.getShaderInfoLog(fragmentShader));
+
 			// compile default vertex shader
 			var vertexShader = gl.createShader(gl.VERTEX_SHADER);
 			gl.shaderSource(vertexShader, GLTextureShader.mVertexProgram);
 			gl.compileShader(vertexShader);
 
+			if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS))
+				trace( gl.getShaderInfoLog(vertexShader));
+
 			gl.attachShader( mShaderGL, fragmentShader );
 			gl.attachShader( mShaderGL, vertexShader ); 
 
 			gl.linkProgram(mShaderGL);
-			gl.useProgram(mShaderGL);
-				
+
+			if (!gl.getProgramParameter(mShaderGL, gl.LINK_STATUS))
+				trace("Could not initialise default shaders");
+
+
+			gl.enableVertexAttribArray( gl.getAttribLocation(mShaderGL, "aVert") );
+			gl.enableVertexAttribArray( gl.getAttribLocation(mShaderGL, "aTexCoord") );
+
+			mTextureGL = gl.createTexture();
+
 		}
 	}
 
@@ -479,14 +494,6 @@ class Graphics
 
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
-				if (jeash.Lib.mOpenGL)
-				{
-					gl.activeTexture(gl.TEXTURE0);
-					gl.bindTexture(gl.TEXTURE_2D, bitmap.texture_buffer);
-					gl.uniform1i(gl.getUniformLocation(mShaderGL, "uTexture"), 0);
-					// TODO: what to do with bitmap.matrix ?
-
-				} else {
 					ctx.save();
 
 					if (!mNoClip)
@@ -518,18 +525,30 @@ class Graphics
 							ctx.restore();
 						}
 					}
-				}
 			}
 
 		}
 
 		// merge into parent canvas context
-		if (!jeash.Lib.mOpenGL && inMaskHandle != null && len > 0) {
-			var maskCtx = inMaskHandle.getContext('2d');
-			maskCtx.drawImage(mSurface, 0, 0);
+		if ( inMaskHandle != null && len > 0) {
+			if (!jeash.Lib.mOpenGL)
+			{
+				var maskCtx = inMaskHandle.getContext('2d');
+				maskCtx.drawImage(mSurface, 0, 0);
+			} else {
+				gl.useProgram(mShaderGL);
+				gl.bindTexture(gl.TEXTURE_2D, mTextureGL);
+
+
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+				gl.bindTexture(gl.TEXTURE_2D, null);
+			}
 		}
 
 	}
+
 
 	public function HitTest(inX:Int,inY:Int) : Bool
 	{

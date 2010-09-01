@@ -43,6 +43,8 @@ import jeash.Manager;
 
 import flash.geom.Point;
 
+import flash.display.Graphics;
+
 /**
  * @author	Hugh Sanderson
  * @author	Lee Sylvester
@@ -166,16 +168,16 @@ class Lib
 	static function InitGL()
 	{
 		var gl : WebGLRenderingContext = Lib.canvas.getContext(Lib.context);
-		var stage = GetStage();
-		gl.viewport(0, 0, Std.int(stage.width), Std.int(stage.height));
+
+		gl.viewport(0, 0, Lib.canvas.width, Lib.canvas.height);
 
 		// TODO: implement background color
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clearColor(1.0, 1.0, 1.0, 1.0);
+		gl.clearDepth(1.0);
 		gl.enable(gl.DEPTH_TEST);
-		gl.enable(gl.BLEND);
-		gl.enable(gl.CULL_FACE);
+		gl.depthFunc(gl.LEQUAL);
 
-
+		// --
 	}
 
 	static public function GetCurrent() : MovieClip

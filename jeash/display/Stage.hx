@@ -177,13 +177,11 @@ class Stage extends flash.display.DisplayObjectContainer
 		mStageMatrix = new Matrix(mScaleX,0,0,mScaleY);
 	}
 
-
 	public function Clear()
 	{
 		var ctx = Lib.canvas.getContext(Lib.context);
 		if ( Lib.mOpenGL )
 		{
-			ctx.viewport(0, 0, Std.int(mWidth), Std.int(mHeight));
 			ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
 		} else {
 			// ideally stage should have a graphic instance

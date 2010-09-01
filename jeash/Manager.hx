@@ -147,18 +147,12 @@ class Manager
 	{
 		__scr = untyped document.getElementById(title);
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
-		Lib.canvas.width = width;
-		Lib.canvas.height = height;
 		__scr.appendChild( Lib.canvas );
 
 		mFrameCount = 0;
 
 		//__scr.onkeydown = setEvent;
 		//__scr.onkeyup = setEvent;
-		//untyped document.onkeydown = addEvent;
-		//untyped document.onkeyup = addEvent;
-
-		graphics = new Graphics(Lib.canvas);
 	}
 
 	public function OnResize(inW:Int, inH:Int)
