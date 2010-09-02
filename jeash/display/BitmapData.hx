@@ -48,6 +48,7 @@ typedef LoadData =
 	var image : HTMLImageElement;
 	var texture:HTMLCanvasElement;
 	var inLoader:LoaderInfo;
+	var bitmapData:BitmapData;
 }
 
 class BitmapData implements IBitmapDrawable
@@ -229,6 +230,12 @@ class BitmapData implements IBitmapDrawable
 		var ctx : CanvasRenderingContext2D = canvas.getContext("2d");
 		ctx.drawImage(data.image, 0, 0);
 
+		data.bitmapData.width = data.image.width;
+		data.bitmapData.height = data.image.height;
+
+		data.inLoader.content.width = data.image.width;
+		data.inLoader.content.height = data.image.height;
+
 		var e = new flash.events.Event( flash.events.Event.COMPLETE );
 		e.target = data.inLoader;
 		data.inLoader.dispatchEvent( e );
@@ -239,7 +246,7 @@ class BitmapData implements IBitmapDrawable
 		var image : HTMLImageElement = cast js.Lib.document.createElement("img");
 		if ( inLoader != null ) 
 		{
-			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:inLoader};
+			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:inLoader, bitmapData:this};
 			image.addEventListener( "load", callback(OnLoad, data), false );
 		}
 		image.src = inFilename;

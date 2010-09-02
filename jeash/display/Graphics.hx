@@ -496,6 +496,7 @@ class Graphics
 			if ( bitmap != null) {
 					ctx.save();
 
+					// Hack to workaround premature width calculations during async image load
 					if (!mNoClip)
 						ctx.clip();
 
@@ -728,6 +729,7 @@ class Graphics
 
 	public function drawRect(x:Float,y:Float,width:Float,height:Float)
 	{
+		// Hack to workaround premature width calculations during async image load
 		if (width == 0 && height == 0) 
 			mNoClip = true;
 		else
@@ -905,13 +907,12 @@ class Graphics
 		if (mDrawList.length == 0)
 			return new Rectangle();
 
-		//TODO build this as points are added, and store in var
 		var maxX, minX, maxY, minY;
 		maxX = minX = mDrawList[0].points[0].x;
 		maxY = minY = mDrawList[0].points[0].y;
-		for (dl in mDrawList) {
-			for (p in dl.points) {
-				var t = inMatrix.transformPoint(new Point(p.x, p.y));
+		var findExtentByMatrixAndPoint = function (m:Matrix, p:Point)
+		{
+				var t = m.transformPoint(new Point(p.x, p.y));
 				if (t.x > maxX) {
 					maxX = t.x;
 				}
@@ -924,7 +925,25 @@ class Graphics
 				if (t.y < minY) {
 					minY = t.y;
 				}
+		}
+		for (dl in mDrawList) {
+			for (p in dl.points) {
+				findExtentByMatrixAndPoint(inMatrix, new Point(p.x, p.y));
 			}
+			if (dl.bitmap != null)
+			{
+				var matrix = if (dl.bitmap.matrix != null) 
+					dl.bitmap.matrix;
+				else
+					new Matrix();
+
+				var width = dl.bitmap.texture_buffer.width;
+				var height = dl.bitmap.texture_buffer.height;
+				findExtentByMatrixAndPoint(matrix, new Point(0,0));
+				findExtentByMatrixAndPoint(matrix, new Point(width,0));
+				findExtentByMatrixAndPoint(matrix, new Point(0,height));
+				findExtentByMatrixAndPoint(matrix, new Point(width,height));
+			} 
 		}
 		return new Rectangle(minX, minY, maxX-minX, maxY-minY);
 	}
