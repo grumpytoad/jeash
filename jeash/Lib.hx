@@ -90,6 +90,7 @@ class Lib
 	var mManager : Manager;
 	var mArgs:Array<String>;
 
+	static inline var VENDOR_HTML_TAG = "data-";
 
 	function new(inName:String,inWidth:Int,inHeight:Int,?inFullScreen:Null<Bool>,?inResizable:Null<Bool>,?cb:Void->Void)
 	{
@@ -209,7 +210,6 @@ class Lib
 		if ( mStage == null )
 		{
 			mStage = new flash.display.Stage(Lib.canvas.width,Lib.canvas.height);
-			mStage.frameRate = 100;
 			mStage.addChild(GetCurrent());
 		}
 
@@ -523,55 +523,6 @@ class Lib
 
 #end
 
-#if js
-	var timer : Dynamic;
-	var frame : Int;
-	static var interval : Int;
-	function setTimer ( ?next :Int ) {
-
-		//if ( timer != null ) untyped window.clearInterval( timer );
-		if ( next == null ) {
-			if ( mStage != null ) {
-				if ( interval == null ) interval = Std.int( 1000.0/mStage.frameRate );
-				next = interval;
-			} else {
-				next = 1;
-			}
-		}
-
-		untyped
-		{
-			if ( window.postMessage != null )
-			{
-				window.addEventListener( 'message', Step, false );
-				window.postMessage('a', window.location);
-			} else {
-				window.setInterval( Step, next );
-			}
-		}
-	}
-#end
-
-	function Step () 
-	{
-
-
-		mStage.Clear();
-		//mManager.clear(mStage.backgroundColor);
-
-		// Process pending timers ...
-		flash.Timer.CheckTimers();
-		// Send frame-enter event
-		var event = new flash.events.Event( flash.events.Event.ENTER_FRAME );
-		mStage.Broadcast(event);
-		mStage.RenderAll();
-
-		if ( untyped window.postMessage != null )
-		{
-			untyped window.postMessage('a', window.location);
-			}
-	}
-
 	function CaptureEvent(evt:Event)
 	{
 		switch(evt.type)
@@ -609,7 +560,7 @@ class Lib
 	function MyRun( )
 	{
 		mManager.ResetFPS();
-		setTimer();
+		GetStage().SetTimer();
 	}
 
 	static public function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
@@ -626,6 +577,20 @@ class Lib
 						}
 						});
 
+
+			for ( i in 0...tgt.attributes.length)
+			{
+				var attr : Attr = cast tgt.attributes.item(i);
+				if (StringTools.startsWith(attr.name, VENDOR_HTML_TAG))
+				{
+					switch (attr.name)
+					{
+						case VENDOR_HTML_TAG + 'framerate':
+							GetStage().frameRate = Std.parseFloat(attr.value);
+						default:
+					}
+				}
+			}
 
 			mMe.MyRun();
 			return mMe;

@@ -26,6 +26,8 @@
 
 package jeash.display;
 
+import Html5Dom;
+
 import flash.Lib;
 import flash.Manager;
 import flash.geom.Matrix;
@@ -36,14 +38,17 @@ import flash.geom.Point;
 
 class Stage extends flash.display.DisplayObjectContainer
 {
-	var mWidth:Int;
-	var mHeight:Int;
-	var mWindowWidth:Int;
-	var mWindowHeight:Int;
+	var mWidth : Int;
+	var mHeight : Int;
+	var mWindowWidth : Int;
+	var mWindowHeight : Int;
+	var mTimer : Dynamic;
+	var mInterval : Int;
+	var mFastMode : Bool;
 
 	public var stageWidth(GetStageWidth,null):Int;
 	public var stageHeight(GetStageHeight,null):Int;
-	public var frameRate(default,default):Float;
+	public var frameRate(default,SetFrameRate):Float;
 	public var quality(GetQuality,SetQuality):String;
 	public var scaleMode:StageScaleMode;
 	public var align:flash.display.StageAlign;
@@ -56,6 +61,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	private var mStageMatrix:Matrix;
 
 	private var mFocusObject : InteractiveObject;
+	static inline var DEFAULT_FRAMERATE = 1000.0;
 
 	public function new(inWidth:Int,inHeight:Int)
 	{
@@ -69,12 +75,13 @@ class Stage extends flash.display.DisplayObjectContainer
 		RecalcScale();
 		tabEnabled = true;
 		// fast as possible ...
-		frameRate=0;
+		frameRate=DEFAULT_FRAMERATE;
 		SetBackgroundColour(0xffffff);
 		name = "Stage";
 		loaderInfo = LoaderInfo.create(null);
 		loaderInfo.parameters.width = Std.string(mWidth);
 		loaderInfo.parameters.height = Std.string(mHeight);
+		
 	}
 
 	public function getObjectsUnderPoint(point:Point)
@@ -94,7 +101,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		mWindowWidth = mWidth = inW;
 		mWindowHeight = mHeight = inH;
 		RecalcScale();
-		var event = new Event( Event.RESIZE );
+		var event = new flash.events.Event( flash.events.Event.RESIZE );
 		event.target = this;
 		Broadcast(event);
 	}
@@ -114,7 +121,7 @@ class Stage extends flash.display.DisplayObjectContainer
 			if (mFocusObject!=null)
 			{
 				mFocusObject.OnFocusOut();
-				var event = new FocusEvent(FocusEvent.FOCUS_OUT, true, false, mFocusObject );
+				var event = new flash.events.FocusEvent(flash.events.FocusEvent.FOCUS_OUT, true, false, mFocusObject );
 				event.relatedObject = inObj;
 
 				Lib.SendEventToObject(event,mFocusObject);
@@ -126,7 +133,7 @@ class Stage extends flash.display.DisplayObjectContainer
 			if (mFocusObject!=null)
 			{
 				mFocusObject.OnFocusIn(inKeyCode<0);
-				var event = new FocusEvent(FocusEvent.FOCUS_IN, true, false, inObj );
+				var event = new flash.events.FocusEvent(flash.events.FocusEvent.FOCUS_IN, true, false, inObj );
 				event.relatedObject = old;
 
 				Lib.SendEventToObject(event,mFocusObject);
@@ -263,10 +270,50 @@ class Stage extends flash.display.DisplayObjectContainer
 		return StageQuality.BEST;
 	}
 
+	function SetFrameRate(speed:Float):Float
+	{
+		var window : Window = cast js.Lib.window;
+		if (speed == 0 && window.postMessage != null)
+			mFastMode = true;
+		else
+		{
+			mFastMode = false;
+			mInterval = Std.int( 1000.0/speed );
+		}
 
-#if !js
-	static var nme_init_view = nme.Loader.load("nme_init_view",2);
-#end
+		SetTimer();
+
+		this.frameRate = speed;
+		return speed;
+	}
+
+	public function SetTimer () 
+	{
+		var window : Window = cast js.Lib.window;
+		window.clearInterval( mTimer );
+		if ( mFastMode )
+		{
+			window.addEventListener( 'message', Step, false );
+			window.postMessage('a', cast window.location);
+		} else {
+			mTimer = window.setInterval( Step, mInterval, [] );
+		}
+	}
+
+	function Step (?_) 
+	{
+
+		this.Clear();
+		//mManager.clear(mStage.backgroundColor);
+
+		// Send frame-enter event
+		var event = new flash.events.Event( flash.events.Event.ENTER_FRAME );
+		this.Broadcast(event);
+		this.RenderAll();
+
+		if ( mFastMode )
+			untyped window.postMessage('a', window.location);
+	}
 
 }
 
