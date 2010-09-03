@@ -271,9 +271,8 @@ class Graphics
 	private var mPenY:Float;
 	private var mLastMoveID:Int;
 
-	public var mSurfaceOffset:Int;
-	public var mMatrix:Matrix;
-
+	public var mMatrix(default,null):Matrix;
+	public var mSurfaceAlpha(null,default):Float;
 
 	// GL shader
 	public var mShaderGL(default,null):WebGLProgram;
@@ -288,7 +287,6 @@ class Graphics
 			mSurface = cast js.Lib.document.createElement("canvas");
 			mSurface.width = jeash.Lib.canvas.width;
 			mSurface.height = jeash.Lib.canvas.height;
-			mSurfaceOffset = 0;
 
 		} else {
 			mSurface = inSurface;
@@ -310,6 +308,7 @@ class Graphics
 		mFillAlpha = 0.0;
 		mLastMoveID = 0;
 		mNoClip = false;
+		mSurfaceAlpha = 1.0;
 
 		ClearLine();
 		mLineJobs = [];
@@ -397,7 +396,7 @@ class Graphics
 		return gradient;
 	}
 
-	public function __Render(?inMatrix:Matrix,?inMaskHandle:HTMLCanvasElement,?inScrollRect:Rectangle, alpha = 1.0)
+	public function __Render(?inMatrix:Matrix,?inMaskHandle:HTMLCanvasElement,?inScrollRect:Rectangle)
 	{
 		ClosePolygon(true);
 
@@ -408,7 +407,7 @@ class Graphics
 
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
 
-		ctx.globalAlpha = alpha;
+		ctx.globalAlpha = mSurfaceAlpha;
 		ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
 
 		var len : Int = mDrawList.length;

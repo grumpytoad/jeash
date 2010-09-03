@@ -61,7 +61,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var scale9Grid(GetScale9Grid,SetScale9Grid):Rectangle;
 #end
 	public var accessibilityProperties:AccessibilityProperties;
-	public var alpha:Float;
+	public var alpha(default,SetAlpha):Float;
 	public var name(default,default):String;
 	public var cacheAsBitmap:Bool;
 	public var width(GetWidth,SetWidth):Float;
@@ -704,10 +704,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	*/
 	public function GetFocusObjects(outObjs:Array<InteractiveObject>) { }
-	public inline function __BlendIndex():Int
+	inline function __BlendIndex():Int
 	{
 		return blendMode == null ? Graphics.BLEND_NORMAL : Type.enumIndex(blendMode);
 	}
 
+	function SetAlpha(alpha:Float):Float
+	{
+		var gfx = GetGraphics();
+		if (gfx!=null && alpha >= 0.0 && alpha <= 1.0) gfx.mSurfaceAlpha = alpha;
+		return alpha;
+	}
 }
 
