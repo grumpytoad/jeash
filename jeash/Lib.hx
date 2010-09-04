@@ -183,7 +183,7 @@ class Lib
 					if ( mOpenGL ) InitGL();
 					starttime = haxe.Timer.stamp();
 				} else {
-					throw "Swf deployed, forcing execution failure.";
+					//throw "Swf deployed, forcing execution failure.";
 				}
 			}
 			return Lib.canvas;
@@ -192,6 +192,10 @@ class Lib
 
 	static function LoadSwf(url:String)
 	{
+		var navigator : Navigator = cast js.Lib.window.navigator;
+		if (navigator.plugins != null && navigator.plugins.length > 0)
+			if ( untyped !navigator.plugins['Shockwave Flash'] ) return false;
+
 		var object : HTMLObjectElement = cast js.Lib.document.createElement("object");
 		object.type = "application/x-shockwave-flash";
 		if (js.Lib.isIE)

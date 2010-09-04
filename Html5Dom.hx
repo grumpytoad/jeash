@@ -3419,7 +3419,9 @@ extern interface Plugin {
     public function namedItem(name:DOMString): Plugin;
 }
 
-extern interface MimeTypeArray {}
+extern interface MimeTypeArray {
+    public var length           (default, null): Int;
+}
 //Tested
 extern interface History {
     public var length           (default, null): Int;
