@@ -56,8 +56,7 @@ class Lib
 {
 	var mKilled:Bool;
 	static var mMe:Lib;
-	static var priority = ["webgl", "experimental-webgl", "2d", "swf"];
-	//static var priority = [ "2d", "swf"];
+	static var mPriority = ["webgl", "experimental-webgl", "2d", "swf"];
 	public static var context(default,null):String;
 	public static var canvas(GetCanvas,null):HTMLCanvasElement;
 	public static var current(GetCurrent,null):MovieClip;
@@ -91,6 +90,23 @@ class Lib
 	var mArgs:Array<String>;
 
 	static inline var VENDOR_HTML_TAG = "data-";
+	static inline var HTML_EVENT_TYPES = [ 
+		'resize', 
+		'mouseup', 
+		'mouseover', 
+		'mouseout', 
+		'mousemove', 
+		'mousedown', 
+		'mousewheel', 
+		'keyup', 
+		'keypress', 
+		'keydown', 
+		'focus', 
+		'dblclick', 
+		'click', 
+		'blur' 
+			];
+	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
 
 	function new(inName:String,inWidth:Int,inHeight:Int,?inFullScreen:Null<Bool>,?inResizable:Null<Bool>,?cb:Void->Void)
 	{
@@ -102,11 +118,13 @@ class Lib
 		mManager = new Manager( inWidth, inHeight, inName, cb );
 	}
 
+	/*
 	public function OnResize(inW:Int, inH:Int)
 	{
 		//mManager.OnResize(inW,inH);
 		mStage.OnResize(inW,inH);
 	}
+	*/
 
 	static public function trace( arg:Dynamic ) 
 	{
@@ -135,12 +153,19 @@ class Lib
 			{
 				if ( document == null ) throw "Document not loaded yet, cannot create root canvas!";
 				Lib.canvas = document.createElement("canvas");
-				for (ctx in priority)
+				ParsePriority();
+
+				var eReg = ~/^swf.*\(([^)]*)\)$/;
+				for (ctx in mPriority)
 					try
 					{
 
-						if (ctx == "swf" || Lib.canvas.getContext(ctx)!=null)
+						if (StringTools.startsWith(ctx, "swf") && eReg.match( ctx ))
 						{
+							Lib.context = ctx;
+							if (LoadSwf(eReg.matched(1))) break;
+
+						} else if (Lib.canvas.getContext(ctx)!=null) {
 							Lib.context = ctx;
 							if ( ctx.indexOf("webgl") >= 0 )
 								mOpenGL = true;
@@ -148,21 +173,40 @@ class Lib
 						}
 					} catch (e:Dynamic) { }
 
-				if ( Lib.context != "swf" )
+				// fallback to 2d context (even if it doesn't work)
+				if ( Lib.context == null ) Lib.context = "2d";
+
+				Bootstrap();
+
+				if ( !StringTools.startsWith(Lib.context, "swf") )
 				{
-					Bootstrap();
 					if ( mOpenGL ) InitGL();
 					starttime = haxe.Timer.stamp();
 				} else {
-					LoadSwf();
+					throw "Swf deployed, forcing execution failure.";
 				}
 			}
 			return Lib.canvas;
 		}
 	}
 
-	static function LoadSwf()
+	static function LoadSwf(url:String)
 	{
+		var object : HTMLObjectElement = cast js.Lib.document.createElement("object");
+		object.type = "application/x-shockwave-flash";
+		if (js.Lib.isIE)
+		{
+			var param : HTMLParamElement = cast js.Lib.document.createElement("param");
+			param.name = "movie";
+			param.value = url;
+			object.appendChild(param);
+		} else {
+			object.data = url;
+		}
+
+		Lib.canvas = untyped object;
+
+		return true;
 		
 	}
 
@@ -563,36 +607,45 @@ class Lib
 		GetStage().SetTimer();
 	}
 
-	static public function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
+	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );
 			Lib.canvas.width = width;
 			Lib.canvas.height = height;
-			GetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
-				ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
-						return switch (pos) {
-						case 0: res | (cur << 16);
-						case 1: res | (cur << 8);
-						case 2: res | (cur);
-						}
-						});
 
-
-			for ( i in 0...tgt.attributes.length)
+			if ( !StringTools.startsWith(Lib.context, "swf") )
 			{
-				var attr : Attr = cast tgt.attributes.item(i);
-				if (StringTools.startsWith(attr.name, VENDOR_HTML_TAG))
+				for ( i in 0...tgt.attributes.length)
 				{
-					switch (attr.name)
+					var attr : Attr = cast tgt.attributes.item(i);
+					if (StringTools.startsWith(attr.name, VENDOR_HTML_TAG))
 					{
-						case VENDOR_HTML_TAG + 'framerate':
-							GetStage().frameRate = Std.parseFloat(attr.value);
-						default:
+						switch (attr.name)
+						{
+							case VENDOR_HTML_TAG + 'framerate':
+								GetStage().frameRate = Std.parseFloat(attr.value);
+							default:
+						}
 					}
 				}
+
+				for (type in HTML_EVENT_TYPES) 
+					tgt.addEventListener(type, mMe.CaptureEvent, false);
+
+				GetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
+					ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
+							return switch (pos) {
+							case 0: res | (cur << 16);
+							case 1: res | (cur << 8);
+							case 2: res | (cur);
+							}
+							});
+
+				GetStage().OnResize(width,height);
+
+				mMe.MyRun();
 			}
 
-			mMe.MyRun();
 			return mMe;
 	}
 
@@ -602,11 +655,13 @@ class Lib
 	}
 
 
+	/*
 	public static function Init(inName:String,inWidth:Int,inHeight:Int,
 			?inFullScreen:Null<Bool>,?inResizable:Null<Bool>,?cb:Void->Void)
 	{
 		mMe = new Lib(inName,inWidth,inHeight,inFullScreen,inResizable,cb);
 	}
+	*/
 
 	static function ParseColor( str:String, cb: Int -> Int -> Int -> Int) 
 	{
@@ -634,11 +689,18 @@ class Lib
 		}
 	}
 
+	static inline function ParsePriority()
+	{
+		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		var attr : Attr = cast tgt.attributes.getNamedItem(VENDOR_HTML_TAG + 'priority');
+		if ( attr != null ) mPriority = attr.value.split(':');
+	}
+
 	static function Bootstrap()
 	{
 		untyped
 		{
-			var tgt : HTMLDivElement = cast document.getElementById('haxe:jeash');
+			var tgt : HTMLDivElement = cast document.getElementById(JEASH_IDENTIFIER);
 			var width : Int;
 			var height : Int;
 			var name : String;
@@ -663,27 +725,8 @@ class Lib
 				height = tgt.clientHeight > 0 ? tgt.clientHeight : Manager.DEFAULT_HEIGHT;
 			}
 
-			var evTypes = [ 
-				'resize', 
-				'mouseup', 
-				'mouseover', 
-				'mouseout', 
-				'mousemove', 
-				'mousedown', 
-				'mousewheel', 
-				'keyup', 
-				'keypress', 
-				'keydown', 
-				'focus', 
-				'dblclick', 
-				'click', 
-				'blur' 
-					];
 			var lib = Run(tgt, width, height);
-			lib.OnResize(width, height);
 
-			for (type in evTypes) 
-				tgt.addEventListener(type, lib.CaptureEvent, false);
 			return lib;
 		}
 	}

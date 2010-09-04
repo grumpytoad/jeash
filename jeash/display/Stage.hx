@@ -272,6 +272,8 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	function SetFrameRate(speed:Float):Float
 	{
+		if ( StringTools.startsWith(Lib.context, "swf") ) return speed;
+
 		var window : Window = cast js.Lib.window;
 		if (speed == 0 && window.postMessage != null)
 			mFastMode = true;
