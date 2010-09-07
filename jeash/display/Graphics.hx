@@ -160,7 +160,7 @@ class GLTextureShader
 	';
 
 	public static inline var mVertexProgram = '
-		attribute vec3 aVert;
+		attribute vec3 aVertPos;
 		attribute vec2 aTexCoord;
 
 		uniform mat4 uMatrix;
@@ -168,7 +168,7 @@ class GLTextureShader
 		varying vec2 vTexCoord;
 
 		void main(void) {
-			gl_Position = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0) * uMatrix * vec4(aVert, 1.0);
+			gl_Position = mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0) * uMatrix * vec4(aVertPos, 1.0);
 			vTexCoord = aTexCoord;
 		}
 	';
@@ -275,8 +275,8 @@ class Graphics
 	public var mSurfaceAlpha(null,default):Float;
 
 	// GL shader
-	public var mShaderGL(default,null):WebGLProgram;
-	public var mTextureGL(default,null):WebGLTexture;
+	public var mShaderGL:WebGLProgram;
+	public var mTextureGL:WebGLTexture;
 
 	private static var gl:WebGLRenderingContext;
 
@@ -315,43 +315,63 @@ class Graphics
 
 		if (jeash.Lib.mOpenGL )
 		{
-			gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
 
 			// initialise shaders
 
-			mShaderGL = gl.createProgram();
+			mShaderGL = CreateShaderGL( GLTextureShader.mFragmentProgram, GLTextureShader.mVertexProgram );
 
-			// compile default fragment shader
-			var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-			gl.shaderSource(fragmentShader, GLTextureShader.mFragmentProgram);
-			gl.compileShader(fragmentShader);
+			// -- 
 
-			if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS))
-				trace( gl.getShaderInfoLog(fragmentShader));
-
-			// compile default vertex shader
-			var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-			gl.shaderSource(vertexShader, GLTextureShader.mVertexProgram);
-			gl.compileShader(vertexShader);
-
-			if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS))
-				trace( gl.getShaderInfoLog(vertexShader));
-
-			gl.attachShader( mShaderGL, fragmentShader );
-			gl.attachShader( mShaderGL, vertexShader ); 
-
-			gl.linkProgram(mShaderGL);
-
-			if (!gl.getProgramParameter(mShaderGL, gl.LINK_STATUS))
-				trace("Could not initialise default shaders");
-
-
-			gl.enableVertexAttribArray( gl.getAttribLocation(mShaderGL, "aVert") );
+			gl.enableVertexAttribArray( gl.getAttribLocation(mShaderGL, "aVertPos") );
+			//gl.enableVertexAttribArray( gl.getAttribLocation(mShaderGL, "aVertNorm") );
 			gl.enableVertexAttribArray( gl.getAttribLocation(mShaderGL, "aTexCoord") );
+
+			// -- 
 
 			mTextureGL = gl.createTexture();
 
+			gl.bindTexture(gl.TEXTURE_2D, mTextureGL);
+
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+
+			gl.bindTexture(gl.TEXTURE_2D, null);
+
 		}
+	}
+
+	public static function CreateShaderGL( fragmentProgram:String, vertexProgram:String )
+	{
+		gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
+
+		var shaderProgram = gl.createProgram();
+
+		// compile default fragment shader
+		var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+		gl.shaderSource(fragmentShader, fragmentProgram);
+		gl.compileShader(fragmentShader);
+
+		if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS))
+			trace( gl.getShaderInfoLog(fragmentShader));
+
+		// compile default vertex shader
+		var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+		gl.shaderSource(vertexShader, vertexProgram);
+		gl.compileShader(vertexShader);
+
+		if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS))
+			trace( gl.getShaderInfoLog(vertexShader));
+
+		gl.attachShader( shaderProgram, fragmentShader );
+		gl.attachShader( shaderProgram, vertexShader ); 
+
+		gl.linkProgram(shaderProgram);
+
+		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS))
+			trace("Could not initialise default shaders");
+
+		return shaderProgram;
 	}
 
 	public function SetSurface(inSurface:Dynamic)
@@ -536,14 +556,8 @@ class Graphics
 				var maskCtx = inMaskHandle.getContext('2d');
 				maskCtx.drawImage(mSurface, 0, 0);
 			} else {
-				gl.useProgram(mShaderGL);
-				gl.bindTexture(gl.TEXTURE_2D, mTextureGL);
-
 
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-				gl.bindTexture(gl.TEXTURE_2D, null);
 			}
 		}
 
