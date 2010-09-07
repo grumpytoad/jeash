@@ -40,6 +40,147 @@ extern class DOMParser
 }
 
 /*
+* <----------------- TypedArray IDL Port ------------------>
+*/
+
+extern interface ArrayBuffer {
+	var byteLength(default,null):Int;
+}
+
+extern interface ArrayBufferView {
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+}
+
+extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	function slice(offset:Int, length:Int):Int8Array;
+}
+
+extern class UInt8Array implements ArrayBufferView, implements ArrayAccess<Int> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	function slice(offset:Int, length:Int):UInt8Array;
+}
+
+extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	function slice(offset:Int, length:Int):Int16Array;
+}
+
+extern class UInt16Array implements ArrayBufferView, implements ArrayAccess<Int> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	function slice(offset:Int, length:Int):UInt16Array;
+}
+
+extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	function slice(offset:Int, length:Int):Int32Array;
+}
+
+extern class UInt32Array implements ArrayBufferView, implements ArrayAccess<Int> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Int>, offset:Int):Void;
+	function slice(offset:Int, length:Int):UInt32Array;
+}
+
+extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Float> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Float>, offset:Int):Void;
+	function slice(offset:Int, length:Int):Float32Array;
+}
+
+extern class Float64Array implements ArrayBufferView, implements ArrayAccess<Float> {
+	var BYTES_PER_ELEMENT:Int;
+
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+	var length(default,null):Int;
+
+	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
+	function set(index:ArrayAccess<Float>, offset:Int):Void;
+	function slice(offset:Int, length:Int):Float64Array;
+}
+
+extern class DataView implements ArrayBufferView {
+	var buffer(default,null):ArrayBuffer;
+	var byteOffset(default,null):ArrayBuffer;
+	var byteLength(default,null):ArrayBuffer;
+
+	function getInt8(byteOffset:Int):Int;
+	function getUInt8(byteOffset:Int):Int;
+	function getInt16(byteOffset:Int, littleEndian:Bool):Int;
+	function getUInt16(byteOffset:Int, littleEndian:Bool):Int;
+	function getInt32(byteOffset:Int, littleEndian:Bool):Int;
+	function getUInt32(byteOffset:Int, littleEndian:Bool):Int;
+	function getFloat(byteOffset:Int, littleEndian:Bool):Float;
+	function getDouble(byteOffset:Int, littleEndian:Bool):Float;
+	function setInt8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setUInt8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setInt16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setUInt16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setInt32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setUInt32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setFloat(byteOffset:Int, value:Float, littleEndian:Bool):Void;
+	function setDouble(byteOffset:Int, value:Float, littleEndian:Bool):Void;
+}
+
+/*
 * <----------------- WebGL IDL Port ------------------>
 */
 
@@ -86,11 +227,6 @@ extern interface WebGLShader implements WebGLObject {
 extern interface WebGLTexture implements WebGLObject {
 }
 
-extern interface WebGLObjectArray {
-	var length(default,null):Int;
-	function get(index:Int):WebGLObject;
-}
-
 extern interface WebGLUniformLocation {
 }
 
@@ -98,223 +234,6 @@ extern interface WebGLActiveInfo {
 	var size(default,null):GLint;
 	var type(default,null):GLenum;
 	var name(default,null):DOMString;
-}
-
-extern class WebGLArrayBuffer {
-	var byteLength(default,null):Int;
-
-	function new (length:Int):Void;
-}
-
-
-extern interface WebGLArray {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-[
-    Constructor(in unsigned long length),
-    Constructor(in WebGLByteArray array),
-    Constructor(in sequence<GLbyte> array),
-    Constructor(in WebGLArrayBuffer buffer, 
-                in optional unsigned long byteOffset, in optional unsigned long length)
-]
-*/
-extern class WebGLByteArray implements WebGLArray, implements ArrayAccess<GLbyte> {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	public var BYTES_PER_ELEMENT : GLsizei;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLbyte;
-	/*
-	   setter void set(in unsigned long index, in GLbyte value);
-	   void set(in WebGLByteArray array, in optional unsigned long offset);
-	   void set(in sequence<GLbyte> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic, value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-[
-    Constructor(in unsigned long length),
-    Constructor(in WebGLUnsignedByteArray array),
-    Constructor(in sequence<GLubyte> array),
-    Constructor(in WebGLArrayBuffer buffer, 
-                in optional unsigned long byteOffset, in optional unsigned long length)
-]
-*/
-extern class WebGLUnsignedByteArray implements WebGLArray, implements ArrayAccess<GLubyte> {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	public var BYTES_PER_ELEMENT : GLsizei;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLubyte;
-	/*
-	   setter void set(in unsigned long index, in GLubyte value);
-	   void set(in WebGLUnsignedByteArray array, in optional unsigned long offset);
-	   void set(in sequence<GLubyte> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic,value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-[
-    Constructor(in unsigned long length),
-    Constructor(in WebGLShortArray array),
-    Constructor(in sequence<GLshort> array),
-    Constructor(in WebGLArrayBuffer buffer, 
-                in optional unsigned long byteOffset, in optional unsigned long length)
-]
-*/
-extern class WebGLShortArray implements WebGLArray, implements ArrayAccess<GLshort> {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	public var BYTES_PER_ELEMENT : GLsizei;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLshort;
-	/*
-	   setter void set(in unsigned long index, in GLshort value);
-	   void set(in WebGLShortArray array, in optional unsigned long offset);
-	   void set(in sequence<GLshort> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic,value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-[
-    Constructor(in unsigned long length),
-    Constructor(in WebGLUnsignedShortArray array),
-    Constructor(in sequence<GLushort> array),
-    Constructor(in WebGLArrayBuffer buffer, 
-                in optional unsigned long byteOffset, in optional unsigned long length)
-]
-*/
-extern class WebGLUnsignedShortArray implements WebGLArray, implements ArrayAccess<GLushort> {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	public var BYTES_PER_ELEMENT : GLsizei;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLushort;
-	/*
-	   setter void set(in unsigned long index, in GLushort value);
-	   void set(in WebGLUnsignedShortArray array, in optional unsigned long offset);
-	   void set(in sequence<GLushort> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic,value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-[
-    Constructor(in unsigned long length),
-    Constructor(in WebGLIntArray array),
-    Constructor(in sequence<GLint> array),
-    Constructor(in WebGLArrayBuffer buffer, 
-                in optional unsigned long byteOffset, in optional unsigned long length)
-]
-*/
-extern class WebGLIntArray implements WebGLArray, implements ArrayAccess<GLint> {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	public var BYTES_PER_ELEMENT : GLsizei;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLint;
-	/*
-	   setter void set(in unsigned long index, in GLint value);
-	   void set(in WebGLIntArray array, in optional unsigned long offset);
-	   void set(in sequence<GLint> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic, value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-[
-    Constructor(in unsigned long length),
-    Constructor(in WebGLUnsignedIntArray array),
-    Constructor(in sequence<GLuint> array),
-    Constructor(in WebGLArrayBuffer buffer, 
-                in optional unsigned long byteOffset, in optional unsigned long length)
-]
-*/
-extern class WebGLUnsignedIntArray implements WebGLArray, implements ArrayAccess<GLuint> {
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	public var BYTES_PER_ELEMENT:GLsizei;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLuint;
-	/*
-	   setter void set(in unsigned long index, in GLuint value);
-	   void set(in WebGLUnsignedIntArray array, in optional unsigned long offset);
-	   void set(in sequence<GLuint> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic, value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
-}
-
-
-/*
-   [
-   Constructor(in unsigned long length),
-   Constructor(in WebGLFloatArray array),
-   Constructor(in sequence<GLfloat> array),
-   Constructor(in WebGLArrayBuffer buffer, 
-   in optional unsigned long byteOffset, in optional unsigned long length)
-   ]
- */
-extern class WebGLFloatArray implements WebGLArray, implements ArrayAccess<GLfloat> { 
-	var buffer(default,null):WebGLArrayBuffer;
-	var byteOffset(default,null):Int;
-	var byteLength(default,null):Int;
-	var length(default,null):Int;
-
-	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function get(index:Int):GLfloat;
-	/*
-	   setter void set(in unsigned long index, in GLfloat value);
-	   void set(in WebGLFloatArray array, in optional unsigned long offset);
-	   void set(in sequence<GLfloat> array, in optional unsigned long offset);
-	 */
-	function set(index:Dynamic, value:Dynamic):Void;
-	function slice(offset:Int,length:Int):WebGLArray;
 }
 
 extern interface WebGLRenderingContext 
@@ -827,7 +746,7 @@ extern interface WebGLRenderingContext
 
     function getActiveAttrib(program:GLuint, index:GLuint):WebGLActiveInfo;
     function getActiveUniform(program:GLuint, index:GLuint):WebGLActiveInfo;
-    function getAttachedShaders(program:GLuint):WebGLObjectArray;
+    function getAttachedShaders(program:GLuint):ArrayAccess<WebGLShader>;
 
     function getAttribLocation(program:WebGLProgram, name:DOMString):GLint;
 
@@ -871,7 +790,7 @@ extern interface WebGLRenderingContext
     function polygonOffset(factor:GLfloat, units:GLfloat):Void;
 
     function readPixels(x:GLint, y:GLint, width:GLsizei, height:GLsizei, 
-                           format:GLenum, type:GLenum):WebGLArray;
+                           format:GLenum, type:GLenum):Void;
 
     function renderbufferStorage(target:GLenum, internalformat:GLenum, 
                              width:GLsizei, height:GLsizei):Void;
@@ -974,7 +893,7 @@ extern interface WebGLRenderingContext
     //function uniform4fv(location:WebGLUniformLocation, v:Array<Float>):Void;
     function uniform4i(location:WebGLUniformLocation, x:GLint, y:GLint, z:GLint, w:GLint):Void;
 
-    function uniform4iv(location:WebGLUniformLocation, v:WebGLIntArray):Void;
+    function uniform4iv(location:WebGLUniformLocation, v:ArrayAccess<Int>):Void;
     //function uniform4iv(location:WebGLUniformLocation, v:Array<Int>):Void;
 
     function uniformMatrix2fv(location:WebGLUniformLocation, transpose:GLboolean, 
