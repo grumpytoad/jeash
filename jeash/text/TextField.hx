@@ -144,7 +144,7 @@ class TextField extends flash.display.InteractiveObject
 		mDownChar = 0;
 		mSelectDrag = -1;
 
-		mTextFormat = defaultTextFormat;
+		//mTextFormat = defaultTextFormat;
 
 		borderColor = 0x000000;
 		border = false;
@@ -280,6 +280,8 @@ class TextField extends flash.display.InteractiveObject
 
 			ctxt.save();
 
+			ctxt.setTransform(mFullMatrix.a, mFullMatrix.b, mFullMatrix.c, mFullMatrix.d, mFullMatrix.tx, mFullMatrix.ty);
+
 			var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
 			var size = textFormat.size;
 			var font = textFormat.font;
@@ -344,6 +346,7 @@ class TextField extends flash.display.InteractiveObject
 		if (inParentMask != null)
 		{
 			var maskCtx = inParentMask.getContext('2d');
+			untyped console.log(inTX, inTY);
 			maskCtx.drawImage(mSurface, inTX, inTY);
 		}
 
