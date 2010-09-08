@@ -129,6 +129,9 @@ class TextField extends flash.display.InteractiveObject
 		maxScrollH = 0;
 		maxScrollV = 1;
 
+		mWidth = 100;
+		mHeight = 100;
+
 		mType = flash.text.TextFieldType.DYNAMIC;
 		autoSize = flash.text.TextFieldAutoSize.NONE;
 		mouseWheelEnabled = true;
