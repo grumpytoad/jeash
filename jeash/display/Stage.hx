@@ -61,7 +61,11 @@ class Stage extends flash.display.DisplayObjectContainer
 	private var mStageMatrix:Matrix;
 
 	private var mFocusObject : InteractiveObject;
-	static inline var DEFAULT_FRAMERATE = 1000.0;
+	static inline var DEFAULT_FRAMERATE = 0.0;
+
+	// for openGL renderers
+	public var mProjMatrix : Array<Float>;
+	static inline var DEFAULT_PROJ_MATRIX = [1., 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0];
 
 	public function new(inWidth:Int,inHeight:Int)
 	{
@@ -81,6 +85,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		loaderInfo = LoaderInfo.create(null);
 		loaderInfo.parameters.width = Std.string(mWidth);
 		loaderInfo.parameters.height = Std.string(mHeight);
+		mProjMatrix = DEFAULT_PROJ_MATRIX;
 		
 	}
 

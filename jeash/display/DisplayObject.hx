@@ -97,10 +97,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mNormItemSize:Int;
 	public var mTexCoordItemSize:Int;
 
-	var mVertexBuffer(default,null):WebGLBuffer;
-	var mNormBuffer(default,null):WebGLBuffer;
-	var mTextureCoordBuffer(default,null):WebGLBuffer;
-	var mIndexBuffer(default,null):WebGLBuffer;
+	public var mVertexBuffer(default,null):WebGLBuffer;
+	public var mNormBuffer(default,null):WebGLBuffer;
+	public var mTextureCoordBuffer(default,null):WebGLBuffer;
+	public var mIndexBuffer(default,null):WebGLBuffer;
 
 	var mX:Float;
 	var mY:Float;
@@ -140,6 +140,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
+
+	// For GL rendering
+	public var viewMatrix:Array<Float>;
 
 	static var TRANSLATE_CHANGE     = 0x01;
 	static var NON_TRANSLATE_CHANGE = 0x02;
@@ -203,6 +206,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mVertexItemSize = 3;
 			mNormItemSize = 3;
 			mTexCoordItemSize = 2;
+
 		}
 	}
 
@@ -234,8 +238,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mIndexBuffer = gl.createBuffer();
 
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new UInt16Array(mIndices), gl.STATIC_DRAW);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mIndices), gl.STATIC_DRAW);
 		}
+
 
 	}
 
@@ -574,31 +579,32 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			else
 				gfx.__Render(mFullMatrix,inMask,null);
 
-			if (jeash.Lib.mOpenGL && gfx.mDrawList.length > 0)
+			if (jeash.Lib.mOpenGL && mVertices != null)
 			{
 				var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
 
 				gl.useProgram(gfx.mShaderGL);
 
-				if (mVertices.length > 0)
+				if (mVertices.length > 0 && gl.getAttribLocation( gfx.mShaderGL, "aVertPos" ) >= 0)
 				{
 					gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
 					gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aVertPos" ), mVertexItemSize, gl.FLOAT, false, 0, 0 );
 				}
 
-				if (mNormals.length > 0)
+				if (mNormals.length > 0 && gl.getAttribLocation( gfx.mShaderGL, "aVertNorm" ) >= 0)
 				{
 					gl.bindBuffer(gl.ARRAY_BUFFER, mNormBuffer);
 					gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aVertNorm" ), mNormItemSize, gl.FLOAT, false, 0, 0 );
 				}
 
-				if (mTextureCoords.length > 0)
+				if (mTextureCoords.length > 0 && gl.getAttribLocation( gfx.mShaderGL, "aTexCoord" ) >= 0)
 				{
+					gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
 					gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordBuffer);
 					gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aTexCoord" ), mTexCoordItemSize, gl.FLOAT, false, 0, 0 );
 				}
 
-				if (gfx.mTextureGL != null)
+				if (gfx.mTextureGL != null && gl.getUniformLocation(gfx.mShaderGL, "uSurface") != null)
 				{
 					gl.activeTexture(gl.TEXTURE0);
 					gl.bindTexture(gl.TEXTURE_2D, gfx.mTextureGL);
@@ -606,13 +612,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
 				}
 
+				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uProjMatrix" ), false, new Float32Array( jeash.Lib.current.stage.mProjMatrix ) );
+
 				if (mIndices.length > 0)
 				{
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uMatrix" ), false, new Float32Array( GetGLMatrix( mFullMatrix ) ) );
+					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( viewMatrix ) );
 					gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
 				} else {
-					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uMatrix" ), false, new Float32Array( GetGLMatrix( mFullMatrix ) ) );
+					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( GetGLMatrix( mFullMatrix ) ) );
 					gl.drawArrays(gl.TRIANGLE_STRIP, 0, Std.int(mVertices.length/mVertexItemSize));
 				}
 

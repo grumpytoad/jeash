@@ -66,7 +66,7 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	function slice(offset:Int, length:Int):Int8Array;
 }
 
-extern class UInt8Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -76,7 +76,7 @@ extern class UInt8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):UInt8Array;
+	function slice(offset:Int, length:Int):Uint8Array;
 }
 
 extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -92,7 +92,7 @@ extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	function slice(offset:Int, length:Int):Int16Array;
 }
 
-extern class UInt16Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Uint16Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -102,7 +102,7 @@ extern class UInt16Array implements ArrayBufferView, implements ArrayAccess<Int>
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):UInt16Array;
+	function slice(offset:Int, length:Int):Uint16Array;
 }
 
 extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -118,7 +118,7 @@ extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> 
 	function slice(offset:Int, length:Int):Int32Array;
 }
 
-extern class UInt32Array implements ArrayBufferView, implements ArrayAccess<Int> {
+extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var BYTES_PER_ELEMENT:Int;
 
 	var buffer(default,null):ArrayBuffer;
@@ -128,7 +128,7 @@ extern class UInt32Array implements ArrayBufferView, implements ArrayAccess<Int>
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):UInt32Array;
+	function slice(offset:Int, length:Int):Uint32Array;
 }
 
 extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Float> {
@@ -163,19 +163,19 @@ extern class DataView implements ArrayBufferView {
 	var byteLength(default,null):ArrayBuffer;
 
 	function getInt8(byteOffset:Int):Int;
-	function getUInt8(byteOffset:Int):Int;
+	function getUint8(byteOffset:Int):Int;
 	function getInt16(byteOffset:Int, littleEndian:Bool):Int;
-	function getUInt16(byteOffset:Int, littleEndian:Bool):Int;
+	function getUint16(byteOffset:Int, littleEndian:Bool):Int;
 	function getInt32(byteOffset:Int, littleEndian:Bool):Int;
-	function getUInt32(byteOffset:Int, littleEndian:Bool):Int;
+	function getUint32(byteOffset:Int, littleEndian:Bool):Int;
 	function getFloat(byteOffset:Int, littleEndian:Bool):Float;
 	function getDouble(byteOffset:Int, littleEndian:Bool):Float;
 	function setInt8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
-	function setUInt8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setUint8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
 	function setInt16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
-	function setUInt16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setUint16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
 	function setInt32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
-	function setUInt32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function setUint32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
 	function setFloat(byteOffset:Int, value:Float, littleEndian:Bool):Void;
 	function setDouble(byteOffset:Int, value:Float, littleEndian:Bool):Void;
 }
@@ -744,9 +744,9 @@ extern interface WebGLRenderingContext
 
     function generateMipmap(target:GLenum):Void;
 
-    function getActiveAttrib(program:GLuint, index:GLuint):WebGLActiveInfo;
-    function getActiveUniform(program:GLuint, index:GLuint):WebGLActiveInfo;
-    function getAttachedShaders(program:GLuint):ArrayAccess<WebGLShader>;
+    function getActiveAttrib(program:WebGLProgram, index:GLuint):WebGLActiveInfo;
+    function getActiveUniform(program:WebGLProgram, index:GLuint):WebGLActiveInfo;
+    function getAttachedShaders(program:WebGLProgram):Array<WebGLShader>;
 
     function getAttribLocation(program:WebGLProgram, name:DOMString):GLint;
 
