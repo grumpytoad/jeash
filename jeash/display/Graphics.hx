@@ -286,8 +286,14 @@ class Graphics
 	{
 		if ( inSurface == null ) {
 			mSurface = cast js.Lib.document.createElement("canvas");
-			mSurface.width = jeash.Lib.canvas.width;
-			mSurface.height = jeash.Lib.canvas.height;
+			if (jeash.Lib.mOpenGL)
+			{
+				mSurface.width = GetSizePow2(jeash.Lib.canvas.width);
+				mSurface.height = GetSizePow2(jeash.Lib.canvas.height);
+			} else {
+				mSurface.width = jeash.Lib.canvas.width;
+				mSurface.height = jeash.Lib.canvas.height;
+			}
 
 		} else {
 			mSurface = inSurface;
@@ -328,6 +334,23 @@ class Graphics
 
 		}
 	}
+
+	static function GetSizePow2( size:Int )
+	{
+		var l_nCount:Int = 1;
+		var ts:Int = 1;
+		while(ts < size) 
+		{
+			ts <<= 1;
+			l_nCount++;
+			if( l_nCount >= 12 )
+			{
+				break;
+			}
+		}
+		return ts;
+	}
+
 
 	public static function CreateShaderGL(fragmentProgram:String, vertexProgram:String, glAttributes:Array<String>)
 	{
