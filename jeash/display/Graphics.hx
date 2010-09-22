@@ -580,7 +580,7 @@ class Graphics
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
 			}
 
-		}
+		} 
 
 	}
 
@@ -894,6 +894,8 @@ class Graphics
 			flags : (repeat ? BMP_REPEAT : 0) |
 				(smooth ? BMP_SMOOTH : 0) };
 
+		InitTextureGL(mBitmap.texture_buffer);
+
 	}
 
 
@@ -1056,19 +1058,24 @@ class Graphics
 
 		mDrawList.unshift( inDrawable );
 
+		InitTextureGL(mSurface);
+
+	}
+
+	private function InitTextureGL(texture : HTMLCanvasElement)
+	{
 		// initialise Texture
 		if ( jeash.Lib.mOpenGL && mTextureGL == null ) {
 			mTextureGL = gl.createTexture();
 
 			gl.bindTexture(gl.TEXTURE_2D, mTextureGL);
 
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
 			gl.bindTexture(gl.TEXTURE_2D, null);
 		}
-
 	}
 
 	private function AddLineSegment()

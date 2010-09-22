@@ -619,6 +619,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( viewMatrix ) );
 					gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
+					// wireframe
+					//for (i in 0...Std.int(mVertices.length/mVertexItemSize))
+					//	gl.drawArrays(gl.LINE_LOOP, i, 3);
 				} else {
 					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( GetGLMatrix( mFullMatrix ) ) );
 					gl.drawArrays(gl.TRIANGLE_STRIP, 0, Std.int(mVertices.length/mVertexItemSize));
