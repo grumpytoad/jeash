@@ -335,7 +335,7 @@ class Graphics
 		}
 	}
 
-	static function GetSizePow2( size:Int )
+	public static function GetSizePow2( size:Int )
 	{
 		var l_nCount:Int = 1;
 		var ts:Int = 1;

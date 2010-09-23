@@ -47,7 +47,7 @@ typedef LoadData =
 {
 	var image : HTMLImageElement;
 	var texture:HTMLCanvasElement;
-	var inLoader:LoaderInfo;
+	var inLoader:Null<LoaderInfo>;
 	var bitmapData:BitmapData;
 }
 
@@ -65,14 +65,16 @@ class BitmapData implements IBitmapDrawable
 	{
 
 
-		// TODO: the following was a hack in the canvas-nme days in
-		// order to load embedded resources, in order to emulate the
-		// embed tag in flex. This sort of feature should be
-		// replaced by supporting the -resource haXe compiler flag.
+		// Load embedded images in the HTML file
 
-		var el : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
-		if ( el != null ) {
-			mTextureBuffer = el;
+		var image : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
+		if ( image != null ) {
+			mTextureBuffer = cast js.Lib.document.createElement('canvas');
+			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:null, bitmapData:this};
+			if (!image.complete)
+				image.addEventListener( "load", callback(OnLoad, data), false );
+			else
+				OnLoad(data, null);
 		} else {
 			mTextureBuffer = cast js.Lib.document.createElement('canvas');
 			mTextureBuffer.width = inWidth;
@@ -224,21 +226,26 @@ class BitmapData implements IBitmapDrawable
 	function OnLoad( data:LoadData, e)
 	{
 		var canvas : HTMLCanvasElement = cast data.texture;
-		canvas.width = data.image.width;
-		canvas.height = data.image.height;
+		var width = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.image.width) : data.image.width;
+		var height = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.image.height) : data.image.height;
+		canvas.width = width;
+		canvas.height = height;
 
 		var ctx : CanvasRenderingContext2D = canvas.getContext("2d");
-		ctx.drawImage(data.image, 0, 0);
+		ctx.drawImage(data.image, 0, 0, width, height);
 
-		data.bitmapData.width = data.image.width;
-		data.bitmapData.height = data.image.height;
+		data.bitmapData.width = width;
+		data.bitmapData.height = height;
 
-		data.inLoader.content.width = data.image.width;
-		data.inLoader.content.height = data.image.height;
+		if (data.inLoader != null)
+		{
+			data.inLoader.content.width = width;
+			data.inLoader.content.height = height;
 
-		var e = new flash.events.Event( flash.events.Event.COMPLETE );
-		e.target = data.inLoader;
-		data.inLoader.dispatchEvent( e );
+			var e = new flash.events.Event( flash.events.Event.COMPLETE );
+			e.target = data.inLoader;
+			data.inLoader.dispatchEvent( e );
+		}
 	}
 
 	public function LoadFromFile(inFilename:String, ?inLoader:LoaderInfo)

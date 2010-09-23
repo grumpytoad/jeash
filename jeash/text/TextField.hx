@@ -348,9 +348,11 @@ class TextField extends flash.display.InteractiveObject
 		// merge into parent canvas context
 		if (inParentMask != null)
 		{
-			var maskCtx = inParentMask.getContext('2d');
-			untyped console.log(inTX, inTY);
-			maskCtx.drawImage(mSurface, inTX, inTY);
+			if (!jeash.Lib.mOpenGL)
+			{
+				var maskCtx = inParentMask.getContext('2d');
+				maskCtx.drawImage(mSurface, inTX, inTY);
+			}
 		}
 
 	}
