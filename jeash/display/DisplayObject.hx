@@ -141,9 +141,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
 
-	// For GL rendering
-	public var viewMatrix:Array<Float>;
-
 	static var TRANSLATE_CHANGE     = 0x01;
 	static var NON_TRANSLATE_CHANGE = 0x02;
 	static var GRAPHICS_CHANGE      = 0x04;
@@ -230,6 +227,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mTextureCoords), gl.STATIC_DRAW);
+		}
+
+		if (mNormals.length > 0)
+		{
+			if (mNormBuffer != null) gl.deleteBuffer(mNormBuffer);
+			mNormBuffer = gl.createBuffer();
+
+			gl.bindBuffer(gl.ARRAY_BUFFER, mNormBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mNormals), gl.STATIC_DRAW);
 		}
 
 		if (mIndices.length > 0)
@@ -612,27 +618,26 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
 				}
 
-				gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uProjMatrix" ), false, new Float32Array( jeash.Lib.current.stage.mProjMatrix ) );
-
 				if (mIndices.length > 0)
 				{
 					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( viewMatrix ) );
-					gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
-					// wireframe
-					//for (i in 0...Std.int(mVertices.length/mVertexItemSize))
-					//	gl.drawArrays(gl.LINE_LOOP, i, 3);
+					if (MatrixUniforms())
+						gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
 				} else {
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( GetGLMatrix( mFullMatrix ) ) );
+					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( GetFlatGLMatrix( mFullMatrix ) ) );
 					gl.drawArrays(gl.TRIANGLE_STRIP, 0, Std.int(mVertices.length/mVertexItemSize));
 				}
 
-				//trace(StringTools.hex(gl.getError()));
 			}
 		}
 	}
 
-	static inline function GetGLMatrix( m:Matrix )
+	dynamic public function MatrixUniforms()
+	{
+		return false;
+	}
+
+	static inline function GetFlatGLMatrix( m:Matrix )
 	{
 		return [
 			m.a, m.b, 0, m.tx,
