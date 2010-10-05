@@ -296,7 +296,7 @@ class Lib
 			inMouse:Html5Dom.MouseEvent,inType:String): flash.events.MouseEvent
 	{
 		var bubble = inType!=flash.events.MouseEvent.ROLL_OUT && inType!=flash.events.MouseEvent.ROLL_OVER;
-		var pos = new flash.geom.Point(inMouse.clientX,inMouse.clientY);
+		var pos = new flash.geom.Point(inMouse.offsetX,inMouse.offsetY);
 		if (inObj!=null)
 			pos = inObj.globalToLocal(pos);
 
@@ -315,7 +315,7 @@ class Lib
 		} else { 2; }
 		var result =  new flash.events.MouseEvent(inType,
 				bubble, false,
-				inMouse.clientX,inMouse.clientY,
+				inMouse.offsetX,inMouse.offsetY,
 				inRelatedObj,
 				inMouse.ctrlKey,
 				inMouse.altKey,
@@ -323,8 +323,8 @@ class Lib
 				true, // buttonDown = left mouse button, 
 				delta);
 
-		result.stageX = inMouse.clientX/mStage.scaleX;
-		result.stageY = inMouse.clientY/mStage.scaleY;
+		result.stageX = inMouse.offsetX/mStage.scaleX;
+		result.stageY = inMouse.offsetY/mStage.scaleY;
 		result.target = inObj;
 		return result;
 	}
@@ -449,8 +449,8 @@ class Lib
 
 	function DoMouse(evt:Html5Dom.MouseEvent)
 	{
-		var x = Std.int(evt.clientX);
-		var y = Std.int(evt.clientY);
+		var x = Std.int(evt.offsetX);
+		var y = Std.int(evt.offsetY);
 
 		mLastMouse.x  = x;
 		mLastMouse.y =  y;
