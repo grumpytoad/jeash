@@ -456,6 +456,7 @@ class Lib
 		mLastMouse.y =  y;
 
 		var type = switch (evt.type) {
+			case flash.events.MouseEvent.CLICK.toLowerCase(): flash.events.MouseEvent.CLICK;
 			case flash.events.MouseEvent.MOUSE_DOWN.toLowerCase(): flash.events.MouseEvent.MOUSE_DOWN;
 			case flash.events.MouseEvent.MOUSE_MOVE.toLowerCase(): flash.events.MouseEvent.MOUSE_MOVE;
 			case flash.events.MouseEvent.MOUSE_UP.toLowerCase(): flash.events.MouseEvent.MOUSE_UP;
@@ -556,7 +557,7 @@ class Lib
 		}
 
 
-		if (nl>0 && (type==flash.events.MouseEvent.MOUSE_DOWN || type==flash.events.MouseEvent.MOUSE_UP) || type==flash.events.MouseEvent.MOUSE_MOVE || type==flash.events.MouseEvent.MOUSE_WHEEL)
+		if (nl>0 && (type==flash.events.MouseEvent.MOUSE_DOWN || type==flash.events.MouseEvent.MOUSE_UP) || type==flash.events.MouseEvent.MOUSE_MOVE || type==flash.events.MouseEvent.MOUSE_WHEEL || type==flash.events.MouseEvent.CLICK)
 		{
 			var evt = CreateMouseEvent(obj, null, evt, type);
 			FireEvents(evt, new_list);
@@ -592,6 +593,9 @@ class Lib
 				DoMouse(cast evt);
 
 			case flash.events.MouseEvent.MOUSE_UP.toLowerCase():
+				DoMouse(cast evt);
+
+			case flash.events.MouseEvent.CLICK.toLowerCase():
 				DoMouse(cast evt);
 
 			case flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase():
