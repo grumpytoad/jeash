@@ -668,7 +668,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			return null;
 
 		var gfx = GetGraphics();
-		if (gfx!=null && gfx.HitTest(inX,inY))
+		if (gfx!=null && gfx.HitTest(inX-this.x,inY-this.y))
 		{
 			var i = AsInteractiveObject();
 			return i==null ? inObj : i;
