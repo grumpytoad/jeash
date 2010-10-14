@@ -82,6 +82,7 @@ class URLLoader extends flash.events.EventDispatcher
 				var c : Int = untyped content["cca"](i) & 0xFF;
 				this.data.writeByte(c);
 			}
+			this.data.position = 0;
 		case TEXT:
 			this.data = content;
 		case VARIABLES:

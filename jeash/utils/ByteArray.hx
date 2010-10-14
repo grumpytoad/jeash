@@ -40,12 +40,17 @@ class ByteArray {
 	var data : Array<Int>;
 	var bigEndian : Bool;
 
-	public var bytesAvailable(default,null) : Int;
+	public var bytesAvailable(GetBytesAvailable,null) : Int;
 	public var endian(__GetEndian,__SetEndian) : Endian;
 	public var objectEncoding : Int;
 
 	public var position : Int;
 	public var length(GetLength,null) : Int;
+
+	inline function GetBytesAvailable():Int
+	{
+		return length - position;
+	}
 
 	function readString( len : Int ) : String {
 		var bytes = Bytes.alloc(len);
