@@ -44,8 +44,8 @@ class Sprite extends DisplayObjectContainer
 
 	public function new()
 	{
-		super();
 		mGraphics = new Graphics();
+		super();
 		buttonMode = false;
 		name = "Sprite " + DisplayObject.mNameID++;
 	}

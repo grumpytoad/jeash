@@ -45,6 +45,13 @@ import flash.filters.BitmapFilterSet;
 import flash.filters.FilterSet;
 import flash.display.BitmapData;
 
+typedef BufferData =
+{
+	var buffer:WebGLBuffer;
+	var size:Int;
+	var location:GLint;
+}
+
 
 /**
  * @author	Niel Drummond
@@ -101,6 +108,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mNormBuffer(default,null):WebGLBuffer;
 	public var mTextureCoordBuffer(default,null):WebGLBuffer;
 	public var mIndexBuffer(default,null):WebGLBuffer;
+	public var mIndicesCount(default,null):Int;
+	public var mBuffers : Hash<BufferData>;
 
 	var mX:Float;
 	var mY:Float;
@@ -171,6 +180,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mCCLeft = mCCRight = mCCTop = mCCBottom = false;
 		name = "DisplayObject " + mNameID++;
 		mChanged = true;
+		mBuffers = new Hash();
 
 		visible = true;
 
@@ -181,72 +191,85 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			// updating these array buffers, it is possible to have
 			// a full GPU accelerated 3D environment.
 
-			mVertices = [      
+			var aBuffers = new Hash();
+			var vertices = [
 				1.0,  1.0,  0.0,
-			       -1.0, 1.0,  0.0,
-			        1.0, -1.0,  0.0,
+				-1.0, 1.0,  0.0,
+				1.0, -1.0,  0.0,
 				-1.0, -1.0, 0.0
-			];
+					];
 
-			mTextureCoords = [
+			aBuffers.set( "aVertPos", {
+					data: vertices,
+					size: 3
+				    });
+
+			var texCoords = [
 				1.0, 0.0,
 				0.0, 0.0,
 				1.0, 1.0,
 				0.0, 1.0,
-			];
+				];
+			aBuffers.set( "aTexCoord", {
+					data: texCoords,
+					size: 2
+				    });
 
-			mNormals = [];
-			mIndices = [];
-
-			SetBuffers();
-
-			mVertexItemSize = 3;
-			mNormItemSize = 3;
-			mTexCoordItemSize = 2;
+			SetBuffers(aBuffers);
 
 		}
 	}
 
-	public function SetBuffers()
+	public function SetBuffers<T>( inputData:Hash<{ size:Int, data:Array<Float>}>, ?indices:Array<Int> )
 	{
 		var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
+		var gfx = GetGraphics();
+		if (gfx == null) return;
 
-		if (mVertices.length > 0)
+		gl.useProgram(gfx.mShaderGL);
+
+		for (key in inputData.keys())
 		{
-			if (mVertexBuffer != null) gl.deleteBuffer(mVertexBuffer);
-			mVertexBuffer = gl.createBuffer();
+			var bufferArray = inputData.get(key);
+			if (bufferArray.data != null && bufferArray.size != null)
+			{
+				var data = mBuffers.get(key);
+				if (data != null) 
+				{ 
+					if (data.buffer != null)
+						gl.deleteBuffer(data.buffer);
+					mBuffers.remove(key);
+				}
+				var buffer = gl.createBuffer();
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mVertices), gl.STATIC_DRAW);
+				gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bufferArray.data), gl.STATIC_DRAW);
+
+				var location = gl.getAttribLocation( gfx.mShaderGL, key );
+				if ( location < 0 ) 
+					trace("Invalid attribute for shader: " + key);
+				var bufferData : BufferData = { buffer:buffer, location:location, size:bufferArray.size };
+				mBuffers.set(key, bufferData );
+
+			}
 		}
 
-		if (mTextureCoords.length > 0)
-		{
-			if (mTextureCoordBuffer != null) gl.deleteBuffer(mTextureCoordBuffer);
-			mTextureCoordBuffer = gl.createBuffer();
 
-			gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mTextureCoords), gl.STATIC_DRAW);
-		}
-
-		if (mNormals.length > 0)
-		{
-			if (mNormBuffer != null) gl.deleteBuffer(mNormBuffer);
-			mNormBuffer = gl.createBuffer();
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, mNormBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mNormals), gl.STATIC_DRAW);
-		}
-
-		if (mIndices.length > 0)
+		if (indices != null)
 		{
 			if (mIndexBuffer != null) gl.deleteBuffer(mIndexBuffer);
 			mIndexBuffer = gl.createBuffer();
 
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mIndices), gl.STATIC_DRAW);
-		}
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
+			mIndicesCount = indices.length;
+		} else if (inputData.exists("aVertPos")) {
+			// still a bit ugly...
+			var vertData = inputData.get("aVertPos");
+
+			mIndicesCount = Std.int(vertData.data.length/vertData.size);
+		}
 
 	}
 
@@ -585,29 +608,20 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			else
 				gfx.__Render(mFullMatrix,inMask,null);
 
-			if (jeash.Lib.mOpenGL && mVertices != null)
+			if (jeash.Lib.mOpenGL && mBuffers.exists("aVertPos"))
 			{
 				var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
 
 				gl.useProgram(gfx.mShaderGL);
 
-				if (mVertices.length > 0 && gl.getAttribLocation( gfx.mShaderGL, "aVertPos" ) >= 0)
+				for(key in mBuffers.keys())
 				{
-					gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
-					gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aVertPos" ), mVertexItemSize, gl.FLOAT, false, 0, 0 );
-				}
-
-				if (mNormals.length > 0 && gl.getAttribLocation( gfx.mShaderGL, "aVertNorm" ) >= 0)
-				{
-					gl.bindBuffer(gl.ARRAY_BUFFER, mNormBuffer);
-					gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aVertNorm" ), mNormItemSize, gl.FLOAT, false, 0, 0 );
-				}
-
-				if (mTextureCoords.length > 0 && gl.getAttribLocation( gfx.mShaderGL, "aTexCoord" ) >= 0)
-				{
-					gl.bindBuffer(gl.ARRAY_BUFFER, mVertexBuffer);
-					gl.bindBuffer(gl.ARRAY_BUFFER, mTextureCoordBuffer);
-					gl.vertexAttribPointer( gl.getAttribLocation( gfx.mShaderGL, "aTexCoord" ), mTexCoordItemSize, gl.FLOAT, false, 0, 0 );
+					var data = mBuffers.get(key);
+					if (data.buffer != null && data.location != null && data.size != null)
+					{
+						gl.bindBuffer(gl.ARRAY_BUFFER, data.buffer);
+						gl.vertexAttribPointer(data.location, data.size, gl.FLOAT, false, 0, 0);
+					}
 				}
 
 				if (gfx.mTextureGL != null && gl.getUniformLocation(gfx.mShaderGL, "uSurface") != null)
@@ -618,14 +632,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
 				}
 
-				if (mIndices.length > 0)
+				if (mIndexBuffer != null)
 				{
 					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
 					if (MatrixUniforms())
-						gl.drawElements(gl.TRIANGLES, mIndices.length, gl.UNSIGNED_SHORT, 0);
+						gl.drawElements(gl.TRIANGLES, mIndicesCount, gl.UNSIGNED_SHORT, 0);
 				} else {
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, new Float32Array( GetFlatGLMatrix( mFullMatrix ) ) );
-					gl.drawArrays(gl.TRIANGLE_STRIP, 0, Std.int(mVertices.length/mVertexItemSize));
+					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uProjMatrix" ), false, stage.mProjMatrix );
+					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, GetFlatGLMatrix( mFullMatrix ) );
+					gl.drawArrays(gl.TRIANGLE_STRIP, 0, mIndicesCount);
 				}
 
 			}

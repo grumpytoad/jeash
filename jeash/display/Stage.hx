@@ -86,7 +86,6 @@ class Stage extends flash.display.DisplayObjectContainer
 		loaderInfo.parameters.width = Std.string(mWidth);
 		loaderInfo.parameters.height = Std.string(mHeight);
 		mProjMatrix = DEFAULT_PROJ_MATRIX;
-		
 	}
 
 	public function getObjectsUnderPoint(point:Point)

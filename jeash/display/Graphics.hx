@@ -278,6 +278,7 @@ class Graphics
 	// GL shader
 	public var mShaderGL:WebGLProgram;
 	public var mTextureGL:WebGLTexture;
+	public var mTextureUniformGL:WebGLUniformLocation;
 
 	private static var gl:WebGLRenderingContext;
 
@@ -1075,6 +1076,8 @@ class Graphics
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 
 			gl.bindTexture(gl.TEXTURE_2D, null);
+
+			mTextureUniformGL = gl.getUniformLocation(mShaderGL, "uSurface");
 		}
 	}
 
