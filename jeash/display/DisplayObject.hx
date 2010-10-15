@@ -434,9 +434,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function globalToLocal(inPos:Point) : Point
 	{
-		//return GetMatrix().invert().transformPoint(inPos);
 		return mFullMatrix.clone().invert().transformPoint(inPos);
 	}
+	
 	// This tells us we are an empty container, or not a container at all
 	public function GetNumChildren() { return 0; }
 

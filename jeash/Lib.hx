@@ -414,8 +414,6 @@ class Lib
 			else
 			{
 				var mouse = new Point( mMouseX, mMouseY );
-				mouse.x /= mStage.scaleX;
-				mouse.y /= mStage.scaleY;
 				var p = mDragObject.parent;
 				if (p!=null)
 					mouse = p.globalToLocal(mouse);
@@ -452,8 +450,8 @@ class Lib
 		var x = Std.int(evt.offsetX);
 		var y = Std.int(evt.offsetY);
 
-		mLastMouse.x  = x;
-		mLastMouse.y =  y;
+		mLastMouse.x = x;
+		mLastMouse.y = y;
 
 		var type = switch (evt.type) {
 			case flash.events.MouseEvent.CLICK.toLowerCase(): flash.events.MouseEvent.CLICK;
@@ -563,7 +561,8 @@ class Lib
 			FireEvents(evt, new_list);
 		}
 
-
+		mMouseX = x;
+		mMouseY = y;
 
 		//var event =CreateMouseEvent(inEvent,type);
 	}
