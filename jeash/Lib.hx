@@ -56,7 +56,7 @@ class Lib
 {
 	var mKilled:Bool;
 	static var mMe:Lib;
-	static var mPriority = ["webgl", "experimental-webgl", "2d", "swf"];
+	static var mPriority = ["2d", "swf"];
 	public static var context(default,null):String;
 	public static var canvas(GetCanvas,null):HTMLCanvasElement;
 	public static var current(GetCurrent,null):MovieClip;
