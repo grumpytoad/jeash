@@ -111,7 +111,21 @@ class Sound extends flash.events.EventDispatcher {
 		m_sound.addEventListener("ended", cast __onSoundChannelFinished, false);
 		m_sound.addEventListener("error", cast __onSoundLoadError, false);
 		m_sound.addEventListener("abort", cast __onSoundLoadError, false);
-		m_sound.src = stream.url;
+		//m_sound.src = stream.url;
+
+		if (stream.url.lastIndexOf(".mp3")==stream.url.length-4){
+			if(m_sound.canPlayType('audio/mpeg')==false){
+				//since MP3 cannot be played, attempt .ogg
+				m_sound.setAttribute('src',stream.url.substr(stream.url.length-4)+'.ogg');
+			}else{
+				m_sound.setAttribute('src',stream.url);
+			}
+		}else if(stream.url.lastIndexOf(".ogg")==stream.url.length-4 && m_sound.canPlayType('audio/ogg; codecs="vorbis"')==false){
+			//since OGG cannot be played attempt .mp3
+			m_sound.setAttribute('src',stream.url.substr(stream.url.length-4)+'.mp3');
+		}else{
+			m_sound.setAttribute('src',stream.url);
+		}
 
 	}
 
