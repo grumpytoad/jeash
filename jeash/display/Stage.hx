@@ -316,6 +316,9 @@ class Stage extends flash.display.DisplayObjectContainer
 		var event = new flash.events.Event( flash.events.Event.ENTER_FRAME );
 		this.Broadcast(event);
 		this.RenderAll();
+		
+		var event = new flash.events.Event( flash.events.Event.RENDER );
+		this.Broadcast(event);
 
 		if ( mFastMode )
 			untyped window.postMessage('a', window.location);
