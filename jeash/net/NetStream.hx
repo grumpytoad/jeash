@@ -61,13 +61,14 @@ class NetStream extends EventDispatcher {
 	*/
 	public var videoElement(default,null):HTMLVideoElement;
 	
-	
 	/* buffer for incoming netstream */
 	public var mTextureBuffer:HTMLCanvasElement;
 	
+	private var timer:Timer;
+
 	/* events */
 	public static inline var BUFFER_UPDATED:String = "jeash.net.NetStream.updated";
-
+	
 	public function new(connection:NetConnection) : Void
 	{	
 		super();
@@ -116,12 +117,27 @@ class NetStream extends EventDispatcher {
 		
 		var scope:NetStream = this;
 		
-		var t:Timer = new Timer(Math.round(1000 / (((Lib.GetStage().frameRate < NetStream.fps) ? NetStream.fps : Lib.GetStage().frameRate) * 2))); //dsp nyquist: fmax = fsample/2
-		t.run = function():Void 
+		timer = new Timer(Math.round(1000 / (((Lib.GetStage().frameRate < NetStream.fps) ? NetStream.fps : Lib.GetStage().frameRate) * 2))); //dsp nyquist: fmax = fsample/2
+		timer.run = function():Void 
 		{
 		  scope.mTextureBuffer.getContext("2d").drawImage(data.video, 0, 0, scope.mTextureBuffer.width, scope.mTextureBuffer.height);
 		  scope.dispatchEvent(new Event(NetStream.BUFFER_UPDATED, false, false));
 		}
+	}
+
+	/**
+	 * enable performance windowed mode;
+	 * @return Bool succes.
+	 */
+	public function js_windowed_hack():Bool
+	{
+		if (timer != null)
+		{
+			timer.stop();
+			timer = null;
+			return true;
+		}
+		return false;
 	}
 	
 	/*

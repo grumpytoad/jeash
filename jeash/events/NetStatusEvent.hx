@@ -24,33 +24,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.net;
+package jeash.events;
 
-import jeash.events.EventDispatcher;
-import jeash.events.NetStatusEvent;
-
-class NetConnection extends EventDispatcher
-{
-	public var connect:Dynamic;
-	
-	public function new() : Void
+class NetStatusEvent extends Event {
+	public var info : Dynamic;
+	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?info : Dynamic) : Void
 	{
-		super();
-		connect = Reflect.makeVarArgs(js_connect);
-		//should set up bidirection connection with Flash Media Server or Flash Remoting
-		//currently does nothing
+		this.info = info;
+		super(type,bubbles,cancelable);
 	}
-
-	private function js_connect (val:Array<Dynamic>) : Void
-	{
-		if (val.length > 1 || val[0] != null)
-		throw "jeash can only connect in 'http streaming' mode";
-		
-		//dispatch events:
-		var ev:NetStatusEvent = new NetStatusEvent(NetStatusEvent.NET_STATUS, false, true, { code : "NetConnection.Connect.Success" } );
-		this.dispatchEvent(ev);
-		
-		//connection.addEventListener(SecurityErrorEvent.SECURITY_ERROR, securityErrorHandler);
-	}
-
+	public static var NET_STATUS : String = "jeash.net.NetStatusEvent";
 }

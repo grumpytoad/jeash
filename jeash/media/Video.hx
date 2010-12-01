@@ -77,42 +77,6 @@ class Video extends DisplayObject {
 	private function added(e:Event):Void 
 	{
 		removeEventListener(Event.ADDED_TO_STAGE, added);
-		
-		//var vid:HTMLVideoElement = cast js.Lib.document.createElement("video");
-		//var mTextureBuffer:HTMLCanvasElement = cast js.Lib.document.createElement('canvas');
-		//mTextureBuffer.width = 720;
-		//mTextureBuffer.height = 404;
-		//var ctx:CanvasRenderingContext2D =  mTextureBuffer.getContext("2d");
-		
-		//var data:Dynamic = { video: vid, texture: mTextureBuffer, context: ctx, graphics: mGraphics };
-		//vid.addEventListener( "loadeddata", callback(OnLoad, data), false ); //
-		//vid.addEventListener( "loadedmetadata", callback(OnLoad, data), false ); //
-		
-		//vid.addEventListener( "timeupdate", callback(TimeUpdate, data), false ); //
-		
-		//vid.src = _url;
-		
-		//vid.play();
-		
-		//this.mGraphics.SetSurface(mTextureBuffer);
-		
-		/*
-		Lib.GetStage().addEventListener(Event.ENTER_FRAME, function(e:Event):Void
-		{
-			me.updateGraphics(vid, ctx, mGraphics_ref, mTextureBuffer);
-		});
-		*/
-		/*
-		var t:Timer = new Timer(Math.round(1000 / (((stage.frameRate < Video.fps) ? Video.fps : stage.frameRate) * 2))); //dsp nyquist: fmax = fsample/2
-		var mGraphics_ref:Graphics = this.mGraphics;
-		var me:Video = this;
-		t.run = function():Void 
-		{ 
-			me.updateGraphics(vid, ctx, mGraphics_ref, mTextureBuffer);
-		}
-		
-		vid.addEventListener( "ended", callback(function(e):Void { trace("stop!"); t.stop();  } ), false );
-		*/
 	}
 	
 	//displayobject override
@@ -131,7 +95,7 @@ class Video extends DisplayObject {
 	
 	public function attachNetStream(ns:NetStream) : Void
 	{
-		if (true)// pseudo windowed hack
+		if (false)// pseudo windowed hack
 		{
 			var canvas:HtmlDom = cast Lib.canvas;
 			canvas.style.zIndex = 3;
@@ -145,6 +109,8 @@ class Video extends DisplayObject {
 			
 			var offsetLeft = canvas.offsetLeft;
 			var offsetTop = canvas.offsetTop;
+			
+			ns.js_windowed_hack();
 			
 			// do this after rendering pass:
 			var instance:Video = this;
