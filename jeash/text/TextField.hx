@@ -68,7 +68,7 @@ class TextField extends flash.display.InteractiveObject
 	public var restrict : String;
 	public var type(GetType,SetType) : String;
 	public var alwaysShowSelection : Bool;
-	public var antiAliasType : String;
+	public var antiAliasType : AntiAliasType;
 	public var mouseWheelEnabled : Bool;
 	public var scrollH : Int;
 	public var scrollV : Int;
@@ -77,7 +77,9 @@ class TextField extends flash.display.InteractiveObject
 	public var sharpness : Float;
 	public var gridFitType : String;
 	public var length(default,null) : Int;
-	public var numLines(GetNumLines,null) : Int;
+	public var numLines(GetNumLines, null) : Int;
+	
+	public var condenseWhite:Bool;
 
 	public var defaultTextFormat (default,SetDefaultTextFormat): TextFormat;
 	var mTextFormat : TextFormat;
@@ -147,7 +149,7 @@ class TextField extends flash.display.InteractiveObject
 		mDownChar = 0;
 		mSelectDrag = -1;
 
-		//mTextFormat = defaultTextFormat;
+		mTextFormat = defaultTextFormat;
 
 		borderColor = 0x000000;
 		border = false;

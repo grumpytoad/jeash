@@ -25,6 +25,7 @@
  */
 
 package jeash.text;
+import Html5Dom;
 
 class TextFormat
 {
@@ -32,7 +33,7 @@ class TextFormat
    public var blockIndent : Int;
    public var bold : Bool;
    public var bullet : Bool;
-   public var color : Int;
+   public var color : UInt;
    public var display : String;
    public var font : String;
    public var indent : Int;
@@ -42,7 +43,7 @@ class TextFormat
    public var leftMargin : Int;
    public var letterSpacing : Int;
    public var rightMargin : Int;
-   public var size : Int;
+   public var size : Float;
    public var tabStops : Int;
    public var target : String;
    public var underline : Bool;
@@ -50,7 +51,7 @@ class TextFormat
 
   public function new(?in_font : String,
                       ?in_size : Int,
-                      ?in_color : Int,
+                      ?in_color : UInt,
                       ?in_bold : Bool,
                       ?in_italic : Bool,
                       ?in_underline : Bool,
