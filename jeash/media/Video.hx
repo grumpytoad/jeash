@@ -32,6 +32,8 @@ import jeash.display.BitmapData;
 import jeash.display.DisplayObject;
 import jeash.display.Graphics;
 import jeash.display.Stage;
+import jeash.geom.Matrix;
+import jeash.geom.Point;
 import jeash.Lib;
 import jeash.net.NetStream;
 import js.Dom;
@@ -40,9 +42,11 @@ class Video extends DisplayObject {
 	
 	private var mGraphics:Graphics;
 	
+	private var windowHack:Bool;
 	public var deblocking:Int;
 	public var smoothing:Bool;
-	
+	private var v_width:Int;
+	private var v_height:Int;
 	/*
 	 * 
 	 * todo: netstream/camera
@@ -57,12 +61,13 @@ class Video extends DisplayObject {
 	function clear() : Void;
 	*/
 	
-	public function new(?Windowed:Bool = false) : Void {
+	public function new(?width : Int, ?height : Int, ?Windowed:Bool = false) : Void {
 		
 		mGraphics = new Graphics();
-		
+		windowHack = Windowed;
+		this.width = width; this.height = height;
 		mGraphics.beginFill(0xDEADBEEF);
-		mGraphics.drawRect(0,0,720,404);
+		mGraphics.drawRect(0,0,width,height);
 		mGraphics.endFill();
 		
 		super();
@@ -95,13 +100,16 @@ class Video extends DisplayObject {
 	
 	public function attachNetStream(ns:NetStream) : Void
 	{
-		if (false)// pseudo windowed hack
+		
+		if (true)// pseudo windowed hack
 		{
 			var canvas:HtmlDom = cast Lib.canvas;
 			canvas.style.zIndex = 3;
 			canvas.style.position = 'absolute';
 			var el:HtmlDom = cast ns.videoElement;
-			js.Lib.document.body.appendChild(el);
+			//js.Lib.document.body.appendChild(el);
+			canvas.parentNode.appendChild(el);
+			//canvas.parentNode.style.overflow = 'hidden';
 			el.style.position = 'absolute';
 			el.style.top = "0px";
 			el.style.left = "0px";
@@ -116,15 +124,20 @@ class Video extends DisplayObject {
 			var instance:Video = this;
 			this.addEventListener(Event.RENDER, function(e:Event):Void 
 			{  
-				//todo get stage x/y
-				var px = instance.parent.x;
-				var py = instance.parent.y;
+				instance.SetupRender(new Matrix()); //dirty reset matrix
 				
-				var ctx = Lib.canvas.getContext('2d');
-				ctx.clearRect(px, py, 720, 404);	
+				//todo get stage x/y
+				var g:Point = instance.localToGlobal(new Point(0, 0));
+				var px = g.x; var py = g.y;
+				
+				var ctx:CanvasRenderingContext2D = Lib.canvas.getContext('2d');
+				ctx.clearRect(px, py, instance.width, instance.height);	
+				ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
+				ctx.fillRect(px, py, instance.width/2, instance.height);
 				el.style.top = py + offsetTop + "px";
-				el.style.left = px + offsetLeft + "px";
+				el.style.left = px + offsetLeft + "px";				
 			} );
+			trace(this.width + " " + this.height);
 		}
 		else
 		{
@@ -132,16 +145,26 @@ class Video extends DisplayObject {
 			var scope:Video = this;
 			ns.addEventListener(NetStream.BUFFER_UPDATED, function(e:Event):Void
 			{
-				scope.mGraphics.clear();
+				scope.SetupRender(new Matrix()); //ugly reset matrix..
 				
+				//todo:revise:something brokehn
+				scope.mGraphics.clear();
 				#if !js
 					scope.mGraphics.blit(BitmapData.CreateFromHandle(ns.mTextureBuffer));
 				#end
 				
 				#if js
 					scope.mGraphics.beginBitmapFill(BitmapData.CreateFromHandle(ns.mTextureBuffer), null, false, false);
-					scope.mGraphics.drawRect(0,0,720, 404);
+					//scope.mGraphics.beginFill(0x00FF00);
+					//scope.mGraphics.drawRect(0, 0, scope.width, scope.height);
+					scope.mGraphics.drawRect(0, 0, ns.mTextureBuffer.width, ns.mTextureBuffer.height);
+					scope.mGraphics.endFill();
+					
+					//hrrm: not finished->
+					//scope.UpdateMatrix();
+					//scope.drawToSurface(ns.mTextureBuffer, null, null, null, null, true);
 				#end
+				trace(scope.width + " " + scope.height + " " + ns.mTextureBuffer.width + " " + ns.mTextureBuffer.height);
 			});
 		}
 	}

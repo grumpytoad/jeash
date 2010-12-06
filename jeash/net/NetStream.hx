@@ -59,7 +59,9 @@ class NetStream extends EventDispatcher {
 	/**
 	* handle to HTMLVideoElement, for windowed (performance) mode 
 	*/
-	public var videoElement(default,null):HTMLVideoElement;
+	public var videoElement(default, null):HTMLVideoElement;
+	
+	private var windowHack:Bool;
 	
 	/* buffer for incoming netstream */
 	public var mTextureBuffer:HTMLCanvasElement;
@@ -72,7 +74,7 @@ class NetStream extends EventDispatcher {
 	public function new(connection:NetConnection) : Void
 	{	
 		super();
-		
+		windowHack = false;
 		play = Reflect.makeVarArgs(js_play);
 		
 		mTextureBuffer = cast js.Lib.document.createElement('canvas');
@@ -114,14 +116,15 @@ class NetStream extends EventDispatcher {
 	{
 		mTextureBuffer.width = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoWidth) : data.video.videoWidth;
 		mTextureBuffer.height = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoHeight) : data.video.videoHeight;
-		
-		var scope:NetStream = this;
-		
-		timer = new Timer(Math.round(1000 / (((Lib.GetStage().frameRate < NetStream.fps) ? NetStream.fps : Lib.GetStage().frameRate) * 2))); //dsp nyquist: fmax = fsample/2
-		timer.run = function():Void 
+		if (!windowHack) //skip heavy load when pseudo windowless
 		{
-		  scope.mTextureBuffer.getContext("2d").drawImage(data.video, 0, 0, scope.mTextureBuffer.width, scope.mTextureBuffer.height);
-		  scope.dispatchEvent(new Event(NetStream.BUFFER_UPDATED, false, false));
+			var scope:NetStream = this;
+			timer = new Timer(Math.round(1000 / (((Lib.GetStage().frameRate < NetStream.fps) ? NetStream.fps : Lib.GetStage().frameRate) * 2))); //dsp nyquist: fmax = fsample/2
+			timer.run = function():Void 
+			{
+			  scope.mTextureBuffer.getContext("2d").drawImage(data.video, 0, 0, scope.mTextureBuffer.width, scope.mTextureBuffer.height);
+			  scope.dispatchEvent(new Event(NetStream.BUFFER_UPDATED, false, false));
+			}
 		}
 	}
 
@@ -131,6 +134,7 @@ class NetStream extends EventDispatcher {
 	 */
 	public function js_windowed_hack():Bool
 	{
+		windowHack = true;
 		if (timer != null)
 		{
 			timer.stop();
