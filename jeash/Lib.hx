@@ -454,13 +454,13 @@ class Lib
 		mLastMouse.y = y;
 
 		var type = switch (evt.type) {
-			case flash.events.MouseEvent.CLICK.toLowerCase(): flash.events.MouseEvent.CLICK;
-			case flash.events.MouseEvent.MOUSE_DOWN.toLowerCase(): flash.events.MouseEvent.MOUSE_DOWN;
-			case flash.events.MouseEvent.MOUSE_MOVE.toLowerCase(): flash.events.MouseEvent.MOUSE_MOVE;
-			case flash.events.MouseEvent.MOUSE_UP.toLowerCase(): flash.events.MouseEvent.MOUSE_UP;
-			case flash.events.MouseEvent.MOUSE_OVER.toLowerCase(): flash.events.MouseEvent.MOUSE_OVER;
-			case flash.events.MouseEvent.MOUSE_OUT.toLowerCase(): flash.events.MouseEvent.MOUSE_OUT;
-			case flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase(): flash.events.MouseEvent.MOUSE_WHEEL;
+			case (flash.events.MouseEvent.CLICK.toLowerCase()): flash.events.MouseEvent.CLICK;
+			case (flash.events.MouseEvent.MOUSE_DOWN.toLowerCase()): flash.events.MouseEvent.MOUSE_DOWN;
+			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()): flash.events.MouseEvent.MOUSE_MOVE;
+			case (flash.events.MouseEvent.MOUSE_UP.toLowerCase()): flash.events.MouseEvent.MOUSE_UP;
+			case (flash.events.MouseEvent.MOUSE_OVER.toLowerCase()): flash.events.MouseEvent.MOUSE_OVER;
+			case (flash.events.MouseEvent.MOUSE_OUT.toLowerCase()): flash.events.MouseEvent.MOUSE_OUT;
+			case (flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase()): flash.events.MouseEvent.MOUSE_WHEEL;
 		}
 
 		if (mDragObject!=null)
@@ -573,31 +573,31 @@ class Lib
 	{
 		switch(evt.type)
 		{
-			case flash.events.KeyboardEvent.KEY_DOWN.toLowerCase():
+			case (flash.events.KeyboardEvent.KEY_DOWN.toLowerCase()):
 				var code = mManager.lastKey();
 				ProcessKeys( code, true,
 						mManager.lastChar(),
 						mManager.lastKeyCtrl(), mManager.lastKeyAlt(),
 						mManager.lastKeyShift() );
-			case flash.events.KeyboardEvent.KEY_UP.toLowerCase():
+			case (flash.events.KeyboardEvent.KEY_UP.toLowerCase()):
 				var code = mManager.lastKey();
 				ProcessKeys( code, false,
 						mManager.lastChar(),
 						mManager.lastKeyCtrl(), mManager.lastKeyAlt(),
 						mManager.lastKeyShift() );
 
-			case flash.events.MouseEvent.MOUSE_MOVE.toLowerCase():
+			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()):
 				DoMouse(cast evt);
-			case flash.events.MouseEvent.MOUSE_DOWN.toLowerCase():
-				DoMouse(cast evt);
-
-			case flash.events.MouseEvent.MOUSE_UP.toLowerCase():
+			case (flash.events.MouseEvent.MOUSE_DOWN.toLowerCase()):
 				DoMouse(cast evt);
 
-			case flash.events.MouseEvent.CLICK.toLowerCase():
+			case (flash.events.MouseEvent.MOUSE_UP.toLowerCase()):
 				DoMouse(cast evt);
 
-			case flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase():
+			case (flash.events.MouseEvent.CLICK.toLowerCase()):
+				DoMouse(cast evt);
+
+			case (flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase()):
 				DoMouse(cast evt);
 
 			default:
