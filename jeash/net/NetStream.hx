@@ -26,13 +26,19 @@
 
 package jeash.net;
 //import haxe.remoting.Connection;
+import flash.events.NetStatusEvent;
 import haxe.Timer;
 import jeash.display.Graphics;
 import jeash.events.Event;
 import jeash.events.EventDispatcher;
-
+import jeash.media.VideoElement;
 import jeash.Lib;
 import Html5Dom;
+
+
+
+typedef NetStatusInfo = { code: String };
+
 
 class NetStream extends EventDispatcher {
 	/*
@@ -71,6 +77,13 @@ class NetStream extends EventDispatcher {
 	/* events */
 	public static inline var BUFFER_UPDATED:String = "jeash.net.NetStream.updated";
 	
+	public static inline var CODE_PLAY_STREAMNOTFOUND:String 	= "NetStream.Play.StreamNotFound";
+	public static inline var CODE_BUFFER_EMPTY:String 			= "NetStream.Buffer.Empty";
+	public static inline var CODE_BUFFER_FULL:String 			= "NetStream.Buffer.Full";
+	public static inline var CODE_BUFFER_FLUSH:String 			= "NetStream.Buffer.Flush";
+	public static inline var CODE_BUFFER_START:String 			= "NetStream.Play.Start";
+	public static inline var CODE_BUFFER_STOP:String 			= "NetStream.Play.Stop";
+	
 	public function new(connection:NetConnection) : Void
 	{	
 		super();
@@ -84,38 +97,52 @@ class NetStream extends EventDispatcher {
 	
 	function js_play(val:Array<Dynamic>) : Void
 	{
-		handleVideo(val[0]);
-		/* todo handling of filetypes:
-		var r:EReg = ~/(?<=.)([^.]+)$/g;
-		trace(val[0]);
-		trace(r.match(val[0]));
-		var ext:String; //get extension
-		switch(val[0])
+		
+		var f:String = Std.string(val[0]);
+		var ext:String = f.substr(f.lastIndexOf("."), f.length);
+		
+		switch(ext)
 		{
-			default:
-			
+			case ".mp4": handleVideo(val[0]);
+			default: return;
 		}
-		*/
 	}
 	
 	private function handleVideo(url:String):Void
 	{
+		var obj:Dynamic = null;
+		
 		videoElement = cast js.Lib.document.createElement("video");
-
 		mTextureBuffer = cast js.Lib.document.createElement('canvas');
-
-		//todo vid events as netstream events
-		var obj:Dynamic = { video: videoElement };
-		videoElement.addEventListener( "loadedmetadata", callback(handleVideoMetaData, obj ), false );
+		
+		for (n in Reflect.fields(VideoElementEvents) )
+		{
+			obj = { video: videoElement, type: n };
+			videoElement.addEventListener(Std.string(n) , callback(handleVideoEvent, obj ), false );	
+		}
 		
 		videoElement.src = url;
 		videoElement.play();
 	}
 	
+	private function handleVideoEvent(data:Dynamic, e):Void
+	{
+		switch(data.type)
+		{
+			case VideoElementEvents.loadedmetadata	: handleVideoMetaData(data, e);
+			case VideoElementEvents.play			: trace("start play");
+			default: trace("unhandled event:" + data.type ) ;
+		}
+	}
+	
 	private function handleVideoMetaData(data:Dynamic, e):Void
 	{
-		mTextureBuffer.width = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoWidth) : data.video.videoWidth;
-		mTextureBuffer.height = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoHeight) : data.video.videoHeight;
+		if (mTextureBuffer.width == 0){
+			mTextureBuffer.width = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoWidth) : data.video.videoWidth;
+		}
+		if (mTextureBuffer.height == 0){
+			mTextureBuffer.height = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoHeight) : data.video.videoHeight;
+		}
 		if (!windowHack) //skip heavy load when pseudo windowless
 		{
 			var scope:NetStream = this;
@@ -126,6 +153,10 @@ class NetStream extends EventDispatcher {
 			  scope.dispatchEvent(new Event(NetStream.BUFFER_UPDATED, false, false));
 			}
 		}
+		/*
+		var info:Dynamic = { code: NetStream.CODE_BUFFER_START };
+		this.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, true, info));
+		*/
 	}
 
 	/**
