@@ -58,7 +58,7 @@ class Video extends DisplayObject {
 	 * 			check compat with flash events
 	 */
 	
-	public function new(?width : Int, ?height : Int, ?Windowed:Bool = true) : Void {
+	public function new(?width : Int, ?height : Int, ?Windowed:Bool = false) : Void {
 		super();
 		
 		mGraphics = new Graphics();
@@ -103,11 +103,13 @@ class Video extends DisplayObject {
 		this.netStream = ns;
 		var scope:Video = this;
 		
+		/*
 		if (ns.videoElement.readyState == Type.enumIndex(ReadyState.HAVE_NOTHING))
 		{
 			trace(this + " attach should be done after connected event.");
 			//return;
 		}
+		*/
 		
 		ns.videoElement.width = this.videoWidth;
 		ns.videoElement.height = this.videoHeight;

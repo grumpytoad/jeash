@@ -34,12 +34,6 @@ import jeash.events.EventDispatcher;
 import jeash.media.VideoElement;
 import jeash.Lib;
 import Html5Dom;
-
-
-
-typedef NetStatusInfo = { code: String };
-
-
 class NetStream extends EventDispatcher {
 	/*
 	 * todo:
@@ -58,6 +52,7 @@ class NetStream extends EventDispatcher {
 	var time(default,null) : Float;
 	var videoCodec(default,null) : UInt;
 	*/
+	public var bufferTime :Float;
 	
 	public var play:Dynamic;
 	public var client:Dynamic;
@@ -127,11 +122,27 @@ class NetStream extends EventDispatcher {
 	
 	private function handleVideoEvent(data:Dynamic, e):Void
 	{
-		switch(data.type)
+
+		//this.client:
+		//onPlayStatus
+		//onMetaData
+		//trace(Type.resolveEnum(VideoElementEvents.loadedmetadata));
+		
+		
+		//todo: fix enum
+		switch(cast(Type.getEnum(data.type), VideoElementEvents))
 		{
-			case VideoElementEvents.loadedmetadata	: handleVideoMetaData(data, e);
-			case VideoElementEvents.play			: trace("start play");
-			default: trace("unhandled event:" + data.type ) ;
+			case VideoElementEvents.loadedmetadata	: 	handleVideoMetaData(data, e);
+			case VideoElementEvents.play			: 	trace("start play");
+			default: '';//trace("unhandled event:" + data.type ) ;
+		}
+	}
+	
+	private function callClient(handler:String, info:Dynamic):Void
+	{
+		if (Reflect.isFunction(Reflect.field(client, handler)))
+		{
+			Reflect.callMethod(client, handler, [ info ]);
 		}
 	}
 	
@@ -153,6 +164,7 @@ class NetStream extends EventDispatcher {
 			  scope.dispatchEvent(new Event(NetStream.BUFFER_UPDATED, false, false));
 			}
 		}
+		callClient("onMetaData", { width: mTextureBuffer.width, height: mTextureBuffer.height, duration: data.video.duration } );
 		/*
 		var info:Dynamic = { code: NetStream.CODE_BUFFER_START };
 		this.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, true, info));
@@ -175,6 +187,16 @@ class NetStream extends EventDispatcher {
 		return false;
 	}
 	
+	public function receiveAudio(flag:Bool) : Void 
+	{ 
+		
+	}
+	
+	public function receiveVideo(flag:Bool) : Void 
+	{ 
+		
+	}
+	
 	/*
 	todo:
 	function attachAudio(microphone : flash.media.Microphone) : Void;
@@ -182,8 +204,7 @@ class NetStream extends EventDispatcher {
 	function close() : Void;
 	function pause() : Void;
 	function publish(?name : String, ?type : String) : Void;
-	function receiveAudio(flag : Bool) : Void;
-	function receiveVideo(flag : Bool) : Void;
+	
 	function receiveVideoFPS(FPS : Float) : Void;
 	function resume() : Void;
 	function seek(offset : Float) : Void;
