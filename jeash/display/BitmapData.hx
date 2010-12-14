@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2010, Jeash contributors.
- * 
+ *
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -54,6 +54,7 @@ typedef LoadData =
 class BitmapData implements IBitmapDrawable
 {
 	private var mTextureBuffer:HTMLCanvasElement;
+	private var mTransparent:Bool;
 
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
@@ -63,7 +64,6 @@ class BitmapData implements IBitmapDrawable
 			?inTransparent:Bool = true,
 			?inFillColour:Int)
 	{
-
 
 		// Load embedded images in the HTML file
 
@@ -79,9 +79,13 @@ class BitmapData implements IBitmapDrawable
 			mTextureBuffer = cast js.Lib.document.createElement('canvas');
 			mTextureBuffer.width = inWidth;
 			mTextureBuffer.height = inHeight;
+
+			mTransparent = inTransparent;
 			if ( inFillColour != null )
 			{
-				// TODO: need support for inTransparent
+				if (!mTransparent)
+					inFillColour |= 0xFF000000;
+
 				var rect = new Rectangle(0,0,inWidth,inHeight);
 				fillRect(rect,inFillColour);
 				var imgdata = mTextureBuffer.getContext("2d").getImageData(0,0,inWidth,inHeight);
@@ -90,7 +94,7 @@ class BitmapData implements IBitmapDrawable
 	}
 
 	public var rect : Rectangle;
-	
+
 	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter)
 	{
 		throw "BitmapData.applyFilter not implemented in Jeash";
@@ -99,7 +103,7 @@ class BitmapData implements IBitmapDrawable
 	public function draw( source:IBitmapDrawable,
 			matrix:Matrix = null,
 			colorTransform:ColorTransform = null,
-			blendMode:String = null, 
+			blendMode:String = null,
 			clipRect:Rectangle = null,
 			smoothing:Bool = false ):Void
 	{
@@ -123,49 +127,103 @@ class BitmapData implements IBitmapDrawable
 	{
 		if (sourceBitmapData.handle() == null || mTextureBuffer == null)
 			return;
-
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
 	}
 
-	public function fillRect(rect: Rectangle, color: Int) : Void {
-		graphics.beginFill(color);
-		graphics.drawRect(rect.x, rect.y, rect.width, rect.height);
-		graphics.endFill();
-		graphics.__Render();
+	private function clipRect (r: Rectangle): Rectangle
+	{
+		if (r.x < 0)
+		{
+			r.width -= -r.x;
+			r.x = 0;
+			if (r.x + r.width <= 0)
+				return null;
+		}
+		if (r.y < 0)
+		{
+			r.height -= -r.y;
+			r.y = 0;
+			if (r.y + r.height <= 0)
+				return null;
+		}
+		if (r.x + r.width >= getWidth ())
+		{
+			r.width -= r.x + r.width - getWidth ();
+			if (r.width <= 0)
+				return null;
+		}
+		if (r.y + r.height >= getHeight ())
+		{
+			r.height -= r.y + r.height - getHeight ();
+			if (r.height <= 0)
+				return null;
+		}
+		return r;
+	}
+
+	public function fillRect(rect: Rectangle, color: UInt) : Void
+	{
+		rect = clipRect (rect);
+		if (rect == null) return;
+
+		var r: Int = (color & 0xFF0000) >>> 16;
+		var g: Int = (color & 0x00FF00) >>> 8;
+		var b: Int = (color & 0x0000FF);
+		var a: Int = (mTransparent)? (color >>> 24) : 0xFF;
+
+		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+		for (i in 0...imagedata.data.length >> 2)
+		{
+			imagedata.data[i * 4] = r;
+			imagedata.data[i * 4 + 1] = g;
+			imagedata.data[i * 4 + 2] = b;
+			imagedata.data[i * 4 + 3] = a;
+		}
+		ctx.putImageData (imagedata, rect.x, rect.y);
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
 	{
+		var byteArray = new ByteArray();
+
+		rect = clipRect (rect);
+		if (rect == null) return byteArray;
+
 		var bytes = haxe.io.Bytes.alloc(cast(3 * rect.width * rect.height, Int));
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
 		for (i in 0...imagedata.data.length) {
 			bytes.set(i, imagedata.data[i]);
 		}
-		var byteArray = new ByteArray();
 		for ( i in 0...bytes.length )
 			byteArray.writeByte( bytes.get(i) );
 		return byteArray;
 	}
 
-	public function getPixel(x:Int, y:Int) : Int
+	public function getPixel(x:Int, y:Int) : UInt
 	{
+		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return 0;
 
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(x, y, 1, 1);
 		return (imagedata.data[0] << 16) | (imagedata.data[1] << 8) | (imagedata.data[2]);
 	}
 
-	public function getPixel32(x:Int, y:Int) 
+	public function getPixel32(x:Int, y:Int)
 	{
+		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return 0;
+
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(x, y, 1, 1);
 		return (imagedata.data[3] << 24) | (imagedata.data[0] << 16) | imagedata.data[1] << 8 | imagedata.data[2];
 	}
 
-	public function setPixel(x:Int, y:Int, color:UInt) 
+	public function setPixel(x:Int, y:Int, color:UInt)
 	{
+		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return;
+
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imageData = ctx.createImageData( 1, 1 );
 		imageData.data[0] = (color & 0xFF0000) >>> 16;
@@ -175,14 +233,19 @@ class BitmapData implements IBitmapDrawable
 		ctx.putImageData(imageData, x, y);
 	}
 
-	public function setPixel32(x:Int, y:Int, color:UInt) 
+	public function setPixel32(x:Int, y:Int, color:UInt)
 	{
+		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return;
+
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imageData = ctx.createImageData( 1, 1 );
 		imageData.data[0] = (color & 0xFF0000) >>> 16;
 		imageData.data[1] = (color & 0x00FF00) >>> 8;
 		imageData.data[2] = (color & 0x0000FF) ;
-		imageData.data[3] = 0xFF;
+		if (mTransparent)
+			imageData.data[3] = color >>> 24;
+		else
+			imageData.data[3] = 0xFF;
 		ctx.putImageData(imageData, x, y);
 	}
 
@@ -197,26 +260,25 @@ class BitmapData implements IBitmapDrawable
 		return graphics;
 	}
 
-	public inline function handle() 
+	public inline function handle()
 	{
 		return mTextureBuffer;
 	}
 
-	public function getWidth() : Int { 
+	public function getWidth() : Int {
 		if ( mTextureBuffer != null ) {
 			return mTextureBuffer.width;
 		} else {
 			return 0;
 		}
 	}
-	public function getHeight()  : Int { 
+	public function getHeight() : Int {
 		if ( mTextureBuffer != null ) {
 			return mTextureBuffer.height;
 		} else {
 			return 0;
 		}
 	}
-
 
 	public function destroy()
 	{
@@ -251,14 +313,13 @@ class BitmapData implements IBitmapDrawable
 	public function LoadFromFile(inFilename:String, ?inLoader:LoaderInfo)
 	{
 		var image : HTMLImageElement = cast js.Lib.document.createElement("img");
-		if ( inLoader != null ) 
+		if ( inLoader != null )
 		{
 			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:inLoader, bitmapData:this};
 			image.addEventListener( "load", callback(OnLoad, data), false );
 		}
 		image.src = inFilename;
 	}
-
 
 	static public function CreateFromHandle(inHandle:HTMLCanvasElement) : BitmapData
 	{
@@ -288,8 +349,8 @@ class BitmapData implements IBitmapDrawable
 		if (matrix != null) {
 			ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 		}
+
 		ctx.drawImage(handle(), 0, 0);
 		ctx.restore();
 	}
 }
-
