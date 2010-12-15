@@ -112,7 +112,7 @@ class NetStream extends EventDispatcher {
 		
 		for (n in Reflect.fields(VideoElementEvents) )
 		{
-			obj = { video: videoElement, type: n };
+			obj = { video: videoElement, type: Reflect.field(VideoElementEvents, n) }; //todo: typedef
 			videoElement.addEventListener(Std.string(n) , callback(handleVideoEvent, obj ), false );	
 		}
 		
@@ -122,20 +122,12 @@ class NetStream extends EventDispatcher {
 	
 	private function handleVideoEvent(data:Dynamic, e):Void
 	{
-
-		//this.client:
-		//onPlayStatus
-		//onMetaData
-		//trace(Type.resolveEnum(VideoElementEvents.loadedmetadata));
-		
-		
-		//todo: fix enum
-		switch(cast(Type.getEnum(data.type), VideoElementEvents))
+		switch(data.type)
 		{
 			case VideoElementEvents.loadedmetadata	: 	handleVideoMetaData(data, e);
 			case VideoElementEvents.play			: 	trace("start play");
-			default: '';//trace("unhandled event:" + data.type ) ;
-		}
+			default: trace("unhandled event:" + data.type ) ;
+		}	
 	}
 	
 	private function callClient(handler:String, info:Dynamic):Void
