@@ -674,12 +674,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (gfx != null)
 		{
 			var local = globalToLocal(point);
-			var extent = gfx.GetExtent(new Matrix());
-			if (this.name == "circle")
-			{
-			//untyped console.log(this.x + ", " + point.x + ", " + local.x + ", " + extent.x);
-			}
-			//if (gfx.jeashHitTest(mFullMatrix,local.x-(extent.x), local.y-(extent.y)))
 			switch (stage.jeashPointInPathMode)
 			{
 				case USER_SPACE:
@@ -689,6 +683,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 						return i == null ? null : i;
 					}
 				case DEVICE_SPACE:
+
+					var extent = gfx.GetExtent(new Matrix());
 					if (gfx.jeashHitTest(local.x-(extent.x), local.y-(extent.y)))
 					{
 						var i = jeashAsInteractiveObject();

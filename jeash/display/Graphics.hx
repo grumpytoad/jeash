@@ -604,7 +604,7 @@ class Graphics
 	}
 
 
-	public function jeashHitTest(inX:Float,inY:Float) : Bool
+	public function jeashHitTest(inX:Float, inY:Float) : Bool
 	{
 		if (jeash.Lib.mOpenGL) return false;
 

@@ -84,22 +84,7 @@ class Lib
 	var mArgs:Array<String>;
 
 	static inline var VENDOR_HTML_TAG = "data-";
-	static inline var HTML_EVENT_TYPES = [ 
-		'resize', 
-		'mouseup', 
-		'mouseover', 
-		'mouseout', 
-		'mousemove', 
-		'mousedown', 
-		'mousewheel', 
-		'keyup', 
-		'keypress', 
-		'keydown', 
-		'focus', 
-		'dblclick', 
-		'click', 
-		'blur' 
-			];
+	static inline var HTML_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'keyup', 'keypress', 'keydown', 'focus', 'dblclick', 'click', 'blur' ];
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
 	static var DEFAULT_WIDTH = 500;
 	static var DEFAULT_HEIGHT = 500;
@@ -114,7 +99,10 @@ class Lib
 		// ... this should go in Stage.hx
 		__scr = cast js.Lib.document.getElementById(title);
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
+		__scr.style.overflow = "none";
+		__scr.style.position = "absolute"; // necessary for chrome ctx.isPointInPath
 		__scr.appendChild( Lib.canvas );
+		
 	}
 
 	static public function trace( arg:Dynamic ) 
