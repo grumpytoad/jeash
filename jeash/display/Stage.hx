@@ -107,8 +107,9 @@ class Stage extends flash.display.DisplayObjectContainer
 		{
 			if (lockCenter)
 			{
-				jeashDragOffsetX = -jeashDragObject.width/2;
-				jeashDragOffsetY = -jeashDragObject.height/2;
+				var bounds = sprite.getBounds(this);
+				jeashDragOffsetX = -bounds.width/2-bounds.x;
+				jeashDragOffsetY = -bounds.height/2-bounds.y;
 			}
 			else
 			{
@@ -279,7 +280,6 @@ class Stage extends flash.display.DisplayObjectContainer
 	// @r551 should be in MouseEvent.hx, haxe issue 300
 	public function jeashCreateMouseEvent(type:String, event:Html5Dom.MouseEvent, local:Point, target:InteractiveObject): flash.events.MouseEvent
 	{
-		var bubble = true;
 		// cross-browser delta sniff
 		var delta = if ( type == flash.events.MouseEvent.MOUSE_WHEEL )
 		{
@@ -296,7 +296,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		} else { 2; }
 
 		var pseudoEvent =  new flash.events.MouseEvent(type,
-				bubble, false,
+				true, false,
 				local.x,local.y,
 				null,
 				event.ctrlKey,

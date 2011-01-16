@@ -751,7 +751,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				mBoundsRect = new Rectangle(mFullMatrix.tx,mFullMatrix.ty,0,0);
 			else
 			{
-				mBoundsRect = gfx.GetExtent(mFullMatrix);
+				var m = mFullMatrix.clone(); m.tx = 0; m.ty = 0;
+				mBoundsRect = gfx.GetExtent(m);
 				if (mScale9Grid!=null)
 				{
 					mBoundsRect.width *= scaleX;
