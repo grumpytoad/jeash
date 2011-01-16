@@ -52,19 +52,19 @@ class Sprite extends DisplayObjectContainer
 
 	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void
 	{
-		flash.Lib.SetDragged(this,lockCenter,bounds);
+		if (stage != null)
+			stage.jeashStartDrag(this, lockCenter, bounds);
 	}
 
 	public function stopDrag():Void
 	{
-		flash.Lib.SetDragged(null);
+		if (stage != null)
+			stage.jeashStopDrag(this);
 	}
 
-	public function getObjectsUnderPoint( pPoint:Point ):Array<DisplayObject> {
-			// TODO
-			return null;
+	override function GetGraphics() 
+	{ 
+		return mGraphics; 
 	}
-
-	override public function GetGraphics() { return mGraphics; }
 }
 

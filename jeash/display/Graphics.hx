@@ -56,7 +56,6 @@ import flash.display.GradientType;
 import flash.display.SpreadMethod;
 import flash.display.InterpolationMethod;
 import flash.display.BitmapData;
-import flash.Manager;
 
 typedef DrawList = Array<Drawable>;
 
@@ -176,6 +175,12 @@ class GLTextureShader
 
 }
 
+enum PointInPathMode
+{
+	USER_SPACE;
+	DEVICE_SPACE;
+}
+
 class Graphics
 {
 	public static var defaultFontName = "ARIAL.TTF";
@@ -245,7 +250,8 @@ class Graphics
 	public static var BLEND_SUBTRACT = 13;
 	public static var BLEND_SHADER = 14;
 
-	var mSurface(default,null):HTMLCanvasElement;
+	public var mSurface(default,null):HTMLCanvasElement;
+	public var mChanged(default,null):Bool;
 
 	// Current set of points
 	private var mPoints:GfxPoints;
@@ -287,13 +293,14 @@ class Graphics
 	{
 		if ( inSurface == null ) {
 			mSurface = cast js.Lib.document.createElement("canvas");
+			var stage = flash.Lib.jeashGetStage();
 			if (jeash.Lib.mOpenGL)
 			{
-				mSurface.width = GetSizePow2(jeash.Lib.canvas.width);
-				mSurface.height = GetSizePow2(jeash.Lib.canvas.height);
+				mSurface.width = GetSizePow2(stage.stageWidth);
+				mSurface.height = GetSizePow2(stage.stageHeight);
 			} else {
-				mSurface.width = jeash.Lib.canvas.width;
-				mSurface.height = jeash.Lib.canvas.height;
+				mSurface.width = stage.stageWidth;
+				mSurface.height = stage.stageHeight;
 			}
 
 		} else {
@@ -320,19 +327,22 @@ class Graphics
 
 		ClearLine();
 		mLineJobs = [];
+		mChanged = true;
 
 		if (jeash.Lib.mOpenGL )
 		{
 
 			// initialise shaders
 
-			gl = jeash.Lib.canvas.getContext(jeash.Lib.context);
+			gl = jeash.Lib.glContext;
 
 			mShaderGL = CreateShaderGL( GLTextureShader.mFragmentProgram, GLTextureShader.mVertexProgram, ["aVertPos", "aTexCoord"] );
 
 			// -- 
 
 
+		} else {
+			//Lib.jeashAppendSurface(mSurface, 0, 0);
 		}
 	}
 
@@ -437,20 +447,25 @@ class Graphics
 		return gradient;
 	}
 
-	public function __Render(?inMatrix:Matrix,?inMaskHandle:HTMLCanvasElement,?inScrollRect:Rectangle)
+	public function __Render(?inMatrix:Matrix, ?inMaskHandle:HTMLCanvasElement)
 	{
+		if (!mChanged) return;
+
 		ClosePolygon(true);
 
 		// clear the canvas
 		ClearCanvas();
-
 
 		if ( inMatrix == null ) inMatrix = new Matrix();
 
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
 
 		ctx.globalAlpha = mSurfaceAlpha;
-		ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, inMatrix.tx, inMatrix.ty);
+
+		var extent = GetExtent(new Matrix());
+
+		// TODO: refactor into DisplayObject
+		ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, -extent.x, -extent.y);
 
 		var len : Int = mDrawList.length;
 		for ( i in 0...len ) {
@@ -570,27 +585,30 @@ class Graphics
 
 		}
 
-		// merge into parent canvas context
+		// merge into parent canvas context - used only when caching.
 		if ( inMaskHandle != null && len > 0) {
 			if (!jeash.Lib.mOpenGL)
 			{
 				var maskCtx = inMaskHandle.getContext('2d');
-				maskCtx.drawImage(mSurface, 0, 0);
+				maskCtx.drawImage(mSurface, inMatrix.tx + extent.x, inMatrix.ty + extent.y);
+
 			} else {
 
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
 			}
 
-		} 
+		}
+
+		mChanged = false;
 
 	}
 
 
-	public function HitTest(inX:Float,inY:Float) : Bool
+	public function jeashHitTest(inX:Float,inY:Float) : Bool
 	{
 		if (jeash.Lib.mOpenGL) return false;
 
-		var ctx : CanvasRenderingContext2D = jeash.Lib.canvas.getContext("2d");
+		var ctx : CanvasRenderingContext2D = mSurface.getContext("2d");
 		ctx.save();
 		for(d in mDrawList)
 		{
@@ -605,8 +623,8 @@ class Graphics
 						ctx.lineTo(p.x, p.y);
 				}
 			}
-			if ( ctx.isPointInPath(inX, inY) ) return true;
 			ctx.closePath();
+			if ( ctx.isPointInPath(inX, inY) ) return true;
 		}
 		ctx.restore();
 		return false;
@@ -940,7 +958,7 @@ class Graphics
 
 	public function GetExtent(inMatrix:Matrix) : Rectangle
 	{
-		flush();
+		//flush();
 
 		if (mDrawList.length == 0)
 			return new Rectangle();
@@ -1147,6 +1165,27 @@ class Graphics
 			mBitmap = null;
 			mFilling = false;
 		}
+
+		mChanged = true;
+	}
+
+	public static function jeashDetectIsPointInPathMode()
+	{
+		var canvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
+		var ctx = canvas.getContext('2d');
+		if (ctx.isPointInPath == null)
+			return USER_SPACE;
+		ctx.save();
+		ctx.translate(1,0);
+		ctx.beginPath();
+		ctx.rect(0,0,1,1);
+		var rv = if (ctx.isPointInPath(0.3,0.3)) {
+			USER_SPACE;
+		} else {
+			DEVICE_SPACE;
+		}
+		ctx.restore();
+		return rv;
 	}
 
 }

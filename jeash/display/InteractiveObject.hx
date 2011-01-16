@@ -51,7 +51,7 @@ class InteractiveObject extends DisplayObject
 
 	public function OnKey(inKey:flash.events.KeyboardEvent):Void { }
 
-	override public function AsInteractiveObject() : flash.display.InteractiveObject
+	override public function jeashAsInteractiveObject() : flash.display.InteractiveObject
 	{
 		return this;
 	}

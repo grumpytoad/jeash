@@ -29,7 +29,7 @@ package jeash.display;
 import flash.display.DisplayObject;
 import flash.display.PixelSnapping;
 
-class Bitmap extends DisplayObject {
+class Bitmap extends jeash.display.DisplayObject {
 	public var bitmapData(default,SetBitmapData) : BitmapData;
 	public var pixelSnapping : PixelSnapping;
 	public var smoothing : Bool;

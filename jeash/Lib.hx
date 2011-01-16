@@ -38,9 +38,6 @@ import flash.display.DisplayObject;
 import flash.display.InteractiveObject;
 import flash.geom.Rectangle;
 
-import flash.ui.Keyboard;
-import jeash.Manager;
-
 import flash.geom.Point;
 
 import flash.display.Graphics;
@@ -58,16 +55,13 @@ class Lib
 	static var mMe:Lib;
 	static var mPriority = ["2d", "swf"];
 	public static var context(default,null):String;
-	public static var canvas(GetCanvas,null):HTMLCanvasElement;
-	public static var current(GetCurrent,null):MovieClip;
+	public static var current(jeashGetCurrent,null):MovieClip;
+	public static var glContext(default,null):WebGLRenderingContext;
 	public static var debug = false;
+	public static var canvas(jeashGetCanvas,null):HTMLCanvasElement;
 	static var mShowCursor = true;
 	static var mShowFPS = false;
 
-	static var mDragObject:DisplayObject = null;
-	static var mDragRect:Rectangle = null;
-	static var mDragOffsetX:Float = 0;
-	static var mDragOffsetY:Float = 0;
 	static public var mOpenGL:Bool = false;
 	var mRequestedWidth:Int;
 	var mRequestedHeight:Int;
@@ -86,7 +80,7 @@ class Lib
 
 	public static var mLastMouse:flash.geom.Point = new flash.geom.Point();
 
-	var mManager : Manager;
+	var __scr : HTMLDivElement;
 	var mArgs:Array<String>;
 
 	static inline var VENDOR_HTML_TAG = "data-";
@@ -107,24 +101,21 @@ class Lib
 		'blur' 
 			];
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
+	static var DEFAULT_WIDTH = 500;
+	static var DEFAULT_HEIGHT = 500;
 
-	function new(inName:String,inWidth:Int,inHeight:Int,?inFullScreen:Null<Bool>,?inResizable:Null<Bool>,?cb:Void->Void)
+	function new(title:String, width:Int, height:Int)
 	{
 		mKilled = false;
-		mRequestedWidth = inWidth;
-		mRequestedHeight = inHeight;
+		mRequestedWidth = width;
+		mRequestedHeight = height;
 		mResizePending = false;
 
-		mManager = new Manager( inWidth, inHeight, inName, cb );
+		// ... this should go in Stage.hx
+		__scr = cast js.Lib.document.getElementById(title);
+		if ( __scr == null ) throw "Element with id '" + title + "' not found";
+		__scr.appendChild( Lib.canvas );
 	}
-
-	/*
-	public function OnResize(inW:Int, inH:Int)
-	{
-		//mManager.OnResize(inW,inH);
-		mStage.OnResize(inW,inH);
-	}
-	*/
 
 	static public function trace( arg:Dynamic ) 
 	{
@@ -137,15 +128,7 @@ class Lib
 		}
 	}
 
-	static public function SetTextCursor(inText:Bool)
-	{
-		if (inText)
-			flash.Manager.SetCursor( 2 );
-		else
-			flash.Manager.SetCursor( mShowCursor ? 1 : 0 );
-	}
-
-	static function GetCanvas() : HTMLCanvasElement
+	static function jeashGetCanvas() : HTMLCanvasElement
 	{
 		untyped
 		{
@@ -163,7 +146,7 @@ class Lib
 						if (StringTools.startsWith(ctx, "swf") && eReg.match( ctx ))
 						{
 							Lib.context = ctx;
-							if (LoadSwf(eReg.matched(1))) break;
+							if (jeashLoadSwf(eReg.matched(1))) break;
 
 						} else if (Lib.canvas.getContext(ctx)!=null) {
 							Lib.context = ctx;
@@ -176,21 +159,22 @@ class Lib
 				// fallback to 2d context (even if it doesn't work)
 				if ( Lib.context == null ) Lib.context = "2d";
 
-				Bootstrap();
+				jeashBootstrap();
 
 				if ( !StringTools.startsWith(Lib.context, "swf") )
 				{
-					if ( mOpenGL ) InitGL();
+					if ( mOpenGL ) jeashInitGL();
 					starttime = haxe.Timer.stamp();
 				} else {
 					//throw "Swf deployed, forcing execution failure.";
 				}
+
 			}
 			return Lib.canvas;
 		}
 	}
 
-	static function LoadSwf(url:String)
+	static function jeashLoadSwf(url:String)
 	{
 		var navigator : Navigator = cast js.Lib.window.navigator;
 		if (navigator.plugins != null && navigator.plugins.length > 0)
@@ -214,9 +198,10 @@ class Lib
 		
 	}
 
-	static function InitGL()
+	static function jeashInitGL()
 	{
 		var gl : WebGLRenderingContext = Lib.canvas.getContext(Lib.context);
+		Lib.glContext = gl;
 
 		gl.viewport(0, 0, Lib.canvas.width, Lib.canvas.height);
 
@@ -227,7 +212,7 @@ class Lib
 		gl.depthFunc(gl.LEQUAL);
 	}
 
-	static public function GetCurrent() : MovieClip
+	static public function jeashGetCurrent() : MovieClip
 	{
 		Lib.canvas;
 		if ( mMainClassRoot == null )
@@ -245,371 +230,32 @@ class Lib
 	}
 
 	static var starttime : Float;
-	static public function getTimer() :Int 
+	public static function getTimer() :Int 
 	{ 
 		return Std.int((haxe.Timer.stamp() - starttime )*1000); 
 	}
 
-#if !flash
-	static public function GetStage() 
+	public static function jeashGetStage() 
 	{ 
+		Lib.canvas;
 		if ( mStage == null )
 		{
-			mStage = new flash.display.Stage(Lib.canvas.width,Lib.canvas.height);
-			mStage.addChild(GetCurrent());
+			mStage = new flash.display.Stage(jeashGetWidth(), jeashGetHeight());
+			mStage.addChild(jeashGetCurrent());
 		}
 
 		return mStage; 
 	}
 
-	public function ProcessKeys( code:Int , pressed : Bool, inChar:Int,
-			ctrl:Bool, alt:Bool, shift:Bool )
+	public static function jeashAppendSurface(surface:HTMLCanvasElement, x:Int, y:Int)
 	{
-		if (code== Keyboard.ESCAPE && mQuitOnEscape)
+		if (mMe.__scr != null)
 		{
-			mKilled = true;
-			return;
+			surface.style.position = "absolute";
+			surface.style.left = x + "px";
+			surface.style.top = y + "px";
+			mMe.__scr.appendChild(surface);
 		}
-
-		switch code
-		{
-			// You might want to disable this in production
-
-			case Keyboard.TAB:
-				mStage.TabChange( shift ? -1 : 1,code);
-
-			default:
-				var event = new flash.events.KeyboardEvent(
-						pressed ? flash.events.KeyboardEvent.KEY_DOWN:
-						flash.events.KeyboardEvent.KEY_UP,
-						true,false,
-						inChar,
-						Keyboard.ConvertCode(code, shift),
-						Keyboard.ConvertLocation(code),
-						ctrl,alt,shift);
-
-				mStage.HandleKey(event);
-		}
-	}
-
-	function CreateMouseEvent(inObj:InteractiveObject,inRelatedObj:InteractiveObject,
-			inMouse:Html5Dom.MouseEvent,inType:String): flash.events.MouseEvent
-	{
-		var bubble = inType!=flash.events.MouseEvent.ROLL_OUT && inType!=flash.events.MouseEvent.ROLL_OVER;
-		var pos = new flash.geom.Point(inMouse.offsetX,inMouse.offsetY);
-		if (inObj!=null)
-			pos = inObj.globalToLocal(pos);
-
-		var delta = if ( inType == flash.events.MouseEvent.MOUSE_WHEEL )
-		{
-			var mouseEvent : Dynamic = inMouse;
-			if (mouseEvent.wheelDelta) { /* IE/Opera. */
-				if ( js.Lib.isOpera )
-					Std.int(mouseEvent.wheelDelta/40);
-				else
-					Std.int(mouseEvent.wheelDelta/120);
-			} else if (mouseEvent.detail) { /** Mozilla case. */
-				Std.int(-mouseEvent.detail);
-			}
-
-		} else { 2; }
-		var result =  new flash.events.MouseEvent(inType,
-				bubble, false,
-				inMouse.offsetX,inMouse.offsetY,
-				inRelatedObj,
-				inMouse.ctrlKey,
-				inMouse.altKey,
-				inMouse.shiftKey,
-				true, // buttonDown = left mouse button, 
-				delta);
-
-		result.stageX = inMouse.offsetX/mStage.scaleX;
-		result.stageY = inMouse.offsetY/mStage.scaleY;
-		result.target = inObj;
-		return result;
-	}
-
-	function GetInteractiveObjectAtPos(inX:Int,inY:Int) : InteractiveObject
-	{
-		return mStage.GetInteractiveObjectAtPos(inX,inY);
-	}
-
-	static function FireEvents(inEvt:flash.events.Event,inList:Array<InteractiveObject>)
-	{
-		var l = inList.length;
-		if (l==0)
-			return;
-
-		// First, the "capture" phase ...
-		inEvt.SetPhase(EventPhase.CAPTURING_PHASE);
-		for(i in 0...l-1)
-		{
-			var obj = inList[i];
-			inEvt.currentTarget = obj;
-			obj.dispatchEvent(inEvt);
-			if (inEvt.IsCancelled())
-				return;
-		}
-
-		// Next, the "target"
-		inEvt.SetPhase(EventPhase.AT_TARGET);
-		inEvt.currentTarget = inList[l-1];
-		inList[l-1].dispatchEvent(inEvt);
-		if (inEvt.IsCancelled())
-			return;
-
-		// Last, the "bubbles" phase
-		if (inEvt.bubbles)
-		{
-			inEvt.SetPhase(EventPhase.BUBBLING_PHASE);
-			var i=l-2;
-			while(i>=0)
-			{
-				var obj = inList[i];
-				inEvt.currentTarget = obj;
-				obj.dispatchEvent(inEvt);
-				if (inEvt.IsCancelled())
-					return;
-				--i;
-			}
-
-		}
-	}
-
-
-	static public function SendEventToObject(inEvent:flash.events.Event,inObj:InteractiveObject) : Void
-	{
-		var objs = GetAnscestors(inObj);
-		objs.reverse();
-		FireEvents(inEvent,objs);
-	}
-
-	static function GetAnscestors(inObj:DisplayObject) : Array<InteractiveObject>
-	{
-		var result:Array<InteractiveObject> = [];
-
-		while(inObj!=null)
-		{
-			var interactive = inObj.AsInteractiveObject();
-			if (interactive!=null)
-				result.push(interactive);
-			inObj = inObj.GetParent();
-		}
-
-		result.reverse();
-		return result;
-	}
-
-	static public function SetDragged(inObj:DisplayObject,?inCentre:Bool, ?inRect:Rectangle)
-	{
-		mDragObject = inObj;
-		mDragRect = inRect;
-		if (mDragObject!=null)
-		{
-			if (inCentre!=null && inCentre)
-			{
-				mDragOffsetX = -inObj.width/2;
-				mDragOffsetY = -inObj.height/2;
-			}
-			else
-			{
-				var mouse = new Point( mMouseX, mMouseY );
-				var p = mDragObject.parent;
-				if (p!=null)
-					mouse = p.globalToLocal(mouse);
-
-				mDragOffsetX = inObj.x-mouse.x;
-				mDragOffsetY = inObj.y-mouse.y;
-			}
-		}
-	}
-
-	function DragObject(inX:Float, inY:Float)
-	{
-		var pos = new Point(inX,inY);
-		var p = mDragObject.parent;
-		if (p!=null)
-			pos = p.globalToLocal(pos);
-
-		if (mDragRect!=null)
-		{
-			if (pos.x < mDragRect.x) pos.x = mDragRect.x;
-			else if (pos.x > mDragRect.right) pos.x = mDragRect.right;
-
-			if (pos.y < mDragRect.y) pos.y = mDragRect.y;
-			else if (pos.y > mDragRect.bottom) pos.y = mDragRect.bottom;
-		}
-
-		mDragObject.x = pos.x + mDragOffsetX;
-		mDragObject.y = pos.y + mDragOffsetY;
-	}
-
-
-	function DoMouse(evt:Html5Dom.MouseEvent)
-	{
-		var x = Std.int(evt.offsetX);
-		var y = Std.int(evt.offsetY);
-
-		mLastMouse.x = x;
-		mLastMouse.y = y;
-
-		var type = switch (evt.type) {
-			case (flash.events.MouseEvent.CLICK.toLowerCase()): flash.events.MouseEvent.CLICK;
-			case (flash.events.MouseEvent.MOUSE_DOWN.toLowerCase()): flash.events.MouseEvent.MOUSE_DOWN;
-			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()): flash.events.MouseEvent.MOUSE_MOVE;
-			case (flash.events.MouseEvent.MOUSE_UP.toLowerCase()): flash.events.MouseEvent.MOUSE_UP;
-			case (flash.events.MouseEvent.MOUSE_OVER.toLowerCase()): flash.events.MouseEvent.MOUSE_OVER;
-			case (flash.events.MouseEvent.MOUSE_OUT.toLowerCase()): flash.events.MouseEvent.MOUSE_OUT;
-			case (flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase()): flash.events.MouseEvent.MOUSE_WHEEL;
-		}
-
-		if (mDragObject!=null)
-			DragObject(x/mStage.scaleX,y/mStage.scaleY);
-
-		var obj = GetInteractiveObjectAtPos(x,y);
-
-		var new_list:Array<InteractiveObject> = obj!=null ?  GetAnscestors(obj) : [];
-		var nl = new_list.length;
-
-
-		// Handle roll-over/roll-out events ...
-		if (obj!=mRolling)
-		{
-			if (mRolling!=null)
-			{
-				mRolling.DoMouseLeave();
-				var evt = CreateMouseEvent( mRolling, obj, evt, flash.events.MouseEvent.MOUSE_OUT);
-				mRolling.dispatchEvent(evt);
-			}
-
-			var old_list = GetAnscestors(mRolling);
-			var ol = old_list.length;
-
-			// Find common parents...
-			var common=0;
-			var stop = ol<nl ? ol:nl;
-
-			while(common<stop && old_list[common]==new_list[common])
-				common++;
-
-			if (ol>common)
-			{
-				var evt = CreateMouseEvent(mRolling, obj, evt, flash.events.MouseEvent.ROLL_OUT);
-				for(o in common...ol)
-				{
-					evt.target = old_list[o];
-					old_list[o].dispatchEvent(evt);
-				}
-			}
-
-			if (nl>common)
-			{
-				var evt = CreateMouseEvent(obj, mRolling, evt, flash.events.MouseEvent.ROLL_OVER);
-				for(o in common...nl)
-				{
-					evt.target = new_list[o];
-					new_list[o].dispatchEvent(evt);
-				}
-			}
-
-			mRolling = obj;
-			if (mRolling!=null)
-			{
-				mRolling.DoMouseEnter();
-				var evt = CreateMouseEvent(mRolling, obj, evt, flash.events.MouseEvent.MOUSE_OVER);
-				mRolling.dispatchEvent(evt);
-			}
-
-		}
-
-		// Send event directly to InteractiveObject for internal processing
-		if (type==flash.events.MouseEvent.MOUSE_DOWN)
-		{
-			mDownObj = obj;
-			if (obj!=null)
-				obj.OnMouseDown(x,y);
-		}
-		else if (type==flash.events.MouseEvent.MOUSE_MOVE && mDownObj!=null)
-			mDownObj.OnMouseDrag(x,y);
-		else if (type==flash.events.MouseEvent.MOUSE_UP)
-		{
-
-			if (mDownObj!=null)
-			{
-				mDownObj.OnMouseUp(x,y);
-
-				if (obj==mDownObj)
-				{
-					var evt = CreateMouseEvent(obj, null, evt, flash.events.MouseEvent.CLICK);
-					FireEvents(evt,new_list);
-				}
-				else
-				{
-					// Send up event to same place as down event...
-					obj = mDownObj;
-					new_list = GetAnscestors(obj);
-				}
-			}
-
-			mDownObj = null;
-		}
-
-
-		if (nl>0 && (type==flash.events.MouseEvent.MOUSE_DOWN || type==flash.events.MouseEvent.MOUSE_UP) || type==flash.events.MouseEvent.MOUSE_MOVE || type==flash.events.MouseEvent.MOUSE_WHEEL || type==flash.events.MouseEvent.CLICK)
-		{
-			var evt = CreateMouseEvent(obj, null, evt, type);
-			FireEvents(evt, new_list);
-		}
-
-		mMouseX = x;
-		mMouseY = y;
-
-		//var event =CreateMouseEvent(inEvent,type);
-	}
-
-#end
-
-	function CaptureEvent(evt:Event)
-	{
-		switch(evt.type)
-		{
-			case (flash.events.KeyboardEvent.KEY_DOWN.toLowerCase()):
-				var code = mManager.lastKey();
-				ProcessKeys( code, true,
-						mManager.lastChar(),
-						mManager.lastKeyCtrl(), mManager.lastKeyAlt(),
-						mManager.lastKeyShift() );
-			case (flash.events.KeyboardEvent.KEY_UP.toLowerCase()):
-				var code = mManager.lastKey();
-				ProcessKeys( code, false,
-						mManager.lastChar(),
-						mManager.lastKeyCtrl(), mManager.lastKeyAlt(),
-						mManager.lastKeyShift() );
-
-			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()):
-				DoMouse(cast evt);
-			case (flash.events.MouseEvent.MOUSE_DOWN.toLowerCase()):
-				DoMouse(cast evt);
-
-			case (flash.events.MouseEvent.MOUSE_UP.toLowerCase()):
-				DoMouse(cast evt);
-
-			case (flash.events.MouseEvent.CLICK.toLowerCase()):
-				DoMouse(cast evt);
-
-			case (flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase()):
-				DoMouse(cast evt);
-
-			default:
-				
-		}
-	}
-
-
-	function MyRun( )
-	{
-		mManager.ResetFPS();
-		GetStage().SetTimer();
 	}
 
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
@@ -628,16 +274,16 @@ class Lib
 						switch (attr.name)
 						{
 							case VENDOR_HTML_TAG + 'framerate':
-								GetStage().frameRate = Std.parseFloat(attr.value);
+								jeashGetStage().frameRate = Std.parseFloat(attr.value);
 							default:
 						}
 					}
 				}
 
 				for (type in HTML_EVENT_TYPES) 
-					tgt.addEventListener(type, mMe.CaptureEvent, false);
+					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
 
-				GetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
+				jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
 					ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
 							return switch (pos) {
 							case 0: res | (cur << 16);
@@ -646,27 +292,11 @@ class Lib
 							}
 							});
 
-				GetStage().OnResize(width,height);
-
-				mMe.MyRun();
+				jeashGetStage().jeashUpdateNextWake();
 			}
 
 			return mMe;
 	}
-
-	public static function close()
-	{
-		mMe.mKilled = true;
-	}
-
-
-	/*
-	public static function Init(inName:String,inWidth:Int,inHeight:Int,
-			?inFullScreen:Null<Bool>,?inResizable:Null<Bool>,?cb:Void->Void)
-	{
-		mMe = new Lib(inName,inWidth,inHeight,inFullScreen,inResizable,cb);
-	}
-	*/
 
 	static function ParseColor( str:String, cb: Int -> Int -> Int -> Int) 
 	{
@@ -701,38 +331,23 @@ class Lib
 		if ( attr != null ) mPriority = attr.value.split(':');
 	}
 
-	static function Bootstrap()
+	static function jeashGetWidth()
 	{
-		untyped
-		{
-			var tgt : HTMLDivElement = cast document.getElementById(JEASH_IDENTIFIER);
-			var width : Int;
-			var height : Int;
-			var name : String;
-
-			// There are two ways of initialising Jeash -
-			// one is the old Canvas-NME method of placing
-			// a single canvas element in the body tag, the
-			// newer method is to have a <div> tag with id
-			// 'haxe:jeash'. Currently, neither method has
-			// any advantages over the other.
-
-			if ( tgt == null )
-			{
-				var els = document.getElementsByTagName('canvas');
-				if ( els != null && els.length > 0 ) tgt = els[0];
-				else return haxe.Timer.delay( Bootstrap, 10 );
-
-				width = tgt.getAttribute('width') != null ? cast tgt.getAttribute('width') : Manager.DEFAULT_WIDTH;
-				height = tgt.getAttribute('height') != null ? cast tgt.getAttribute('height') : Manager.DEFAULT_HEIGHT;
-			} else {
-				width = tgt.clientWidth > 0 ? tgt.clientWidth : Manager.DEFAULT_WIDTH;
-				height = tgt.clientHeight > 0 ? tgt.clientHeight : Manager.DEFAULT_HEIGHT;
-			}
-
-			var lib = Run(tgt, width, height);
-
-			return lib;
-		}
+		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		return tgt.clientWidth > 0 ? tgt.clientWidth : Lib.DEFAULT_WIDTH;
 	}
+
+	static function jeashGetHeight()
+	{
+		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		return tgt.clientHeight > 0 ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
+	}
+
+	static function jeashBootstrap()
+	{
+		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		var lib = Run(tgt, jeashGetWidth(), jeashGetHeight());
+		return lib;
+	}
+
 }

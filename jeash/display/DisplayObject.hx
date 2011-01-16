@@ -33,6 +33,7 @@ import flash.display.Stage;
 import flash.display.Graphics;
 import flash.events.EventDispatcher;
 import flash.events.Event;
+import flash.events.EventPhase;
 import flash.display.DisplayObjectContainer;
 import flash.display.IBitmapDrawable;
 import flash.display.InteractiveObject;
@@ -40,7 +41,6 @@ import flash.geom.Rectangle;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Transform;
-import flash.Manager;
 import flash.filters.BitmapFilterSet;
 import flash.filters.FilterSet;
 import flash.display.BitmapData;
@@ -51,7 +51,6 @@ typedef BufferData =
 	var size:Int;
 	var location:GLint;
 }
-
 
 /**
  * @author	Niel Drummond
@@ -75,11 +74,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var height(GetHeight,SetHeight):Float;
 	public var visible(default,default):Bool;
 	public var opaqueBackground(GetOpaqueBackground,SetOpaqueBackground):Null<Int>;
-	public var mouseX(GetMouseX,null):Float;
-	public var mouseY(GetMouseY,null):Float;
+	public var mouseX(jeashGetMouseX, jeashSetMouseX):Float;
+	public var mouseY(jeashGetMouseY, jeashSetMouseY):Float;
 	public var parent(GetParent,null):DisplayObjectContainer;
 	public var stage(GetStage,null):Stage;
-	public var root(GetStage,null):Stage;
 	public var rotation(GetRotation,SetRotation):Float;
 	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
 	public var mask(GetMask,SetMask):DisplayObject;
@@ -126,7 +124,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mScaleY:Float;
 	var mTransformed:Bool;
 	var mRotation:Float;
-	var mParent:DisplayObjectContainer;
+	var jeashParent:DisplayObjectContainer;
 	var mScrollRect:Rectangle;
 	var mOpaqueBackground:Null<Int>;
 
@@ -156,7 +154,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function new()
 	{
-		mParent = null;
+		jeashParent = null;
 		super(null);
 		mX = mY = 0;
 		mScaleX = mScaleY = 1.0;
@@ -222,7 +220,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function SetBuffers<T>( inputData:Hash<{ size:Int, data:Array<Float>}>, ?indices:Array<Int> )
 	{
-		var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
+		var gl : WebGLRenderingContext = jeash.Lib.glContext;
 		var gfx = GetGraphics();
 		if (gfx == null) return;
 
@@ -304,36 +302,36 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function DoMouseEnter() {}
 	public function DoMouseLeave() {}
 
-	public function SetParent(inParent:DisplayObjectContainer)
+	public function jeashSetParent(inParent:DisplayObjectContainer)
 	{
-		if (inParent == mParent)
+		if (inParent == jeashParent)
 			return;
 
-		if (mParent != null)
-			mParent.__removeChild(this);
+		if (jeashParent != null)
+			jeashParent.__removeChild(this);
 
-		if (mParent==null && inParent!=null)
+		if (jeashParent==null && inParent!=null)
 		{
-			mParent = inParent;
+			jeashParent = inParent;
 			DoAdded(this);
 		}
-		else if (mParent!=null && inParent==null)
+		else if (jeashParent!=null && inParent==null)
 		{
-			mParent = inParent;
+			jeashParent = inParent;
 			DoRemoved(this);
 		}
 		else
-			mParent = inParent;
+			jeashParent = inParent;
 
 	}
 
 
 	public function GetX() { return mX; }
-	public function GetParent() { return mParent; }
+	public function GetParent() { return jeashParent; }
 	public function GetY() { return mY; }
 	public function SetX(inX:Float) { mX = inX; UpdateMatrix(); return mX; }
 	public function SetY(inY:Float) { mY = inY; UpdateMatrix();return mY; }
-	public function GetStage() { return flash.Lib.GetStage(); }
+	public function GetStage() { return flash.Lib.jeashGetStage(); }
 	public function AsContainer() : DisplayObjectContainer { return null; }
 
 	public function GetScaleX() { return mScaleX; }
@@ -362,7 +360,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mScrollRect.clone();
 	}
 
-	public function AsInteractiveObject() : flash.display.InteractiveObject
+	public function jeashAsInteractiveObject() : flash.display.InteractiveObject
 	{ return null; }
 
 	public function SetScrollRect(inRect:Rectangle)
@@ -397,21 +395,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	// TODO:
-	public function GetMouseX() { return globalToLocal(flash.Lib.mLastMouse).x; }
-	public function GetMouseY() { return globalToLocal(flash.Lib.mLastMouse).y; }
+	function jeashGetMouseX() { return stage.mouseX; }
+	function jeashSetMouseX(x:Float) { return null; }
+	function jeashGetMouseY() { return stage.mouseY; }
+	function jeashSetMouseY(y:Float) { return null; }
 
-	//#if !js
 	public function GetTransform() { return  new Transform(this); }
-	/*#else
-	  var mTransform : Transform;
-	  public function GetTransform() {
-	  if ( mTransform == null ) {
-	  mTransform = new Transform(this);
-	  }
-	  return mTransform;
-	  }
-#end*/
 
 	public function SetTransform(trans:Transform)
 	{
@@ -544,7 +533,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mScaleY *= inHeight/h;
 			UpdateMatrix();
 		}
-		//gfx.mCanvas.height = Std.int(inHeight);
 		return inHeight;
 	}
 
@@ -566,7 +554,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mScaleX *= inWidth/w;
 			UpdateMatrix();
 		}
-		//gfx.mCanvas.width = Std.int(inWidth);
 		return inWidth;
 	}
 
@@ -588,7 +575,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mGraphicsBounds;
 	}
 
-	public function __Render(inMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
+	public function __Render(?inMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
 	{
 		var gfx = GetGraphics();
 
@@ -598,53 +585,58 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			Graphics.setBlendMode(blend);
 
-			if (inScrollRect!=null)
+			var m = mFullMatrix.clone();
+			gfx.__Render(m, inMask);
+
+			if (!jeash.Lib.mOpenGL)
 			{
-				var m = mFullMatrix.clone();
-				m.tx -= inTX;
-				m.ty -= inTY;
-				gfx.__Render(m,inMask,inScrollRect);
-			}
-			else
-				gfx.__Render(mFullMatrix,inMask,null);
-
-			if (jeash.Lib.mOpenGL && mBuffers.exists("aVertPos"))
-			{
-				var gl : WebGLRenderingContext = jeash.Lib.canvas.getContext(jeash.Lib.context);
-
-				gl.useProgram(gfx.mShaderGL);
-
-				for(key in mBuffers.keys())
+				var extent = gfx.GetExtent(new Matrix());
+				gfx.mSurface.style.left = (m.tx + inTX + extent.x) + "px";
+				gfx.mSurface.style.top = (m.ty + inTY + extent.y) + "px";
+			} else {
+				if (mBuffers.exists("aVertPos"))
 				{
-					var data = mBuffers.get(key);
-					if (data.buffer != null && data.location != null && data.size != null)
+					var gl : WebGLRenderingContext = jeash.Lib.glContext;
+
+					gl.useProgram(gfx.mShaderGL);
+
+					for(key in mBuffers.keys())
 					{
-						gl.bindBuffer(gl.ARRAY_BUFFER, data.buffer);
-						gl.vertexAttribPointer(data.location, data.size, gl.FLOAT, false, 0, 0);
+						var data = mBuffers.get(key);
+						if (data.buffer != null && data.location != null && data.size != null)
+						{
+							gl.bindBuffer(gl.ARRAY_BUFFER, data.buffer);
+							gl.vertexAttribPointer(data.location, data.size, gl.FLOAT, false, 0, 0);
+						}
 					}
+
+					if (gfx.mTextureGL != null && gl.getUniformLocation(gfx.mShaderGL, "uSurface") != null)
+					{
+						gl.activeTexture(gl.TEXTURE0);
+						gl.bindTexture(gl.TEXTURE_2D, gfx.mTextureGL);
+
+						gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
+					}
+
+					if (mIndexBuffer != null)
+					{
+						gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
+						if (MatrixUniforms())
+							gl.drawElements(gl.TRIANGLES, mIndicesCount, gl.UNSIGNED_SHORT, 0);
+					} else {
+						gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uProjMatrix" ), false, stage.mProjMatrix );
+						gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, GetFlatGLMatrix( mFullMatrix ) );
+						gl.drawArrays(gl.TRIANGLE_STRIP, 0, mIndicesCount);
+					}
+
 				}
-
-				if (gfx.mTextureGL != null && gl.getUniformLocation(gfx.mShaderGL, "uSurface") != null)
-				{
-					gl.activeTexture(gl.TEXTURE0);
-					gl.bindTexture(gl.TEXTURE_2D, gfx.mTextureGL);
-
-					gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
-				}
-
-				if (mIndexBuffer != null)
-				{
-					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-					if (MatrixUniforms())
-						gl.drawElements(gl.TRIANGLES, mIndicesCount, gl.UNSIGNED_SHORT, 0);
-				} else {
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uProjMatrix" ), false, stage.mProjMatrix );
-					gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, GetFlatGLMatrix( mFullMatrix ) );
-					gl.drawArrays(gl.TRIANGLE_STRIP, 0, mIndicesCount);
-				}
-
 			}
 		}
+	}
+
+	function RenderContentsToCache(inCanvas:HTMLCanvasElement, inTX:Int, inTY:Int)
+	{
+		__Render(inCanvas, inTX, inTY);
 	}
 
 	dynamic public function MatrixUniforms()
@@ -676,17 +668,33 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		//RenderContentsToCache(inSurface,0,0);
 	}
 
-
-	public function GetObj(inX:Int,inY:Int, inObj:InteractiveObject ) : InteractiveObject
+	public function jeashGetObjectUnderPoint(point:Point)
 	{
-		if (!visible || mMaskingObj!=null)
-			return null;
-
 		var gfx = GetGraphics();
-		if (gfx!=null && gfx.HitTest(inX-this.x,inY-this.y))
+		if (gfx != null)
 		{
-			var i = AsInteractiveObject();
-			return i==null ? inObj : i;
+			var local = globalToLocal(point);
+			var extent = gfx.GetExtent(new Matrix());
+			if (this.name == "circle")
+			{
+			//untyped console.log(this.x + ", " + point.x + ", " + local.x + ", " + extent.x);
+			}
+			//if (gfx.jeashHitTest(mFullMatrix,local.x-(extent.x), local.y-(extent.y)))
+			switch (stage.jeashPointInPathMode)
+			{
+				case USER_SPACE:
+					if (gfx.jeashHitTest(local.x, local.y))
+					{
+						var i = jeashAsInteractiveObject();
+						return i == null ? null : i;
+					}
+				case DEVICE_SPACE:
+					if (gfx.jeashHitTest(local.x-(extent.x), local.y-(extent.y)))
+					{
+						var i = jeashAsInteractiveObject();
+						return i == null ? null : i;
+					}
+			}
 		}
 
 		return null;
@@ -797,5 +805,59 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (gfx!=null && alpha >= 0.0 && alpha <= 1.0) gfx.mSurfaceAlpha = alpha;
 		return alpha;
 	}
-}
 
+	public function jeashGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
+	{
+		var io = jeashAsInteractiveObject();
+		if (io!=null)
+			outStack.push(io);
+		if (jeashParent!=null)
+			jeashParent.jeashGetInteractiveObjectStack(outStack);
+	}
+
+
+	// @r551
+	public function jeashFireEvent(event:flash.events.Event)
+	{
+		var stack:Array<InteractiveObject> = [];
+		if (jeashParent != null)
+			jeashParent.jeashGetInteractiveObjectStack(stack);
+		var l = stack.length;
+
+		if (l>0)
+		{
+			// First, the "capture" phase ...
+			event.jeashSetPhase(EventPhase.CAPTURING_PHASE);
+			stack.reverse();
+			for(obj in stack)
+			{
+				event.currentTarget = obj;
+				obj.dispatchEvent(event);
+				if (event.jeashGetIsCancelled())
+					return;
+			}
+		}
+
+		// Next, the "target"
+		event.jeashSetPhase(EventPhase.AT_TARGET);
+		event.currentTarget = this;
+		dispatchEvent(event);
+		if (event.jeashGetIsCancelled())
+			return;
+
+		// Last, the "bubbles" phase
+		if (event.bubbles)
+		{
+			event.jeashSetPhase(EventPhase.BUBBLING_PHASE);
+			stack.reverse();
+			for(obj in stack)
+			{
+				event.currentTarget = obj;
+				obj.dispatchEvent(event);
+				if (event.jeashGetIsCancelled())
+					return;
+			}
+		}
+	}
+
+}

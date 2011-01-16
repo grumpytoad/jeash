@@ -99,6 +99,7 @@ class NetStream extends EventDispatcher {
 		switch(ext)
 		{
 			case ".mp4": handleVideo(val[0]);
+			case ".webm": handleVideo(val[0]);
 			default: return;
 		}
 	}

@@ -48,7 +48,7 @@ class Transform
 
    function GetPixelBounds()
    {
-   	return mObj.getBounds(jeash.Lib.GetStage());
+   	return mObj.getBounds(jeash.Lib.jeashGetStage());
    }
 
    public function GetColorTransform() { 

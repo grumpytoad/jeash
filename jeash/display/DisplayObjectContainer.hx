@@ -30,6 +30,7 @@ import Html5Dom;
 import flash.events.Event;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
+import flash.geom.Point;
 
 
 /**
@@ -40,7 +41,7 @@ import flash.geom.Rectangle;
 */
 class DisplayObjectContainer extends InteractiveObject
 {
-	var mObjs : Array<DisplayObject>;
+	var jeashChildren : Array<DisplayObject>;
 	var mLastSetupObjs : Array<DisplayObject>;
 	public var numChildren(GetNumChildren,null):Int;
 	public var mouseChildren:Bool;
@@ -48,7 +49,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	public function new()
 	{
-		mObjs = new Array<DisplayObject>();
+		jeashChildren = new Array<DisplayObject>();
 		mLastSetupObjs = new Array<DisplayObject>();
 		mouseChildren = true;
 		tabChildren = true;
@@ -61,7 +62,7 @@ class DisplayObjectContainer extends InteractiveObject
 	public function Broadcast(inEvent:flash.events.Event)
 	{
 		dispatchEvent(inEvent);
-		for(obj in mObjs)
+		for(obj in jeashChildren)
 		{
 			var container = obj.AsContainer();
 			//#if !js
@@ -79,7 +80,7 @@ class DisplayObjectContainer extends InteractiveObject
 		//if (mBoundsDirty)
 		{
 			super.BuildBounds();
-			for(obj in mObjs)
+			for(obj in jeashChildren)
 			{
 				if (obj.visible)
 				{
@@ -99,14 +100,14 @@ class DisplayObjectContainer extends InteractiveObject
 	override function DoAdded(inObj:DisplayObject)
 	{
 		super.DoAdded(inObj);
-		for(child in mObjs)
+		for(child in jeashChildren)
 			child.DoAdded(inObj);
 	}
 
 	override function DoRemoved(inObj:DisplayObject)
 	{
 		super.DoAdded(inObj);
-		for(child in mObjs)
+		for(child in jeashChildren)
 			child.DoRemoved(inObj);
 	}
 
@@ -115,7 +116,7 @@ class DisplayObjectContainer extends InteractiveObject
 		var r = super.GetBackgroundRect();
 		if (r!=null) r = r.clone();
 
-		for(obj in mObjs)
+		for(obj in jeashChildren)
 		{
 			if (obj.visible)
 			{
@@ -135,7 +136,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override public function GetFocusObjects(outObjs:Array<InteractiveObject>)
 	{
-		for(obj in mObjs)
+		for(obj in jeashChildren)
 			obj.GetFocusObjects(outObjs);
 	}
 
@@ -157,76 +158,31 @@ class DisplayObjectContainer extends InteractiveObject
 
 
 	public override function GetNumChildren() {
-		return mObjs.length;
+		return jeashChildren.length;
 	}
 
-	override public function GetObj(inX:Int,inY:Int, inObj:InteractiveObject) : InteractiveObject
-	{
-		if (!visible || mMaskingObj!=null)
-			return null;
-
-		// Start at end and work backwards (find topmost)
-		var l = mObjs.length-1;
-		for(i in 0...mObjs.length)
-		{
-			var result = mObjs[l-i].GetObj(inX,inY,this);
-			if (result!=null)
-				return result;
-		}
-
-		return super.GetObj(inX,inY,this);
-	}
-
-	override public function __Render(inMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int, inTY:Int)
+	override public function __Render(?inMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
 	{
 
 		if (!visible || mMaskingObj!=null) return;
 
-		super.__Render(inMask,inScrollRect,inTX,inTY);
-		for(obj in mObjs)
+		super.__Render(inMask, inTX, inTY);
+		for(obj in jeashChildren)
 		{
 			if (obj.visible && obj.mMaskingObj==null)
 			{
-				var scroll = obj.mScrollRect;
-				if (scroll!=null)
-				{
-					// Convert scrollrect into display coordinates.
-					// Use a simple transform for efficiency
-					var m = obj.mFullMatrix;
-					var x0 = m.tx;
-					var y0 = m.ty;
-					var x1 = m.a * scroll.width + m.tx;
-					var y1 = m.d * scroll.height + m.ty;
-					var display_rect = new Rectangle(x0,y0,x1-x0,y1-y0);
-					if (inScrollRect!=null)
-						display_rect = display_rect.intersection(inScrollRect);
-
-					if (!display_rect.isEmpty())
-					{
-						var tx = inTX + Std.int(scroll.x*m.a);
-						var ty = inTY + Std.int(scroll.y*m.d);
-
-						obj.__Render(inMask,display_rect,tx,ty);
-					}
-				}
-				else
-				{
-					obj.__Render(inMask,inScrollRect,inTX,inTY);
-				}
-
+				obj.__Render(inMask, inTX, inTY);
 			}
 		}
 
 	}
 
-	/*
-	function RenderContentsToCache(inBitmap:BitmapData,inTX:Float,inTY:Float)
+	override function RenderContentsToCache(inCanvas:HTMLCanvasElement, inTX:Int, inTY:Int)
 	{
-		super.RenderContentsToCache(inBitmap,inTX,inTY);
-		for(obj in mObjs)
-			obj.RenderContentsToCache(inBitmap,inTX,inTY);
+		super.RenderContentsToCache(inCanvas,inTX,inTY);
+		for(obj in jeashChildren)
+			obj.RenderContentsToCache(inCanvas,inTX,inTY);
 	}
-	*/
 
 	override public function SetupRender(inParentMatrix:Matrix) : Int
 	{
@@ -234,21 +190,21 @@ class DisplayObjectContainer extends InteractiveObject
 
 		var child_result = 0;
 
-		for(obj in mObjs)
+		for(obj in jeashChildren)
 		{
 			if (obj.visible)
 				child_result |= obj.SetupRender(mFullMatrix);
 		}
-		if (mLastSetupObjs.length != mObjs.length)
+		if (mLastSetupObjs.length != jeashChildren.length)
 			child_result |= DisplayObject.NON_TRANSLATE_CHANGE;
 		else if (child_result==0)
-			for(i in 0...mObjs.length)
-				if (mObjs[i] != mLastSetupObjs[i])
+			for(i in 0...jeashChildren.length)
+				if (jeashChildren[i] != mLastSetupObjs[i])
 				{
 				child_result |= DisplayObject.NON_TRANSLATE_CHANGE;
 				break;
 				}
-		mLastSetupObjs = mObjs.copy();
+		mLastSetupObjs = jeashChildren.copy();
 
 		var result = 0;
 		// TODO: case where all objects have moved together = TRANSLATE_CHANGE
@@ -276,7 +232,7 @@ class DisplayObjectContainer extends InteractiveObject
 	#if js
 	public function WalkChildren( func: DisplayObject -> Void )
 	{
-		for ( obj in mObjs )
+		for ( obj in jeashChildren )
 		{
 			func( obj );
 		}
@@ -291,48 +247,55 @@ class DisplayObjectContainer extends InteractiveObject
 		if (inObject == this) {
 			throw "Adding to self";
 		}
-		if (inObject.mParent==this)
+		if (inObject.jeashParent==this)
 		{
-			setChildIndex(inObject,mObjs.length-1);
+			setChildIndex(inObject,jeashChildren.length-1);
 			return inObject;
 		}
 
 		#if debug
-		for(i in 0...mObjs.length) {
-			if(mObjs[i] == inObject) {
+		for(i in 0...jeashChildren.length) {
+			if(jeashChildren[i] == inObject) {
 				throw "Internal error: child already existed at index " + i;
 			}
 		}
 		#end
 
-		mObjs.push(inObject);
-		inObject.SetParent(this);
+		jeashChildren.push(inObject);
+		inObject.jeashSetParent(this);
+
+		var gfx = inObject.GetGraphics();
+		if (gfx != null)
+		{
+			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
+		}
+
 		return inObject;
 	}
 
 	public function addChildAt( obj : DisplayObject, index : Int )
 	{
-		if(index > mObjs.length || index < 0) {
+		if(index > jeashChildren.length || index < 0) {
 			throw "Invalid index position " + index;
 		}
 
-		if (obj.mParent == this)
+		if (obj.jeashParent == this)
 		{
 			setChildIndex(obj, index);
 			return;
 		}
 
-		if(index == mObjs.length)
-			mObjs.push(obj);
+		if(index == jeashChildren.length)
+			jeashChildren.push(obj);
 		else
-			mObjs.insert(index, obj);
-		obj.SetParent(this);
+			jeashChildren.insert(index, obj);
+		obj.jeashSetParent(this);
 	}
 
 	public function contains( obj : DisplayObject )
 	{
 		if ( obj == this ) return true;
-		for ( i in mObjs )
+		for ( i in jeashChildren )
 		{
 			if ( obj == i ) return true;
 			if ( Std.is(i,DisplayObjectContainer) )
@@ -343,32 +306,32 @@ class DisplayObjectContainer extends InteractiveObject
 
 	public function getChildAt( index : Int )
 	{
-		return mObjs[index];
+		return jeashChildren[index];
 	}
 
 	public function getChildByName(inName:String):DisplayObject
 	{
-		for(i in 0...mObjs.length)
-			if (mObjs[i].name==inName)
-				return mObjs[i];
+		for(i in 0...jeashChildren.length)
+			if (jeashChildren[i].name==inName)
+				return jeashChildren[i];
 		return null;
 	}
 
 	public function getChildIndex( child : DisplayObject )
 	{
-		for ( i in 0...mObjs.length )
-			if ( mObjs[i] == child )
+		for ( i in 0...jeashChildren.length )
+			if ( jeashChildren[i] == child )
 				return i;
 		return -1;
 	}
 
 	public function removeChild( child : DisplayObject )
 	{
-		for ( i in 0...mObjs.length )
+		for ( i in 0...jeashChildren.length )
 		{
-			if ( mObjs[i] == child )
+			if ( jeashChildren[i] == child )
 			{
-				child.SetParent( null );
+				child.jeashSetParent( null );
 				#if debug
 				if (getChildIndex(child) >= 0) {
 					throw "Not removed properly";
@@ -382,7 +345,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	public function removeChildAt(inI:Int)
 	{
-		mObjs[inI].SetParent(null);
+		jeashChildren[inI].jeashSetParent(null);
 	}
 
 	public function __removeChild( child : DisplayObject )
@@ -390,13 +353,13 @@ class DisplayObjectContainer extends InteractiveObject
 		var i = getChildIndex(child);
 		if (i>=0)
 		{
-			mObjs.splice( i, 1 );
+			jeashChildren.splice( i, 1 );
 		}
 	}
 
 	public function setChildIndex( child : DisplayObject, index : Int )
 	{
-		if(index > mObjs.length) {
+		if(index > jeashChildren.length) {
 			throw "Invalid index position " + index;
 		}
 
@@ -407,8 +370,8 @@ class DisplayObjectContainer extends InteractiveObject
 			var msg = "setChildIndex : object " + child.name + " not found.";
 			if(child.parent == this) {
 				var realindex = -1;
-				for(i in 0...mObjs.length) {
-					if(mObjs[i] == child) {
+				for(i in 0...jeashChildren.length) {
+					if(jeashChildren[i] == child) {
 						realindex = i;
 						break;
 					}
@@ -416,7 +379,7 @@ class DisplayObjectContainer extends InteractiveObject
 				if(realindex != -1)
 					msg += "Internal error: Real child index was " + Std.string(realindex);
 				else
-					msg += "Internal error: Child was not in mObjs array!";
+					msg += "Internal error: Child was not in jeashChildren array!";
 			}
 			throw msg;
 		}
@@ -426,26 +389,26 @@ class DisplayObjectContainer extends InteractiveObject
 		{
 			var i = orig;
 			while(i > index) {
-				mObjs[i] = mObjs[i-1];
+				jeashChildren[i] = jeashChildren[i-1];
 				i--;
 			}
-			mObjs[index] = child;
+			jeashChildren[index] = child;
 		}
 		// move up ...
 		else if (orig<index)
 		{
 			var i = orig;
 			while(i < index) {
-				mObjs[i] = mObjs[i+1];
+				jeashChildren[i] = jeashChildren[i+1];
 				i++;
 			}
-			mObjs[index] = child;
+			jeashChildren[index] = child;
 		}
 
 		#if debug
-			for(i in 0...mObjs.length)
-				if(mObjs[i] == null) {
-					throw "Null element at index " + i + " length " + mObjs.length;
+			for(i in 0...jeashChildren.length)
+				if(jeashChildren[i] == null) {
+					throw "Null element at index " + i + " length " + jeashChildren.length;
 				}
 		#end
 	}
@@ -455,25 +418,58 @@ class DisplayObjectContainer extends InteractiveObject
 		var c1 : Int = -1;
 		var c2 : Int = -1;
 		var swap : DisplayObject;
-		for ( i in 0...mObjs.length )
-		if ( mObjs[i] == child1 ) c1 = i;
-		else if  ( mObjs[i] == child2 ) c2 = i;
+		for ( i in 0...jeashChildren.length )
+		if ( jeashChildren[i] == child1 ) c1 = i;
+		else if  ( jeashChildren[i] == child2 ) c2 = i;
 		if ( c1 != -1 && c2 != -1 )
 		{
-			swap = mObjs[c1];
-			mObjs[c1] = mObjs[c2];
-			mObjs[c2] = swap;
+			swap = jeashChildren[c1];
+			jeashChildren[c1] = jeashChildren[c2];
+			jeashChildren[c2] = swap;
 			swap = null;
 		}
 	}
 
 	public function swapChildrenAt( child1 : Int, child2 : Int )
 	{
-		var swap : DisplayObject = mObjs[child1];
-		mObjs[child1] = mObjs[child2];
-		mObjs[child2] = swap;
+		var swap : DisplayObject = jeashChildren[child1];
+		jeashChildren[child1] = jeashChildren[child2];
+		jeashChildren[child2] = swap;
 		swap = null;
 	}
 
+	override public function jeashGetObjectUnderPoint(point:Point)
+	{
+		var l = jeashChildren.length-1;
+		for(i in 0...jeashChildren.length)
+		{
+			var result = jeashChildren[l-i].jeashGetObjectUnderPoint(point);
+			if (result != null)
+				return result;
+		}
+
+		return super.jeashGetObjectUnderPoint(point);
+	}
+
+	// @r551
+	public function getObjectsUnderPoint(point:Point)
+	{
+		var result = new Array<DisplayObject>();
+		jeashGetObjectsUnderPoint(point, result);
+		return result;
+	}
+
+	function jeashGetObjectsUnderPoint(point:Point, stack:Array<DisplayObject>)
+	{
+		var l = jeashChildren.length-1;
+		for(i in 0...jeashChildren.length)
+		{
+			var result = jeashChildren[l-i].jeashGetObjectUnderPoint(point);
+			if (result != null)
+				stack.push(result);
+		}
+
+		//return super.jeashGetObjectsUnderPoint(point);
+	}
 }
 

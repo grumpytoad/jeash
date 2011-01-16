@@ -114,7 +114,7 @@ class EventDispatcher implements IEventDispatcher
 				if (listener.mUseCapture==capture)
 				{
 					listener.dispatchEvent(event);
-					if (event.IsCancelledNow())
+					if (event.jeashGetIsCancelledNow())
 						return true;
 				}
 				// Detect if the just used event listener was removed...

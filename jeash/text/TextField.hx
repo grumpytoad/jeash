@@ -41,8 +41,6 @@ import flash.text.TextFieldType;
 
 import Html5Dom;
 
-import flash.Manager;
-
 class TextField extends flash.display.InteractiveObject
 {
 	public var htmlText(GetHTMLText,SetHTMLText):String;
@@ -276,7 +274,7 @@ class TextField extends flash.display.InteractiveObject
 		return tf;
 	}
 
-	override public function __Render(inParentMask:HTMLCanvasElement,inScrollRect:Rectangle,inTX:Int,inTY:Int)
+	override public function __Render(?inParentMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
 	{
 		//mGraphics.clear();
 

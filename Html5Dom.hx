@@ -2612,7 +2612,7 @@ extern interface Event {
     public var defaultPrevented (default, null): Bool;
     public var trusted          (default, null): Bool;
     
-    public function stopPropagatio(): Void;
+    public function stopPropagation(): Void;
     
     public function preventDefault(): Void;
     
