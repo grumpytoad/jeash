@@ -452,6 +452,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mTransformed = mMatrix.a!=1 || mMatrix.c!=0 || mMatrix.tx!=0 ||
 			mMatrix.b!=0 || mMatrix.d!=1 || mMatrix.ty!=0;
 		mBoundsDirty = true;
+
+		// HACK, until we get CSS matrix transforms working 
+		var gfx = GetGraphics();
+		if (gfx != null)
+			Reflect.setField(gfx, 'mChanged', true);
 	}
 
 	public function GetGraphics() : flash.display.Graphics
@@ -591,8 +596,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			if (!jeash.Lib.mOpenGL)
 			{
 				var extent = gfx.GetExtent(new Matrix());
-				gfx.mSurface.style.left = (m.tx + inTX + extent.x) + "px";
-				gfx.mSurface.style.top = (m.ty + inTY + extent.y) + "px";
+				gfx.mSurface.style.left = ((Math.isNaN(m.tx)?0:m.tx)  + inTX + extent.x) + "px";
+				gfx.mSurface.style.top = ((Math.isNaN(m.ty)?0:m.ty) + inTY + extent.y) + "px";
+
 			} else {
 				if (mBuffers.exists("aVertPos"))
 				{

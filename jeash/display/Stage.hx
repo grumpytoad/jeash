@@ -305,8 +305,8 @@ class Stage extends flash.display.DisplayObjectContainer
 				event.button != null, // buttonDown = left mouse button, 
 				delta);
 
-		pseudoEvent.stageX = event.x;
-		pseudoEvent.stageY = event.y;
+		pseudoEvent.stageX = mouseX;
+		pseudoEvent.stageY = mouseY;
 		pseudoEvent.target = target;
 		return pseudoEvent;
 	}

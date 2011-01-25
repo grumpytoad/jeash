@@ -150,7 +150,7 @@ class NetStream extends EventDispatcher {
 		if (!windowHack) //skip heavy load when pseudo windowless
 		{
 			var scope:NetStream = this;
-			timer = new Timer(Math.round(1000 / (((Lib.GetStage().frameRate < NetStream.fps) ? NetStream.fps : Lib.GetStage().frameRate) * 2))); //dsp nyquist: fmax = fsample/2
+			timer = new Timer(Math.round(1000 / (((Lib.current.stage.frameRate < NetStream.fps) ? NetStream.fps : Lib.current.stage.frameRate) * 2))); //dsp nyquist: fmax = fsample/2
 			timer.run = function():Void 
 			{
 			  scope.mTextureBuffer.getContext("2d").drawImage(data.video, 0, 0, scope.mTextureBuffer.width, scope.mTextureBuffer.height);
