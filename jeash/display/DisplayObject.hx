@@ -691,7 +691,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				case DEVICE_SPACE:
 
 					var extent = gfx.GetExtent(new Matrix());
-					if (gfx.jeashHitTest(local.x-(extent.x), local.y-(extent.y)))
+					if (gfx.jeashHitTest((local.x-(extent.x))*scaleX, (local.y-(extent.y))*scaleY))
 					{
 						var i = jeashAsInteractiveObject();
 						return i == null ? null : i;
