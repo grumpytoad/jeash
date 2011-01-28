@@ -1,32 +1,4 @@
-/**
- * Copyright (c) 2010, Jeash contributors.
- * 
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * 
- *   - Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   - Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- * 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- */
-
-
-package jeash.geom;
-
+package geom;
 
 class Rectangle
 {
@@ -46,7 +18,7 @@ class Rectangle
 
    public var left(get_left,set_left) : Float;
    function get_left() { return x; }
-   function set_left(l:Float) { x=l; return l;}
+   function set_left(l:Float) { width-=l-x; x=l; return l;}
 
    public var right(get_right,set_right) : Float;
    function get_right() { return x+width; }
@@ -54,7 +26,7 @@ class Rectangle
 
    public var top(get_top,set_top) : Float;
    function get_top() { return y; }
-   function set_top(t:Float) { y=t; return t;}
+   function set_top(t:Float) { height-=t-y; y=t; return t;}
 
    public var bottom(get_bottom,set_bottom) : Float;
    function get_bottom() { return y+height; }
@@ -77,7 +49,7 @@ class Rectangle
       return p.clone();
    }
 
-   public function clone() : flash.geom.Rectangle
+   public function clone() : Rectangle
    {
       return new Rectangle(x,y,width,height);
    }
@@ -85,15 +57,15 @@ class Rectangle
    {
       return inX>=x && inY>=y && inX<right && inY<bottom;
    }
-   public function containsPoint(point : flash.geom.Point) : Bool
+   public function containsPoint(point : Point) : Bool
    {
       return contains(point.x,point.y);
    }
-   public function containsRect(rect : flash.geom.Rectangle) : Bool
+   public function containsRect(rect : Rectangle) : Bool
    {
      return contains(rect.x,rect.y) && containsPoint(rect.bottomRight);
    }
-   public function equals(toCompare : flash.geom.Rectangle) : Bool
+   public function equals(toCompare : Rectangle) : Bool
    {
       return x==toCompare.x && y==toCompare.y &&
              width==toCompare.width && height==toCompare.height;
@@ -103,11 +75,11 @@ class Rectangle
       x-=dx; width+=dx*2;
       y-=dy; height+=dy*2;
    }
-   public function inflatePoint(point : flash.geom.Point) : Void
+   public function inflatePoint(point : Point) : Void
    {
       inflate(point.x,point.y);
    }
-   public function intersection(toIntersect : flash.geom.Rectangle) : flash.geom.Rectangle
+   public function intersection(toIntersect : Rectangle) : Rectangle
    {
       var x0 = x<toIntersect.x ? toIntersect.x : x;
       var x1 = right>toIntersect.right ? toIntersect.right : right;
@@ -122,7 +94,7 @@ class Rectangle
       return new Rectangle(x0,y0,x1-x0,y1-y0);
    }
 
-   public function intersects(toIntersect : flash.geom.Rectangle) : Bool
+   public function intersects(toIntersect : Rectangle) : Bool
    {
       var x0 = x<toIntersect.x ? toIntersect.x : x;
       var x1 = right>toIntersect.right ? toIntersect.right : right;
@@ -134,7 +106,7 @@ class Rectangle
       return y1>y0;
    }
 
-   public function union(toUnion : flash.geom.Rectangle) : flash.geom.Rectangle
+   public function union(toUnion : Rectangle) : Rectangle
    {
       var x0 = x>toUnion.x ? toUnion.x : x;
       var x1 = right<toUnion.right ? toUnion.right : right;
@@ -150,7 +122,7 @@ class Rectangle
       y+=dy;
    }
 
-   public function offsetPoint(point : flash.geom.Point) : Void
+   public function offsetPoint(point : Point) : Void
    {
       x+=point.x;
       y+=point.y;
@@ -207,5 +179,9 @@ class Rectangle
          right = r.right;
       if (r.bottom>bottom)
          bottom = r.bottom;
+   }
+   
+   public function toString() : String {
+		return "(x="+Std.string(x)+", y="+Std.string(y)+", w="+Std.string(width)+", h="+Std.string(height)+")";
    }
 }
