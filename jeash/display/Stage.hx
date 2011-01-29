@@ -261,7 +261,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		if (stack.length > 0)
 		{
 			//var global = obj.localToGlobal(point);
-			var obj = stack[0];
+			//var obj = stack[0];
 			stack.reverse();
 			var local = obj.globalToLocal(point);
 

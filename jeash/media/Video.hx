@@ -46,11 +46,11 @@ class Video extends DisplayObject {
 	private var windowHack:Bool;
 	private var netStream:NetStream;
 	private var renderHandler:Event->Void;
+
+	private var videoElement(default,null):HTMLVideoElement;
 	
 	public var deblocking:Int;
 	public var smoothing:Bool;
-	public var videoHeight(default,null) : Int;
-	public var videoWidth(default, null) : Int;
 	
 	/*
 	 * 
@@ -58,18 +58,14 @@ class Video extends DisplayObject {
 	 * 			check compat with flash events
 	 */
 	
-	public function new(?width : Int, ?height : Int, ?Windowed:Bool = false) : Void {
+	public function new(width : Int = 320, height : Int = 240) : Void {
 		super();
 		
 		mGraphics = new Graphics();
-		windowHack = Windowed;
+		mGraphics.drawRect(0, 0, width, height);
 		
-		this.videoWidth = width;
-		this.videoHeight = height;
-		
-		mGraphics.beginFill(0xDEADBEEF);
-		mGraphics.drawRect(0,0,width,height);
-		mGraphics.endFill();
+		this.width = width;
+		this.height = height;
 		
 		name = "Video_" + DisplayObject.mNameID++;
 		
@@ -103,111 +99,42 @@ class Video extends DisplayObject {
 		this.netStream = ns;
 		var scope:Video = this;
 		
-		/*
-		if (ns.videoElement.readyState == Type.enumIndex(ReadyState.HAVE_NOTHING))
-		{
-			trace(this + " attach should be done after connected event.");
-			//return;
-		}
-		*/
-		
-		ns.videoElement.width = this.videoWidth;
-		ns.videoElement.height = this.videoHeight;
-		
-		ns.mTextureBuffer.width = this.videoWidth;
-		ns.mTextureBuffer.height = this.videoHeight;
-		
-		if (this.windowHack)// pseudo windowed hack
-		{
-			var canvas:HtmlDom = cast Lib.canvas;
-			canvas.style.zIndex = 3;
-			canvas.style.position = 'absolute';
-			var el:HtmlDom = cast ns.videoElement;
-			//js.Lib.document.body.appendChild(el);
-			canvas.parentNode.appendChild(el);
-			//canvas.parentNode.style.overflow = 'hidden';
-			el.style.position = 'absolute';
-			el.style.top = "0px";
-			el.style.left = "0px";
-			el.style.zIndex = 2;
-			
-			var offsetLeft = canvas.offsetLeft;
-			var offsetTop = canvas.offsetTop;
-			
-			ns.js_windowed_hack();
-			
-			this.renderHandler = function(e:Event):Void 
-			{  
-				scope.SetupRender(new Matrix()); //dirty reset matrix
-				
-				//todo get stage x/y
-				var g:Point = scope.localToGlobal(new Point(0, 0));
-				var px = g.x; var py = g.y;
-				
-				var ctx:CanvasRenderingContext2D = Lib.canvas.getContext('2d');
-				ctx.clearRect(px, py, scope.width, scope.height);	
-				
-				//todo get overlapping displayobjects, and render them after clearrect;
-				ctx.fillStyle = "rgba(255, 0, 0, 0.2)";
-				ctx.fillRect(px, py, scope.width/2, scope.height);
-				el.style.top = py + offsetTop + "px";
-				el.style.left = px + offsetLeft + "px";				
-			}
-			
-			// do this after rendering pass:
-			this.addEventListener(Event.RENDER, this.renderHandler );
-		}
-		else
-		{
-			// 'windowless'
-			scope.renderHandler = function(e:Event):Void
-			{
-				scope.SetupRender(new Matrix()); //ugly reset matrix..
-				
-				//todo:revise:something brokehn
-				scope.mGraphics.clear();
-				/*
-				var bd:BitmapData = new BitmapData(scope.videoWidth, scope.videoHeight);
-				var m:Matrix = new Matrix();
-				m.scale(scope.videoWidth / ns.mTextureBuffer.width, scope.videoHeight / ns.mTextureBuffer.height);
-				bd.draw( BitmapData.CreateFromHandle(ns.mTextureBuffer), m);
-				*/
-				var bd:BitmapData = BitmapData.CreateFromHandle(ns.mTextureBuffer);
-				
-				#if !js
-					scope.mGraphics.blit(bd);
-				#end
-				
-				#if js
-					scope.mGraphics.beginBitmapFill(bd, null, false, false);
-					//scope.mGraphics.beginFill(0x00FF00);
-					//scope.mGraphics.drawRect(0, 0, scope.width, scope.height);
-					scope.mGraphics.drawRect(0, 0, ns.mTextureBuffer.width, ns.mTextureBuffer.height);
-					scope.mGraphics.endFill();
-					
-					//hrrm: not finished->
-					//scope.UpdateMatrix();
-					//scope.drawToSurface(ns.mTextureBuffer, null, null, null, null, true);
-				#end
-			}
-			
-			ns.addEventListener(NetStream.BUFFER_UPDATED, renderHandler);
-		}
+		mGraphics.SetSurface(ns.jeashVideoElement);
+
+		ns.jeashVideoElement.width = width;
+		ns.jeashVideoElement.height = height;
+
+		ns.jeashVideoElement.play();
 	}
 	
 	public function clear():Void
 	{
-		if (this.renderHandler != null)
+		if (mGraphics != null)
+			jeash.Lib.jeashRemoveSurface(mGraphics.mSurface);
+		mGraphics = new Graphics();
+		mGraphics.drawRect(0, 0, width, height);
+	}
+
+	override public function __Render(?inMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
+	{
+		var gfx = GetGraphics();
+
+		if (gfx!=null)
 		{
-			if (!this.windowHack)
-			{
-				this.netStream.removeEventListener(NetStream.BUFFER_UPDATED, renderHandler);
-			}
-			else
-			{
-				this.removeEventListener(Event.RENDER, renderHandler );
-			}
-			this.mGraphics.clear();
+			Lib.jeashSetSurfaceTransform(gfx.mSurface, mFullMatrix);
 		}
+	}
+	
+	override public function jeashGetObjectUnderPoint(point:Point)
+	{
+		var local = globalToLocal(point);
+		if (local.x >= 0 && local.y >= 0 && local.x <= width && local.y <= height)
+
+		{
+			// NOTE: bad cast, should be InteractiveObject... 
+			return cast this;
+		}
+		else
+			return null;
 	}
 }

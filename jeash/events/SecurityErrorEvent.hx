@@ -26,11 +26,11 @@
 
 package jeash.events;
 
-extern class SecurityErrorEvent extends ErrorEvent {
-	function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?text : String) : Void
+class SecurityErrorEvent extends ErrorEvent {
+	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?text : String) : Void
 	{
 		super(type, bubbles, cancelable);
 		this.text = text;
 	}
-	static var SECURITY_ERROR : String;
+	static public var SECURITY_ERROR : String;
 }

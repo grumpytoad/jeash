@@ -33,7 +33,9 @@ import jeash.events.Event;
 import jeash.events.EventDispatcher;
 import jeash.media.VideoElement;
 import jeash.Lib;
+
 import Html5Dom;
+
 class NetStream extends EventDispatcher {
 	/*
 	 * todo:
@@ -57,15 +59,8 @@ class NetStream extends EventDispatcher {
 	public var play:Dynamic;
 	public var client:Dynamic;
 	private static inline var fps:Int = 30;
-	/**
-	* handle to HTMLVideoElement, for windowed (performance) mode 
-	*/
-	public var videoElement(default, null):HTMLVideoElement;
-	
-	private var windowHack:Bool;
-	
-	/* buffer for incoming netstream */
-	public var mTextureBuffer:HTMLCanvasElement;
+
+	public var jeashVideoElement(default, null):HTMLVideoElement;
 	
 	private var timer:Timer;
 
@@ -82,112 +77,17 @@ class NetStream extends EventDispatcher {
 	public function new(connection:NetConnection) : Void
 	{	
 		super();
-		windowHack = false;
-		play = Reflect.makeVarArgs(js_play);
-		
-		mTextureBuffer = cast js.Lib.document.createElement('canvas');
-		
-		var nc:NetConnection = connection;
-	}
-	
-	function js_play(val:Array<Dynamic>) : Void
-	{
-		
-		var f:String = Std.string(val[0]);
-		var ext:String = f.substr(f.lastIndexOf("."), f.length);
-		
-		switch(ext)
-		{
-			case ".mp4": handleVideo(val[0]);
-			case ".webm": handleVideo(val[0]);
-			default: return;
-		}
-	}
-	
-	private function handleVideo(url:String):Void
-	{
-		var obj:Dynamic = null;
-		
-		videoElement = cast js.Lib.document.createElement("video");
-		mTextureBuffer = cast js.Lib.document.createElement('canvas');
-		
-		for (n in Reflect.fields(VideoElementEvents) )
-		{
-			obj = { video: videoElement, type: Reflect.field(VideoElementEvents, n) }; //todo: typedef
-			videoElement.addEventListener(Std.string(n) , callback(handleVideoEvent, obj ), false );	
-		}
-		
-		videoElement.src = url;
-		videoElement.play();
-	}
-	
-	private function handleVideoEvent(data:Dynamic, e):Void
-	{
-		switch(data.type)
-		{
-			case VideoElementEvents.loadedmetadata	: 	handleVideoMetaData(data, e);
-			case VideoElementEvents.play			: 	trace("start play");
-			default: trace("unhandled event:" + data.type ) ;
-		}	
-	}
-	
-	private function callClient(handler:String, info:Dynamic):Void
-	{
-		if (Reflect.isFunction(Reflect.field(client, handler)))
-		{
-			Reflect.callMethod(client, handler, [ info ]);
-		}
-	}
-	
-	private function handleVideoMetaData(data:Dynamic, e):Void
-	{
-		if (mTextureBuffer.width == 0){
-			mTextureBuffer.width = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoWidth) : data.video.videoWidth;
-		}
-		if (mTextureBuffer.height == 0){
-			mTextureBuffer.height = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.video.videoHeight) : data.video.videoHeight;
-		}
-		if (!windowHack) //skip heavy load when pseudo windowless
-		{
-			var scope:NetStream = this;
-			timer = new Timer(Math.round(1000 / (((Lib.current.stage.frameRate < NetStream.fps) ? NetStream.fps : Lib.current.stage.frameRate) * 2))); //dsp nyquist: fmax = fsample/2
-			timer.run = function():Void 
-			{
-			  scope.mTextureBuffer.getContext("2d").drawImage(data.video, 0, 0, scope.mTextureBuffer.width, scope.mTextureBuffer.height);
-			  scope.dispatchEvent(new Event(NetStream.BUFFER_UPDATED, false, false));
-			}
-		}
-		callClient("onMetaData", { width: mTextureBuffer.width, height: mTextureBuffer.height, duration: data.video.duration } );
-		/*
-		var info:Dynamic = { code: NetStream.CODE_BUFFER_START };
-		this.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, true, info));
-		*/
-	}
 
-	/**
-	 * enable performance windowed mode;
-	 * @return Bool succes.
-	 */
-	public function js_windowed_hack():Bool
+		jeashVideoElement = cast js.Lib.document.createElement("video");
+
+		play = Reflect.makeVarArgs(jeashPlay);
+		
+	}
+	
+	function jeashPlay(val:Array<Dynamic>) : Void
 	{
-		windowHack = true;
-		if (timer != null)
-		{
-			timer.stop();
-			timer = null;
-			return true;
-		}
-		return false;
-	}
-	
-	public function receiveAudio(flag:Bool) : Void 
-	{ 
-		
-	}
-	
-	public function receiveVideo(flag:Bool) : Void 
-	{ 
-		
+		var url = Std.string(val[0]);
+		jeashVideoElement.src = url;
 	}
 	
 	/*

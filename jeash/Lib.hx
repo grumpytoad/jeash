@@ -37,6 +37,7 @@ import flash.display.DisplayObjectContainer;
 import flash.display.DisplayObject;
 import flash.display.InteractiveObject;
 import flash.geom.Rectangle;
+import flash.geom.Matrix;
 
 import flash.geom.Point;
 
@@ -235,7 +236,7 @@ class Lib
 		return mStage; 
 	}
 
-	public static function jeashAppendSurface(surface:HTMLCanvasElement, x:Int, y:Int)
+	public static function jeashAppendSurface(surface:HTMLElement, x:Int, y:Int)
 	{
 		if (mMe.__scr != null)
 		{
@@ -244,6 +245,21 @@ class Lib
 			surface.style.top = y + "px";
 			mMe.__scr.appendChild(surface);
 		}
+	}
+
+	public static function jeashRemoveSurface(surface:HTMLElement)
+	{
+		if (mMe.__scr != null)
+		{
+			mMe.__scr.removeChild(surface);
+		}
+	}
+
+	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix)
+	{
+		Reflect.setField(surface.style, "-moz-transform", matrix.toString() );
+		Reflect.setField(surface.style, "-webkit-transform", matrix.toString() );
+		Reflect.setField(surface.style, "-o-transform", matrix.toString() );
 	}
 
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
