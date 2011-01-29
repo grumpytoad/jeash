@@ -1,4 +1,32 @@
-package geom;
+/**
+ * Copyright (c) 2010, Jeash contributors.
+ * 
+ * All rights reserved.
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ *   - Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   - Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package jeash.geom;
+import flash.geom.Point;
+
 
 /*
 
@@ -33,7 +61,7 @@ class Matrix
    }
 
 
-   public function clone() { return new Matrix(a,b,c,d,tx,ty); }
+   public function clone() { return new flash.geom.Matrix(a,b,c,d,tx,ty); }
 
    public function createGradientBox(in_width : Float, in_height : Float,
          ?rotation : Float, ?in_tx : Float, ?in_ty : Float) : Void
@@ -69,7 +97,7 @@ class Matrix
       d = a;
    }
 
-   public function invert() : Matrix
+   public function invert() : flash.geom.Matrix
    {
       var norm = a*d-b*c;
       if (norm==0)
@@ -179,7 +207,7 @@ class Matrix
             
 
    */
-   public function concat(m:Matrix)
+   public function concat(m:flash.geom.Matrix)
    {
       var a1 = a*m.a + b*m.c;
       b = a*m.b + b*m.d;
@@ -194,9 +222,9 @@ class Matrix
       tx = tx1;
    }
 
-   public function mult(m:Matrix)
+   public function mult(m:flash.geom.Matrix)
    {
-      var result = new Matrix();
+      var result = new flash.geom.Matrix();
       result.a = a*m.a + b*m.c;
       result.b = a*m.b + b*m.d;
       result.c = c*m.a + d*m.c;
