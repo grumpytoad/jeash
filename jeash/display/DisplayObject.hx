@@ -59,26 +59,26 @@ typedef BufferData =
  */
 class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 {
-	public var x(GetX,SetX):Float;
-	public var y(GetY,SetY):Float;
-	public var scaleX(GetScaleX,SetScaleX):Float;
-	public var scaleY(GetScaleY,SetScaleY):Float;
+	public var x:Float;
+	public var y:Float;
+	public var scaleX:Float;
+	public var scaleY:Float;
 #if !js
 	public var scale9Grid(GetScale9Grid,SetScale9Grid):Rectangle;
 #end
 	public var accessibilityProperties:AccessibilityProperties;
-	public var alpha(default,SetAlpha):Float;
+	public var alpha:Float;
 	public var name(default,default):String;
 	public var cacheAsBitmap:Bool;
-	public var width(GetWidth,SetWidth):Float;
-	public var height(GetHeight,SetHeight):Float;
+	public var width:Float;
+	public var height:Float;
 	public var visible(default,default):Bool;
 	public var opaqueBackground(GetOpaqueBackground,SetOpaqueBackground):Null<Int>;
 	public var mouseX(jeashGetMouseX, jeashSetMouseX):Float;
 	public var mouseY(jeashGetMouseY, jeashSetMouseY):Float;
-	public var parent(GetParent,null):DisplayObjectContainer;
+	public var parent:DisplayObjectContainer;
 	public var stage(GetStage,null):Stage;
-	public var rotation(GetRotation,SetRotation):Float;
+	public var rotation:Float;
 	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
 	public var mask(GetMask,SetMask):DisplayObject;
 	public var filters(GetFilters,SetFilters):Array<Dynamic>;
@@ -90,7 +90,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var __swf_depth:Int;
 
 	public var transform(GetTransform,SetTransform):Transform;
-	public var mChanged(default,null):Bool;
 
 	// Variables for manipulating OpenGL co-ordinate system
 	public var mVertices:Array<Float>;
@@ -109,22 +108,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mIndicesCount(default,null):Int;
 	public var mBuffers : Hash<BufferData>;
 
-	var mX:Float;
-	var mY:Float;
 	var mSizeDirty:Bool;
 	var mBoundsRect : Rectangle;
 	var mGraphicsBounds : Rectangle;
 	var mScale9Grid : Rectangle;
-	var mBoundsDirty : Bool;
 
 	static var mNameID = 0;
 
-
-	var mScaleX:Float;
-	var mScaleY:Float;
-	var mTransformed:Bool;
-	var mRotation:Float;
-	var jeashParent:DisplayObjectContainer;
 	var mScrollRect:Rectangle;
 	var mOpaqueBackground:Null<Int>;
 
@@ -134,50 +124,26 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mFilters:Array<Dynamic>;
 	var mFilterSet:FilterSet;
 
-	var mCacheAsBitmap:Bool;
-	var mCachedBitmap:BitmapData;
-	var mFilteredBitmap:BitmapData;
-	var mCachedBitmapTx:Float;
-	var mCachedBitmapTy:Float;
-	var mCachedBoundsRect : Rectangle;
-	var mCCLeft:Bool;
-	var mCCRight:Bool;
-	var mCCTop:Bool;
-	var mCCBottom:Bool;
-
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
 
-	static var TRANSLATE_CHANGE     = 0x01;
-	static var NON_TRANSLATE_CHANGE = 0x02;
-	static var GRAPHICS_CHANGE      = 0x04;
-
 	public function new()
 	{
-		jeashParent = null;
+		parent = null;
 		super(null);
-		mX = mY = 0;
-		mScaleX = mScaleY = 1.0;
+		x = y = 0;
+		scaleX = scaleY = 1.0;
 		alpha = 1.0;
-		mTransformed = false;
-		mRotation = 0.0;
+		rotation = 0.0;
 		__swf_depth = 0;
 		mMatrix = new Matrix();
 		mFullMatrix = new Matrix();
 		mMask = null;
 		mMaskingObj = null;
-		mCacheAsBitmap = false;
-		mCachedBitmap = null;
-		mFilteredBitmap = null;
-		mCachedBitmapTx = 0;
-		mCachedBitmapTy = 0;
-		mBoundsDirty = true;
 		mBoundsRect = new Rectangle();
 		mGraphicsBounds = null;
 		mMaskHandle = null;
-		mCCLeft = mCCRight = mCCTop = mCCBottom = false;
 		name = "DisplayObject " + mNameID++;
-		mChanged = true;
 		mBuffers = new Hash();
 
 		visible = true;
@@ -302,57 +268,31 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function DoMouseEnter() {}
 	public function DoMouseLeave() {}
 
-	public function jeashSetParent(inParent:DisplayObjectContainer)
+	public function jeashSetParent(parent:DisplayObjectContainer)
 	{
-		if (inParent == jeashParent)
+		if (parent == this.parent)
 			return;
 
-		if (jeashParent != null)
-			jeashParent.__removeChild(this);
+		if (this.parent != null)
+			this.parent.__removeChild(this);
 
-		if (jeashParent==null && inParent!=null)
+		if (this.parent==null && parent!=null)
 		{
-			jeashParent = inParent;
+			this.parent = parent;
 			DoAdded(this);
 		}
-		else if (jeashParent!=null && inParent==null)
+		else if (this.parent != null && parent==null)
 		{
-			jeashParent = inParent;
+			this.parent = parent;
 			DoRemoved(this);
 		}
 		else
-			jeashParent = inParent;
+			this.parent = parent;
 
 	}
 
-
-	public function GetX() { return mX; }
-	public function GetParent() { return jeashParent; }
-	public function GetY() { return mY; }
-	public function SetX(inX:Float) { mX = inX; UpdateMatrix(); return mX; }
-	public function SetY(inY:Float) { mY = inY; UpdateMatrix();return mY; }
 	public function GetStage() { return flash.Lib.jeashGetStage(); }
 	public function AsContainer() : DisplayObjectContainer { return null; }
-
-	public function GetScaleX() { return mScaleX; }
-	public function GetScaleY() { return mScaleY; }
-	public function SetScaleX(inS:Float)
-	{ mScaleX = inS; UpdateMatrix(); return inS; }
-	public function SetScaleY(inS:Float)
-	{ mScaleY = inS; UpdateMatrix(); return inS; }
-
-
-
-	public function SetRotation(inRotation:Float)
-	{
-		mRotation = inRotation * Math.PI / 180.0;
-		UpdateMatrix();
-		return inRotation;
-	}
-	public function GetRotation()
-	{
-		return mRotation * (180.0 / Math.PI);
-	}
 
 	public function GetScrollRect() : Rectangle
 	{
@@ -404,7 +344,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function SetTransform(trans:Transform)
 	{
-		mTransformed = true;
 		mMatrix = trans.matrix.clone();
 		return trans;
 	}
@@ -437,130 +376,38 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function SetMatrix(inMatrix:Matrix)
 	{
 		mMatrix = inMatrix.clone();
-		mTransformed = mMatrix.a!=1 || mMatrix.b!=0 || mMatrix.tx!=0 ||
-			mMatrix.c!=0 || mMatrix.d!=1 || mMatrix.ty!=0;
 		return inMatrix;
 	}
 
-	public function UpdateMatrix()
+	public function jeashUpdateMatrix(parentMatrix:Matrix)
 	{
-		mMatrix = new Matrix(mScaleX,0.0, 0.0,mScaleY);
-		if (mRotation!=0.0)
-			mMatrix.rotate(mRotation);
-		mMatrix.tx = mX;
-		mMatrix.ty = mY;
-		mTransformed = mMatrix.a!=1 || mMatrix.c!=0 || mMatrix.tx!=0 ||
-			mMatrix.b!=0 || mMatrix.d!=1 || mMatrix.ty!=0;
-		mBoundsDirty = true;
+		BuildBounds();
+		var h = mBoundsRect.height;
+		if (this.height == null) this.height = h;
+		else
+		if (this.height != h && h>0)
+			scaleY *= this.height/h;
 
-		// HACK, until we get CSS matrix transforms working 
-		var gfx = GetGraphics();
-		if (gfx != null)
-			Reflect.setField(gfx, 'mChanged', true);
+		var w = mBoundsRect.width;
+		if (this.width == null) this.width = w;
+		else
+		if (w!=this.width && w>0)
+			scaleX *= this.width/w;
+
+		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
+
+		var rad = this.rotation * Math.PI / 180.0;
+		if (rad != 0.0)
+			mMatrix.rotate(rad);
+
+		mMatrix.tx = this.x;
+		mMatrix.ty = this.y;
+
+		mFullMatrix = mMatrix.mult(parentMatrix);
 	}
 
 	public function GetGraphics() : flash.display.Graphics
 	{ return null; }
-
-
-	public function SetupRender(inParentMatrix:Matrix) : Int
-	{
-		var result = 0;
-		var m:Matrix;
-
-		if (mTransformed)
-		{
-			m = mMatrix.mult(inParentMatrix);
-		}
-		else
-			m = inParentMatrix;
-
-		if ( m.a!=mFullMatrix.a || m.b!=mFullMatrix.b ||
-				m.c!=mFullMatrix.c || m.d!=mFullMatrix.d )
-			result |= DisplayObject.NON_TRANSLATE_CHANGE;
-
-		if (m.tx!=mFullMatrix.tx || m.ty!=mFullMatrix.ty )
-			result |= DisplayObject.TRANSLATE_CHANGE;
-
-		var gfx = GetGraphics();
-		/*
-		if (gfx!=null)
-		{
-			if (gfx.mChanged)
-			{
-				result |= DisplayObject.NON_TRANSLATE_CHANGE | DisplayObject.GRAPHICS_CHANGE;
-				mGraphicsBounds = null;
-			}
-		}
-		*/
-		result |= DisplayObject.NON_TRANSLATE_CHANGE | DisplayObject.GRAPHICS_CHANGE;
-		mGraphicsBounds = null;
-
-		if ( (result & DisplayObject.NON_TRANSLATE_CHANGE) !=0)
-			mBoundsDirty = true;
-		else if (result!=0)
-		{
-			mBoundsRect.x += m.tx - mFullMatrix.tx;
-			mBoundsRect.y += m.ty - mFullMatrix.ty;
-
-			// See if translation exposes a new bit of previously clipped cached bitmap...
-			var dx = mFullMatrix.tx + mCachedBitmapTx;
-			var dy = mFullMatrix.ty + mCachedBitmapTy;
-			if ( (mCCLeft && (dx<0)) || (mCCRight && (dx>0)) ||
-					(mCCBottom && (dy<0)) || (mCCTop && (dy>0)) )
-			{
-				mCachedBitmap = null;
-			}
-		}
-
-
-		mFullMatrix = m;
-
-		if (result!=0)
-			mMaskHandle = null;
-
-
-		return result;
-	}
-
-	public function GetHeight() : Float
-	{
-		BuildBounds();
-		return mBoundsRect.height;
-	}
-	public function SetHeight(inHeight:Float) : Float
-	{
-		BuildBounds();
-		var h = mBoundsRect.height;
-		if (inHeight!=h)
-		{
-			if (h<=0) return 0;
-			mScaleY *= inHeight/h;
-			UpdateMatrix();
-		}
-		return inHeight;
-	}
-
-
-
-	public function GetWidth() : Float
-	{
-		BuildBounds();
-		return mBoundsRect.width;
-	}
-
-	public function SetWidth(inWidth:Float) : Float
-	{
-		BuildBounds();
-		var w = mBoundsRect.width;
-		if (w!=inWidth)
-		{
-			if (w<=0) return 0;
-			mScaleX *= inWidth/w;
-			UpdateMatrix();
-		}
-		return inWidth;
-	}
 
 	public function GetOpaqueBackground() { return mOpaqueBackground; }
 	public function SetOpaqueBackground(inBG:Null<Int>)
@@ -580,8 +427,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mGraphicsBounds;
 	}
 
-	public function __Render(?inMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
+	public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
+		jeashUpdateMatrix(inParentMatrix);
 		var gfx = GetGraphics();
 
 		if (gfx!=null)
@@ -591,13 +439,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			Graphics.setBlendMode(blend);
 
 			var m = mFullMatrix.clone();
-			gfx.__Render(m, inMask);
+			gfx.jeashRender(inMask, m);
 
 			if (!jeash.Lib.mOpenGL)
 			{
 				var extent = gfx.GetExtent(new Matrix());
-				gfx.mSurface.style.left = ((Math.isNaN(m.tx)?0:m.tx)  + inTX + extent.x) + "px";
-				gfx.mSurface.style.top = ((Math.isNaN(m.ty)?0:m.ty) + inTY + extent.y) + "px";
+				m.tx = m.tx + extent.x;
+				m.ty = m.ty + extent.y;
+
+				if (inMask != null)
+				{
+					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m);
+				} else {
+					Lib.jeashSetSurfaceTransform(gfx.mSurface, m);
+					Lib.jeashSetSurfaceOpacity(gfx.mSurface, alpha);
+				}
 
 			} else {
 				if (mBuffers.exists("aVertPos"))
@@ -640,9 +496,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function RenderContentsToCache(inCanvas:HTMLCanvasElement, inTX:Int, inTY:Int)
+	function jeashRenderContentsToCache(inParentMatrix:Matrix, inCanvas:HTMLCanvasElement)
 	{
-		__Render(inCanvas, inTX, inTY);
+		jeashRender(inParentMatrix, inCanvas);
 	}
 
 	dynamic public function MatrixUniforms()
@@ -669,9 +525,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			smoothing:Bool):Void
 	{
 		if (matrix==null) matrix = new Matrix();
-		SetupRender(matrix);
-		// TODO
-		//RenderContentsToCache(inSurface,0,0);
+		jeashRenderContentsToCache(matrix, inSurface);
 	}
 
 	public function jeashGetObjectUnderPoint(point:Point)
@@ -691,7 +545,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				case DEVICE_SPACE:
 
 					var extent = gfx.GetExtent(new Matrix());
-					if (gfx.jeashHitTest((local.x-(extent.x))*scaleX, (local.y-(extent.y))*scaleY))
+					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
 					{
 						var i = jeashAsInteractiveObject();
 						return i == null ? null : i;
@@ -703,7 +557,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// Masking
-
 	public function GetMask() : DisplayObject { return mMask; }
 
 	public function SetMask(inMask:DisplayObject) : DisplayObject
@@ -724,9 +577,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for(filter in inFilters)
 				f.push( filter.clone() );
 		mFilters = f;
-		// Regenerate next render ...
-		mCachedBitmap = null;
-		mFilteredBitmap = null;
 
 		if (mFilters.length<1)
 			mFilterSet = null;
@@ -749,21 +599,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	function BuildBounds()
 	{
-		if (mBoundsDirty || mBoundsRect==null)
+		var gfx = GetGraphics();
+		if (gfx==null)
+			mBoundsRect = new Rectangle(mMatrix.tx,mMatrix.ty,0,0);
+		else
 		{
-			mBoundsDirty = false;
-			var gfx = GetGraphics();
-			if (gfx==null)
-				mBoundsRect = new Rectangle(mFullMatrix.tx,mFullMatrix.ty,0,0);
-			else
+			var m = mMatrix.clone(); m.tx = 0; m.ty = 0;
+			mBoundsRect = gfx.GetExtent(m);
+			if (mScale9Grid!=null)
 			{
-				var m = mFullMatrix.clone(); m.tx = 0; m.ty = 0;
-				mBoundsRect = gfx.GetExtent(m);
-				if (mScale9Grid!=null)
-				{
-					mBoundsRect.width *= scaleX;
-					mBoundsRect.height *= scaleY;
-				}
+				mBoundsRect.width *= scaleX;
+				mBoundsRect.height *= scaleY;
 			}
 		}
 	}
@@ -774,48 +620,19 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mBoundsRect.clone();
 	}
 
-	// We have detected that a cached bitmap has been hit - check to
-	//  see it it was actually one of the child objects.  This will
-	//  be overwritten by DisplayObjectContainer.
-	/*
-	public function GetChildCachedObj(inX:Int,inY:Int,inObj:InteractiveObject) : InteractiveObject
-	{
-		return inObj;
-	}
-
-	public function CacheGetObj(inX:Int,inY:Int, inObj:InteractiveObject ) : InteractiveObject
-	{
-		var tx = Std.int(mFullMatrix.tx + mCachedBitmapTx + 0.5);
-		var ty = Std.int(mFullMatrix.ty + mCachedBitmapTy + 0.5);
-		if (inX>=tx && inY>=ty && inX<tx+mCachedBitmap.width && inY<ty+mCachedBitmap.height)
-		{
-			// TODO : Check alpha ?
-			var i = AsInteractiveObject();
-			return GetChildCachedObj(inX-tx,inY-ty,i==null ? inObj : i);
-		}
-		return null;
-	}
-	*/
 	public function GetFocusObjects(outObjs:Array<InteractiveObject>) { }
 	inline function __BlendIndex():Int
 	{
 		return blendMode == null ? Graphics.BLEND_NORMAL : Type.enumIndex(blendMode);
 	}
 
-	function SetAlpha(alpha:Float):Float
-	{
-		var gfx = GetGraphics();
-		if (gfx!=null && alpha >= 0.0 && alpha <= 1.0) gfx.mSurfaceAlpha = alpha;
-		return alpha;
-	}
-
 	public function jeashGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
 	{
 		var io = jeashAsInteractiveObject();
-		if (io!=null)
+		if (io != null)
 			outStack.push(io);
-		if (jeashParent!=null)
-			jeashParent.jeashGetInteractiveObjectStack(outStack);
+		if (this.parent != null)
+			this.parent.jeashGetInteractiveObjectStack(outStack);
 	}
 
 
@@ -823,8 +640,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashFireEvent(event:flash.events.Event)
 	{
 		var stack:Array<InteractiveObject> = [];
-		if (jeashParent != null)
-			jeashParent.jeashGetInteractiveObjectStack(stack);
+		if (this.parent != null)
+			this.parent.jeashGetInteractiveObjectStack(stack);
 		var l = stack.length;
 
 		if (l>0)

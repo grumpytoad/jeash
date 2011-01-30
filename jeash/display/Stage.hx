@@ -368,18 +368,14 @@ class Stage extends flash.display.DisplayObjectContainer
 	{
 		jeashClear();
 
-		SetupRender(jeashStageMatrix);
-
-		__Render();
+		jeashRender(jeashStageMatrix);
 	}
 
 	public function jeashRenderToCanvas(canvas:HTMLCanvasElement)
 	{
 		canvas.width = canvas.width;
 
-		SetupRender(jeashStageMatrix);
-
-		RenderContentsToCache(canvas,0,0);
+		jeashRenderContentsToCache(jeashStageMatrix, canvas);
 	}
 
 	public function jeashSetQuality(inQuality:String):String
@@ -421,14 +417,14 @@ class Stage extends flash.display.DisplayObjectContainer
 		window.clearInterval( jeashTimer );
 		if ( jeashFastMode )
 		{
-			window.addEventListener( 'message', jeashRender, false );
+			window.addEventListener( 'message', jeashStageRender, false );
 			window.postMessage('a', cast window.location);
 		} else {
-			jeashTimer = window.setInterval( jeashRender, jeashInterval, [] );
+			jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
 		}
 	}
 
-	function jeashRender (?_) 
+	function jeashStageRender (?_) 
 	{
 		this.jeashClear();
 

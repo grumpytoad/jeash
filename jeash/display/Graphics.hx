@@ -279,7 +279,7 @@ class Graphics
 	private var mLastMoveID:Int;
 
 	public var mMatrix(default,null):Matrix;
-	public var mSurfaceAlpha(null,default):Float;
+	//public var mSurfaceAlpha(null,default):Float;
 
 	// GL shader
 	public var mShaderGL:WebGLProgram;
@@ -323,7 +323,7 @@ class Graphics
 		mFillAlpha = 0.0;
 		mLastMoveID = 0;
 		mNoClip = false;
-		mSurfaceAlpha = 1.0;
+		//mSurfaceAlpha = 1.0;
 
 		ClearLine();
 		mLineJobs = [];
@@ -447,7 +447,7 @@ class Graphics
 		return gradient;
 	}
 
-	public function __Render(?inMatrix:Matrix, ?inMaskHandle:HTMLCanvasElement)
+	public function jeashRender(?inMaskHandle:HTMLCanvasElement, ?inMatrix:Matrix)
 	{
 		if (!mChanged) return;
 
@@ -456,21 +456,21 @@ class Graphics
 		// clear the canvas
 		ClearCanvas();
 
-		if ( inMatrix == null ) inMatrix = new Matrix();
+		//if ( inMatrix == null ) inMatrix = new Matrix();
 
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
 
-		ctx.globalAlpha = mSurfaceAlpha;
+		//ctx.globalAlpha = mSurfaceAlpha;
 
 		var extent = GetExtent(new Matrix());
-
-		// TODO: refactor into DisplayObject
-		ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, -extent.x, -extent.y);
+		if (inMaskHandle != null)
+			ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, 0, 0);
 
 		var len : Int = mDrawList.length;
 		for ( i in 0...len ) {
 			var d = mDrawList[(len-1)-i];
 			ctx.save();
+			ctx.translate(-extent.x, -extent.y);
 			ctx.beginPath();
 
 			if (d.lineJobs.length > 0) {
@@ -582,15 +582,14 @@ class Graphics
 						}
 					}
 			}
-
 		}
 
 		// merge into parent canvas context - used only when caching.
 		if ( inMaskHandle != null && len > 0) {
 			if (!jeash.Lib.mOpenGL)
 			{
-				var maskCtx = inMaskHandle.getContext('2d');
-				maskCtx.drawImage(mSurface, inMatrix.tx + extent.x, inMatrix.ty + extent.y);
+				//var maskCtx = inMaskHandle.getContext('2d');
+				//maskCtx.drawImage(mSurface, inMatrix.tx + extent.x, inMatrix.ty + extent.y);
 
 			} else {
 
@@ -635,8 +634,11 @@ class Graphics
 	{
 		ClosePolygon(true);
 
-		var ctx = mSurface.getContext('2d');
-		ctx.drawImage(inTexture.handle(),mPenX,mPenY);
+		try
+		{
+			var ctx = mSurface.getContext('2d');
+			ctx.drawImage(inTexture.handle(),mPenX,mPenY);
+		} catch (e:Dynamic) {}
 	}
 
 

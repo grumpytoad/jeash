@@ -116,7 +116,6 @@ class TextField extends flash.display.InteractiveObject
 	public function new()
 	{
 		super();
-		mChanged = true;
 		mSurface = cast js.Lib.document.createElement("canvas");
 
 		mHTMLMode = false;
@@ -204,7 +203,6 @@ class TextField extends flash.display.InteractiveObject
 
 	public function setTextFormat(inFmt:TextFormat, ?beginIndex:Int, ?endIndex:Int)
 	{
-		mChanged = true;
 		mTextFormat = inFmt;
 	}
 
@@ -214,32 +212,19 @@ class TextField extends flash.display.InteractiveObject
 		return 0;
 	}
 
-	override public function GetWidth() : Float { return mWidth; }
-	override public function GetHeight() : Float { return mHeight; }
-	override public function SetWidth(inWidth:Float) : Float
+	override public function jeashUpdateMatrix(parentMatrix:Matrix)
 	{
-		mChanged = true;
-		if (inWidth!=mWidth)
-		{
-			mWidth = inWidth;
-		}
-		return mWidth;
-	}
+		super.jeashUpdateMatrix(parentMatrix);
 
-	override public function SetHeight(inHeight:Float) : Float
-	{
-		mChanged = true;
-		if (inHeight!=mHeight)
-		{
-			mHeight = inHeight;
-		}
-		return mHeight;
+		if (this.height!=mHeight)
+			mHeight = this.height;
+		if (this.width!=mWidth)
+			mWidth = this.width;
 	}
 
 	function GetType() { return mType; }
 	function SetType(inType:String) : String
 	{
-		mChanged = true;
 		mType = inType;
 
 		mInput = mType == TextFieldType.INPUT;
@@ -255,13 +240,6 @@ class TextField extends flash.display.InteractiveObject
 		return mHTMLText.substr( selectionBeginIndex, selectionEndIndex );
 	}
 
-	private function CheckChanged() : Bool
-	{
-		var result = mChanged;
-		mChanged = false;
-		return result;
-	}
-
 	function EvaluateTextFormat( tf:TextFormat, dtf:TextFormat )
 	{
 		if ( tf == null ) return dtf;
@@ -274,76 +252,75 @@ class TextField extends flash.display.InteractiveObject
 		return tf;
 	}
 
-	override public function __Render(?inParentMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
+	override public function jeashRender(parentMatrix:Matrix, ?inParentMask:HTMLCanvasElement)
 	{
 		//mGraphics.clear();
 
-		if (CheckChanged()) {
-			var ctxt = mSurface.getContext("2d");
+		jeashUpdateMatrix(parentMatrix);
 
-			ctxt.save();
+		var ctxt = mSurface.getContext("2d");
 
-			ctxt.setTransform(mFullMatrix.a, mFullMatrix.b, mFullMatrix.c, mFullMatrix.d, mFullMatrix.tx, mFullMatrix.ty);
+		ctxt.save();
 
-			var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
-			var size = textFormat.size;
-			var font = textFormat.font;
-			var bold = textFormat.bold == false ? 400 : 700;
-			var align = textFormat.align;
-			var color = textFormat.color;
+		ctxt.setTransform(mFullMatrix.a, mFullMatrix.b, mFullMatrix.c, mFullMatrix.d, mFullMatrix.tx, mFullMatrix.ty);
 
-			// smaller flash fonts seem to be bolder than in HTML
-			if ( size < 18 ) bold += 300;
+		var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
+		var size = textFormat.size;
+		var font = textFormat.font;
+		var bold = textFormat.bold == false ? 400 : 700;
+		var align = textFormat.align;
+		var color = textFormat.color;
 
-			var posX = null, posY = null;
-			if ( border == false )
+		// smaller flash fonts seem to be bolder than in HTML
+		if ( size < 18 ) bold += 300;
+
+		var posX = null, posY = null;
+		if ( border == false )
+		{
+			posX = 2.;
+			posY = 1. + size;
+		} else {
+			posX = 12.;
+			posY = 11. + size;
+		}
+
+		ctxt.font = bold + " " + size + "px " + font;
+
+		if ( mAlign != null )
+			ctxt.textAlign = mAlign;
+
+		ctxt.fillStyle = '#' + StringTools.hex(color);
+		var pos = 0;
+		while (pos < mHTMLText.length - 1)
+		{
+			var index = mHTMLText.indexOf(" ", pos);
+			var c = (index < 0 ) ? mHTMLText.substr(pos) : mHTMLText.substr(pos, index - pos) + " ";
+			pos += c.length;
+			var estX = ctxt.measureText(c).width;
+			if ( wordWrap && posX + estX > mWidth )
 			{
-				posX = 2.;
-				posY = 1. + size;
-			} else {
-				posX = 12.;
-				posY = 11. + size;
+				if ( posY + 12 + size > mHeight ) break;
+				posX = border ? 12 : 2;
+				if ( wordWrap )
+					posY += 8 + size;
 			}
 
-			ctxt.font = bold + " " + size + "px " + font;
-
-			if ( mAlign != null )
-				ctxt.textAlign = mAlign;
-
-			ctxt.fillStyle = '#' + StringTools.hex(color);
-			var pos = 0;
-			while (pos < mHTMLText.length - 1)
-			{
-				var index = mHTMLText.indexOf(" ", pos);
-				var c = (index < 0 ) ? mHTMLText.substr(pos) : mHTMLText.substr(pos, index - pos) + " ";
-				pos += c.length;
-				var estX = ctxt.measureText(c).width;
-				if ( wordWrap && posX + estX > mWidth )
-				{
-					if ( posY + 12 + size > mHeight ) break;
-					posX = border ? 12 : 2;
-					if ( wordWrap )
-						posY += 8 + size;
-				}
-
-				ctxt.fillText(c, posX, posY);
-				posX += estX;
-
-			}
-			
-			ctxt.restore();
-			ctxt.save();
-
-			if ( border )
-			{
-				ctxt.beginPath();
-				ctxt.strokeStyle = '#' + StringTools.hex(color);
-				ctxt.strokeRect(10, 10, mWidth+2, mHeight+2 );
-			}
-
-			ctxt.restore();
+			ctxt.fillText(c, posX, posY);
+			posX += estX;
 
 		}
+
+		ctxt.restore();
+		ctxt.save();
+
+		if ( border )
+		{
+			ctxt.beginPath();
+			ctxt.strokeStyle = '#' + StringTools.hex(color);
+			ctxt.strokeRect(10, 10, mWidth+2, mHeight+2 );
+		}
+
+		ctxt.restore();
 
 		// merge into parent canvas context
 		if (inParentMask != null)
@@ -351,7 +328,7 @@ class TextField extends flash.display.InteractiveObject
 			if (!jeash.Lib.mOpenGL)
 			{
 				var maskCtx = inParentMask.getContext('2d');
-				maskCtx.drawImage(mSurface, inTX, inTY);
+				maskCtx.drawImage(mSurface, parentMatrix.tx, parentMatrix.ty);
 			}
 		}
 
@@ -399,42 +376,36 @@ class TextField extends flash.display.InteractiveObject
 
 	public function SetAutoSize(inAutoSize:String) : String
 	{
-		mChanged = true;
 		autoSize = inAutoSize;
 		return inAutoSize;
 	}
 
 	public function SetWordWrap(inWordWrap:Bool) : Bool
 	{
-		mChanged = true;
 		wordWrap = inWordWrap;
 		return wordWrap;
 	}
 
 	public function SetBorder(inBorder:Bool) : Bool
 	{
-		mChanged = true;
 		border = inBorder;
 		return inBorder;
 	}
 
 	public function SetBorderColor(inBorderCol:Int) : Int
 	{
-		mChanged = true;
 		borderColor = inBorderCol;
 		return inBorderCol;
 	}
 
 	public function SetBackgroundColor(inCol:Int) : Int
 	{
-		mChanged = true;
 		backgroundColor = inCol;
 		return inCol;
 	}
 
 	public function SetBackground(inBack:Bool) : Bool
 	{
-		mChanged = true;
 		background = inBack;
 		return inBack;
 	}
@@ -444,7 +415,6 @@ class TextField extends flash.display.InteractiveObject
 
 	public function SetHTMLText(inHTMLText:String)
 	{
-		mChanged = true;
 		//mParagraphs = new Paragraphs();
 		mHTMLText = inHTMLText;
 		mHTMLMode = true;

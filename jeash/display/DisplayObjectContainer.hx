@@ -161,72 +161,27 @@ class DisplayObjectContainer extends InteractiveObject
 		return jeashChildren.length;
 	}
 
-	override public function __Render(?inMask:HTMLCanvasElement, inTX:Int = 0, inTY:Int = 0)
+	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
 
 		if (!visible || mMaskingObj!=null) return;
 
-		super.__Render(inMask, inTX, inTY);
+		super.jeashRender(inParentMatrix, inMask);
 		for(obj in jeashChildren)
 		{
 			if (obj.visible && obj.mMaskingObj==null)
 			{
-				obj.__Render(inMask, inTX, inTY);
+				obj.jeashRender(mMatrix, inMask);
 			}
 		}
 
 	}
 
-	override function RenderContentsToCache(inCanvas:HTMLCanvasElement, inTX:Int, inTY:Int)
+	override function jeashRenderContentsToCache(inParentMatrix:Matrix, inCanvas:HTMLCanvasElement)
 	{
-		super.RenderContentsToCache(inCanvas,inTX,inTY);
+		super.jeashRenderContentsToCache(inParentMatrix, inCanvas);
 		for(obj in jeashChildren)
-			obj.RenderContentsToCache(inCanvas,inTX,inTY);
-	}
-
-	override public function SetupRender(inParentMatrix:Matrix) : Int
-	{
-		var super_result = super.SetupRender(inParentMatrix);
-
-		var child_result = 0;
-
-		for(obj in jeashChildren)
-		{
-			if (obj.visible)
-				child_result |= obj.SetupRender(mFullMatrix);
-		}
-		if (mLastSetupObjs.length != jeashChildren.length)
-			child_result |= DisplayObject.NON_TRANSLATE_CHANGE;
-		else if (child_result==0)
-			for(i in 0...jeashChildren.length)
-				if (jeashChildren[i] != mLastSetupObjs[i])
-				{
-				child_result |= DisplayObject.NON_TRANSLATE_CHANGE;
-				break;
-				}
-		mLastSetupObjs = jeashChildren.copy();
-
-		var result = 0;
-		// TODO: case where all objects have moved together = TRANSLATE_CHANGE
-		if ( child_result !=0 )
-			result = DisplayObject.TRANSLATE_CHANGE | DisplayObject.NON_TRANSLATE_CHANGE;
-
-		if ( (result & DisplayObject.NON_TRANSLATE_CHANGE) != 0 )
-		{
-			mCachedBitmap = null;
-			mBoundsDirty = true;
-		}
-
-
-		if ( (result | super_result) !=0)
-			mBoundsDirty = true;
-
-		// See if we need cache, and that super call did not create one ...
-
-		if (result!=0)
-			mMaskHandle = null;
-
-		return result | super_result;
+			obj.jeashRenderContentsToCache(inParentMatrix, inCanvas);
 	}
 
 	#if js
@@ -247,7 +202,7 @@ class DisplayObjectContainer extends InteractiveObject
 		if (inObject == this) {
 			throw "Adding to self";
 		}
-		if (inObject.jeashParent==this)
+		if (inObject.parent==this)
 		{
 			setChildIndex(inObject,jeashChildren.length-1);
 			return inObject;
@@ -279,7 +234,7 @@ class DisplayObjectContainer extends InteractiveObject
 			throw "Invalid index position " + index;
 		}
 
-		if (obj.jeashParent == this)
+		if (obj.parent == this)
 		{
 			setChildIndex(obj, index);
 			return;

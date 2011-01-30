@@ -257,9 +257,24 @@ class Lib
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix)
 	{
-		Reflect.setField(surface.style, "-moz-transform", matrix.toString() );
-		Reflect.setField(surface.style, "-webkit-transform", matrix.toString() );
-		Reflect.setField(surface.style, "-o-transform", matrix.toString() );
+		surface.style.setProperty("-moz-transform", matrix.toString(), "");
+		surface.style.setProperty("-moz-transform-origin", "0 0", "");
+		surface.style.setProperty("-webkit-transform", matrix.toString(), "");
+		surface.style.setProperty("-webkit-transform-origin", "0 0", "");
+		surface.style.setProperty("-o-transform", matrix.toString(), "");
+		surface.style.setProperty("-o-transform-origin", "0 0", "");
+	}
+
+	public static function jeashSetSurfaceOpacity(surface:HTMLElement, alpha:Float)
+	{
+		surface.style.setProperty("opacity", Std.string(alpha), "" );
+	}
+
+	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix)
+	{
+		var ctx = surface.getContext("2d");
+		var maskCtx = mask.getContext("2d");
+		maskCtx.drawImage(surface, matrix.tx, matrix.ty);
 	}
 
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
