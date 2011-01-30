@@ -62,7 +62,7 @@ class Sprite extends DisplayObjectContainer
 			stage.jeashStopDrag(this);
 	}
 
-	override function GetGraphics() 
+	override public function GetGraphics() 
 	{ 
 		return mGraphics; 
 	}
