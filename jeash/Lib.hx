@@ -236,14 +236,48 @@ class Lib
 		return mStage; 
 	}
 
-	public static function jeashAppendSurface(surface:HTMLElement, x:Int, y:Int)
+	public static function jeashAppendSurface(surface:HTMLElement, ?after:HTMLElement, x:Int, y:Int)
 	{
 		if (mMe.__scr != null)
 		{
 			surface.style.position = "absolute";
 			surface.style.left = x + "px";
 			surface.style.top = y + "px";
-			mMe.__scr.appendChild(surface);
+			if (after != null && after.nextSibling != null)
+			{
+				mMe.__scr.insertBefore(surface, after.nextSibling);
+				}
+			else
+				mMe.__scr.appendChild(surface);
+		}
+	}
+
+	public static function jeashSwapSurface(surface1:HTMLElement, surface2:HTMLElement)
+	{
+		var c1 : Int = -1;
+		var c2 : Int = -1;
+		var swap : Node;
+		for ( i in 0...mMe.__scr.childNodes.length )
+			if ( mMe.__scr.childNodes[i] == surface1 ) c1 = i;
+			else if  ( mMe.__scr.childNodes[i] == surface2 ) c2 = i;
+		if ( c1 != -1 && c2 != -1 )
+		{
+			//swap = mMe.__scr.childNodes[c1].cloneNode(true);
+			swap = mMe.__scr.removeChild(mMe.__scr.childNodes[c1]);
+			if (c2 < mMe.__scr.childNodes.length-1)
+			{
+				mMe.__scr.insertBefore(mMe.__scr.childNodes[c2+1], swap);
+			} else {
+				mMe.__scr.appendChild(swap);
+			}
+
+			swap = mMe.__scr.removeChild(mMe.__scr.childNodes[c2]);
+			if (c1 < mMe.__scr.childNodes.length-1)
+			{
+				mMe.__scr.insertBefore(mMe.__scr.childNodes[c1+1], swap);
+			} else {
+				mMe.__scr.appendChild(swap);
+			}
 		}
 	}
 

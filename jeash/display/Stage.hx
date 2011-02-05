@@ -334,7 +334,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		//RecalcScale();
 		var event = new flash.events.Event( flash.events.Event.RESIZE );
 		event.target = this;
-		Broadcast(event);
+		jeashBroadcast(event);
 	}
 
 
@@ -429,12 +429,12 @@ class Stage extends flash.display.DisplayObjectContainer
 		this.jeashClear();
 
 		var event = new flash.events.Event( flash.events.Event.ENTER_FRAME );
-		this.Broadcast(event);
+		this.jeashBroadcast(event);
 
 		this.jeashRenderAll();
 		
 		var event = new flash.events.Event( flash.events.Event.RENDER );
-		this.Broadcast(event);
+		this.jeashBroadcast(event);
 
 		if ( jeashFastMode )
 			untyped window.postMessage('a', window.location);

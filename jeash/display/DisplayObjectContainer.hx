@@ -59,20 +59,25 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override public function AsContainer() { return this; }
 
-	public function Broadcast(inEvent:flash.events.Event)
+	// @r498
+	override public function jeashBroadcast(event:flash.events.Event)
 	{
-		dispatchEvent(inEvent);
-		for(obj in jeashChildren)
-		{
-			var container = obj.AsContainer();
-			//#if !js
-			if (container!=null)
-				container.Broadcast(inEvent);
-			else
-			//#end
-				obj.dispatchEvent(inEvent);
-		}
-
+		var i = 0;
+		if (jeashChildren.length>0)
+			while(true)
+			{
+				var child = jeashChildren[i];
+				child.jeashBroadcast(event);
+				if (i>=jeashChildren.length)
+					break;
+				if (jeashChildren[i]==child)
+				{
+					i++;
+					if (i>=jeashChildren.length)
+						break;
+				}
+			}
+		dispatchEvent(event);
 	}
 
 	override function BuildBounds()
@@ -197,35 +202,43 @@ class DisplayObjectContainer extends InteractiveObject
 
 	///////////////////////////// FLASH API ///////////////////////////////
 
-	public function addChild(inObject:DisplayObject):DisplayObject
+	public function addChild(object:DisplayObject):DisplayObject
 	{
-		if (inObject == this) {
+		if (object == this) {
 			throw "Adding to self";
 		}
-		if (inObject.parent==this)
+		if (object.parent==this)
 		{
-			setChildIndex(inObject,jeashChildren.length-1);
-			return inObject;
+			setChildIndex(object,jeashChildren.length-1);
+			return object;
 		}
 
 		#if debug
 		for(i in 0...jeashChildren.length) {
-			if(jeashChildren[i] == inObject) {
+			if(jeashChildren[i] == object) {
 				throw "Internal error: child already existed at index " + i;
 			}
 		}
 		#end
 
-		jeashChildren.push(inObject);
-		inObject.jeashSetParent(this);
-
-		var gfx = inObject.GetGraphics();
-		if (gfx != null)
+		if (stage.contains(this))
 		{
-			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
+			object.jeashAddToStage();
 		}
 
-		return inObject;
+		jeashChildren.push(object);
+		object.jeashSetParent(this);
+
+		return object;
+	}
+
+	override private function jeashAddToStage()
+	{
+		var gfx = GetGraphics();
+		if (gfx != null)
+			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
+		for(i in 0...jeashChildren.length)
+			jeashChildren[i].jeashAddToStage();
 	}
 
 	public function addChildAt( obj : DisplayObject, index : Int )
@@ -247,21 +260,26 @@ class DisplayObjectContainer extends InteractiveObject
 		obj.jeashSetParent(this);
 	}
 
-	public function contains( obj : DisplayObject )
+	// @r498
+	public function contains(child:DisplayObject)
 	{
-		if ( obj == this ) return true;
-		for ( i in jeashChildren )
-		{
-			if ( obj == i ) return true;
-			if ( Std.is(i,DisplayObjectContainer) )
-				if ( cast(i,DisplayObjectContainer).contains(obj) ) return true;
-		}
+		if (child==null)
+			return false;
+		if (this==child)
+			return true;
+		for(c in jeashChildren)
+			if (c==child)
+				return true;
 		return false;
 	}
 
+	// @r498
 	public function getChildAt( index : Int )
 	{
-		return jeashChildren[index];
+		if (index>=0 && index<jeashChildren.length)
+			return jeashChildren[index];
+		throw "getChildAt : index out of bounds " + index + "/" + jeashChildren.length;
+		return null;
 	}
 
 	public function getChildByName(inName:String):DisplayObject
@@ -340,9 +358,9 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 
 		// move down ...
+		var i = orig;
 		if (index<orig)
 		{
-			var i = orig;
 			while(i > index) {
 				jeashChildren[i] = jeashChildren[i-1];
 				i--;
@@ -359,6 +377,7 @@ class DisplayObjectContainer extends InteractiveObject
 			}
 			jeashChildren[index] = child;
 		}
+		jeashSwapSurface(index, i-1);
 
 		#if debug
 			for(i in 0...jeashChildren.length)
@@ -368,20 +387,31 @@ class DisplayObjectContainer extends InteractiveObject
 		#end
 	}
 
+	private function jeashSwapSurface(c1:Int, c2:Int)
+	{
+		if (jeashChildren[c1] == null) throw "Null element at index " + c1 + " length " + jeashChildren.length;
+		if (jeashChildren[c2] == null) throw "Null element at index " + c2 + " length " + jeashChildren.length;
+		var gfx1 = jeashChildren[c1].GetGraphics();
+		var gfx2 = jeashChildren[c2].GetGraphics();
+		if (gfx1 != null && gfx2 != null)
+			Lib.jeashSwapSurface(gfx1.mSurface, gfx2.mSurface);
+	}
+
 	public function swapChildren( child1 : DisplayObject, child2 : DisplayObject )
 	{
 		var c1 : Int = -1;
 		var c2 : Int = -1;
 		var swap : DisplayObject;
 		for ( i in 0...jeashChildren.length )
-		if ( jeashChildren[i] == child1 ) c1 = i;
-		else if  ( jeashChildren[i] == child2 ) c2 = i;
+			if ( jeashChildren[i] == child1 ) c1 = i;
+			else if  ( jeashChildren[i] == child2 ) c2 = i;
 		if ( c1 != -1 && c2 != -1 )
 		{
 			swap = jeashChildren[c1];
 			jeashChildren[c1] = jeashChildren[c2];
 			jeashChildren[c2] = swap;
 			swap = null;
+			jeashSwapSurface(c1, c2);
 		}
 	}
 

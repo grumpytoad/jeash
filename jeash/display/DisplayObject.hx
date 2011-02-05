@@ -679,4 +679,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
+	// @533
+	public function jeashBroadcast(event:flash.events.Event)
+	{
+		dispatchEvent(event);
+	}
+
+	private function jeashAddToStage()
+	{
+		var gfx = GetGraphics();
+		if (gfx != null)
+			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
+	}
+
 }
