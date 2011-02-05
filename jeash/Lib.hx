@@ -260,21 +260,23 @@ class Lib
 		for ( i in 0...mMe.__scr.childNodes.length )
 			if ( mMe.__scr.childNodes[i] == surface1 ) c1 = i;
 			else if  ( mMe.__scr.childNodes[i] == surface2 ) c2 = i;
+
 		if ( c1 != -1 && c2 != -1 )
 		{
-			//swap = mMe.__scr.childNodes[c1].cloneNode(true);
 			swap = mMe.__scr.removeChild(mMe.__scr.childNodes[c1]);
+			if (c2>c1) c2--;
 			if (c2 < mMe.__scr.childNodes.length-1)
 			{
-				mMe.__scr.insertBefore(mMe.__scr.childNodes[c2+1], swap);
+				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c2++]);
 			} else {
 				mMe.__scr.appendChild(swap);
 			}
 
 			swap = mMe.__scr.removeChild(mMe.__scr.childNodes[c2]);
+			if (c1>c2) c1--;
 			if (c1 < mMe.__scr.childNodes.length-1)
 			{
-				mMe.__scr.insertBefore(mMe.__scr.childNodes[c1+1], swap);
+				mMe.__scr.insertBefore(swap, mMe.__scr.childNodes[c1++]);
 			} else {
 				mMe.__scr.appendChild(swap);
 			}
