@@ -440,8 +440,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			if (!jeash.Lib.mOpenGL)
 			{
 				var extent = gfx.GetExtent(new Matrix());
-				m.tx = m.tx + extent.x;
-				m.ty = m.ty + extent.y;
+				m.tx = m.tx + extent.x*m.a + extent.y*m.c;
+				m.ty = m.ty + extent.x*m.b + extent.y*m.d;
 
 				if (inMask != null)
 				{
