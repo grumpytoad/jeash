@@ -86,7 +86,8 @@ class Lib
 	var mArgs:Array<String>;
 
 	static inline var VENDOR_HTML_TAG = "data-";
-	static inline var HTML_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'keyup', 'keypress', 'keydown', 'focus', 'dblclick', 'click', 'blur' ];
+	static inline var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'focus', 'dblclick', 'click', 'blur' ];
+	static inline var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown' ];
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
 	static inline var DEFAULT_WIDTH = 500;
 	static inline var DEFAULT_HEIGHT = 500;
@@ -343,8 +344,14 @@ class Lib
 					}
 				}
 
-				for (type in HTML_EVENT_TYPES) 
+				for (type in HTML_DIV_EVENT_TYPES) 
 					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+				for (type in HTML_WINDOW_EVENT_TYPES) 
+
+				{
+					var window : Window = cast js.Lib.window;
+					window.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+				}
 
 				jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
 					ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 

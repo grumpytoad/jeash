@@ -202,23 +202,10 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function jeashProcessStageEvent(evt:Html5Dom.Event)
 	{
-		evt.preventDefault();
+		//evt.preventDefault();
 		evt.stopPropagation();
 		switch(evt.type)
 		{
-			case (flash.events.KeyboardEvent.KEY_DOWN.toLowerCase()):
-				var evt:KeyboardEvent = cast evt; 
-				jeashOnKey( evt.keyLocation, true,
-						evt.keyIdentifier.charCodeAt(0),
-						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
-			case (flash.events.KeyboardEvent.KEY_UP.toLowerCase()):
-				var evt:KeyboardEvent = cast evt; 
-				jeashOnKey( evt.keyLocation, false,
-						evt.keyIdentifier.charCodeAt(0),
-						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
-
 			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()):
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_MOVE);
 
@@ -233,6 +220,30 @@ class Stage extends flash.display.DisplayObjectContainer
 
 			case (flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase()):
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_WHEEL);
+
+			case "keydown":
+				var evt:KeyboardEvent = cast evt; 
+				var keyCode = if (evt.keyIdentifier != null)
+					Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+				else
+					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+
+				jeashOnKey( keyCode, true,
+						evt.keyLocation,
+						evt.ctrlKey, evt.altKey,
+						evt.shiftKey );
+
+			case "keyup":
+				var evt:KeyboardEvent = cast evt; 
+				var keyCode = if (evt.keyIdentifier != null)
+					Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+				else
+					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+
+				jeashOnKey( keyCode, false,
+						evt.keyLocation,
+						evt.ctrlKey, evt.altKey,
+						evt.shiftKey );
 
 			default:
 				
@@ -333,14 +344,14 @@ class Stage extends flash.display.DisplayObjectContainer
 	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
 			ctrl:Bool, alt:Bool, shift:Bool )
 	{
-		// currently non-functioning
+		//untyped console.log(code);
 		var event = new flash.events.KeyboardEvent(
 				pressed ? flash.events.KeyboardEvent.KEY_DOWN:
 				flash.events.KeyboardEvent.KEY_UP,
 				true,false,
 				inChar,
-				Keyboard.ConvertCode(code, shift),
-				Keyboard.ConvertLocation(code),
+				code,
+				(shift || ctrl) ? 1 : 0, // TODO
 				ctrl,alt,shift);
 
 		dispatchEvent(event);
