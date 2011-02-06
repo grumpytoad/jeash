@@ -127,6 +127,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
 
+	var jeashBoundsHeight:Float;
+	var jeashBoundsWidth:Float;
+
 	public function new()
 	{
 		parent = null;
@@ -382,13 +385,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashUpdateMatrix(parentMatrix:Matrix)
 	{
 		BuildBounds();
+		
 		var h = mBoundsRect.height;
-		if (this.height == null) scaleY = 1;
-		else if (h>0) scaleY *= this.height/h;
+		if (this.height == null) this.height = h;
+		if (jeashBoundsHeight == null) jeashBoundsHeight = h;
+		if (this.height != scaleY*jeashBoundsHeight && h>0)
+			scaleY *= this.height/jeashBoundsHeight;
+		jeashBoundsHeight = h;
+		this.height = scaleY*h;
 
 		var w = mBoundsRect.width;
-		if (this.width == null) scaleX = 1;
-		else if (w>0) scaleX *= this.width/w;
+		if (this.width == null) this.width = w;
+		if (jeashBoundsWidth == null) jeashBoundsWidth = w;
+		if (this.width != scaleX*jeashBoundsWidth && w>0)
+			scaleX *= this.width/jeashBoundsWidth;
+		jeashBoundsWidth = w;
+		this.width = scaleX*w;
 
 		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
 
