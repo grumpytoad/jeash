@@ -383,16 +383,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		BuildBounds();
 		var h = mBoundsRect.height;
-		if (this.height == null) this.height = h;
-		else
-		if (this.height != h && h>0)
-			scaleY *= this.height/h;
+		if (this.height == null) scaleY = 1;
+		else if (h>0) scaleY *= this.height/h;
 
 		var w = mBoundsRect.width;
-		if (this.width == null) this.width = w;
-		else
-		if (w!=this.width && w>0)
-			scaleX *= this.width/w;
+		if (this.width == null) scaleX = 1;
+		else if (w>0) scaleX *= this.width/w;
 
 		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
 
