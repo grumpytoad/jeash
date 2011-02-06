@@ -2687,6 +2687,7 @@ extern interface MouseEvent implements UIEvent {
     public var altKey           (default, null): Bool;
     public var metaKey          (default, null): Bool;
     public var button           (default, null): Int;
+    public var which            (default, null): Int; // Note: W3C non-conformant
     public var relatedTarget    (default, null): EventTarget;
     
     public function getModifierState(keyIdentifierArg: DOMString): Bool;

@@ -53,6 +53,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	var jeashDragOffsetY:Float;
 	var jeashMouseOverObjects:Array<InteractiveObject>;
 	var jeashStageMatrix:Matrix;
+	var jeashMouseDown:Bool;
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
@@ -95,6 +96,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		mProjMatrix = DEFAULT_PROJ_MATRIX;
 		jeashPointInPathMode = Graphics.jeashDetectIsPointInPathMode();
 		jeashMouseOverObjects = [];
+		jeashMouseDown = false;
 	}
 
 	// @r551
@@ -295,6 +297,23 @@ class Stage extends flash.display.DisplayObjectContainer
 
 		} else { 2; }
 
+		// source: http://unixpapa.com/js/mouse.html
+		if (type == flash.events.MouseEvent.MOUSE_DOWN)
+			jeashMouseDown = if ( event.which != null ) 
+				event.which == 1
+			else if (event.button != null) 
+				(js.Lib.isIE && event.button == 1 || event.button == 0) 
+			else false;
+		else if (type == flash.events.MouseEvent.MOUSE_UP)
+			if ( event.which != null ) 
+				if (event.which == 1)
+					jeashMouseDown = false;
+			else if (event.button != null) 
+				if (js.Lib.isIE && event.button == 1 || event.button == 0)
+					jeashMouseDown = false;
+			else 
+				jeashMouseDown = false;
+
 		var pseudoEvent =  new flash.events.MouseEvent(type,
 				true, false,
 				local.x,local.y,
@@ -302,7 +321,7 @@ class Stage extends flash.display.DisplayObjectContainer
 				event.ctrlKey,
 				event.altKey,
 				event.shiftKey,
-				event.button != null, // buttonDown = left mouse button, 
+				jeashMouseDown,
 				delta);
 
 		pseudoEvent.stageX = mouseX;
