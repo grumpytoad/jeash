@@ -40,16 +40,11 @@ class System
 
 	public static var useCodePage : Bool = false;
 
-	public static function exit( code : Int ) : Void
+	public static function exit( code : Int ) : Void 
 	{
-		jeash.Lib.close();
+		throw "System.close not implemented in Jeash";
 	}
-	public static function gc() : Void
-	{
-#if neko
-		neko.vm.Gc.run(true);
-#end
-	}
+	public static function gc() : Void { }
 	public static function pause() : Void
 	{
 		throw "System.pause not implemented in Jeash";
@@ -60,7 +55,7 @@ class System
 	}
 	public static function setClipboard( string : String ) : Void
 	{
-		jeash.Manager.setClipboardString(string);
+		throw "System.setClipboard not implemented in Jeash";
 	}
 
 	static function GetMemory() : Int

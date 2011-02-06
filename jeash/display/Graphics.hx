@@ -288,7 +288,6 @@ class Graphics
 
 	private static var gl:WebGLRenderingContext;
 
-	static var c:Int = 0;
 	public function new(?inSurface:HTMLCanvasElement)
 	{
 		if ( inSurface == null ) {
@@ -456,11 +455,7 @@ class Graphics
 		// clear the canvas
 		ClearCanvas();
 
-		//if ( inMatrix == null ) inMatrix = new Matrix();
-
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
-
-		//ctx.globalAlpha = mSurfaceAlpha;
 
 		var extent = GetExtent(new Matrix());
 		if (inMaskHandle != null)

@@ -221,10 +221,8 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 		#end
 
-		if (stage.contains(this))
-		{
+		if (jeashIsOnStage())
 			object.jeashAddToStage();
-		}
 
 		jeashChildren.push(object);
 		object.jeashSetParent(this);

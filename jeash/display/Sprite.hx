@@ -44,6 +44,7 @@ class Sprite extends DisplayObjectContainer
 
 	public function new()
 	{
+		Lib.canvas;
 		mGraphics = new Graphics();
 		super();
 		buttonMode = false;

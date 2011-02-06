@@ -80,8 +80,8 @@ class Stage extends flash.display.DisplayObjectContainer
 	{
 		super();
 		mFocusObject = null;
-		jeashWindowWidth = jeashWidth = width;
-		jeashWindowHeight = jeashHeight = height;
+		jeashWindowWidth = jeashWidth = stageWidth = width;
+		jeashWindowHeight = jeashHeight = stageHeight = height;
 		stageFocusRect = false;
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
@@ -440,6 +440,7 @@ class Stage extends flash.display.DisplayObjectContainer
 			untyped window.postMessage('a', window.location);
 	}
 
+	override function jeashIsOnStage() { return true; }
 	override function jeashGetMouseX() { return this.mouseX; }
 	override function jeashSetMouseX(x:Float) { this.mouseX = x; return x; }
 	override function jeashGetMouseY() { return this.mouseY; }

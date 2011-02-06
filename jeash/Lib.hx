@@ -54,7 +54,8 @@ class Lib
 {
 	var mKilled:Bool;
 	static var mMe:Lib;
-	static var mPriority = ["2d", "swf"];
+	static var mPriority;
+	static inline var DEFAULT_PRIORITY = ["2d", "swf"];
 	public static var context(default,null):String;
 	public static var current(jeashGetCurrent,null):MovieClip;
 	public static var glContext(default,null):WebGLRenderingContext;
@@ -87,8 +88,8 @@ class Lib
 	static inline var VENDOR_HTML_TAG = "data-";
 	static inline var HTML_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'keyup', 'keypress', 'keydown', 'focus', 'dblclick', 'click', 'blur' ];
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
-	static var DEFAULT_WIDTH = 500;
-	static var DEFAULT_HEIGHT = 500;
+	static inline var DEFAULT_WIDTH = 500;
+	static inline var DEFAULT_HEIGHT = 500;
 
 	function new(title:String, width:Int, height:Int)
 	{
@@ -103,7 +104,7 @@ class Lib
 		__scr.style.overflow = "none";
 		__scr.style.position = "absolute"; // necessary for chrome ctx.isPointInPath
 		__scr.appendChild( Lib.canvas );
-		
+
 	}
 
 	static public function trace( arg:Dynamic ) 
@@ -283,6 +284,13 @@ class Lib
 		}
 	}
 
+	public static function jeashIsOnStage(surface:HTMLElement)
+	{
+		for ( i in 0...mMe.__scr.childNodes.length )
+			if ( mMe.__scr.childNodes[i] == surface ) return true;
+		return false;
+	}
+
 	public static function jeashRemoveSurface(surface:HTMLElement)
 	{
 		if (mMe.__scr != null)
@@ -383,7 +391,8 @@ class Lib
 	{
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		var attr : Attr = cast tgt.attributes.getNamedItem(VENDOR_HTML_TAG + 'priority');
-		if ( attr != null ) mPriority = attr.value.split(':');
+		if (attr != null) mPriority = attr.value.split(':');
+		if (mPriority == null) mPriority = DEFAULT_PRIORITY;
 	}
 
 	static function jeashGetWidth()
