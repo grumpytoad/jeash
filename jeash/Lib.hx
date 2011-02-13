@@ -238,19 +238,18 @@ class Lib
 		return mStage; 
 	}
 
-	public static function jeashAppendSurface(surface:HTMLElement, ?after:HTMLElement, x:Int, y:Int)
+	public static function jeashAppendSurface(surface:HTMLElement, ?before:HTMLElement, x:Int, y:Int)
 	{
 		if (mMe.__scr != null)
 		{
 			surface.style.position = "absolute";
 			surface.style.left = x + "px";
 			surface.style.top = y + "px";
-			if (after != null && after.nextSibling != null)
-			{
-				mMe.__scr.insertBefore(surface, after.nextSibling);
-				}
-			else
-				mMe.__scr.appendChild(surface);
+			for ( i in 0...mMe.__scr.childNodes.length )
+				if (before != null)
+					mMe.__scr.insertBefore(surface, before);
+				else
+					mMe.__scr.appendChild(surface);
 		}
 	}
 

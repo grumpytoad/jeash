@@ -232,9 +232,14 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override private function jeashAddToStage()
 	{
-		var gfx = GetGraphics();
-		if (gfx != null)
-			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
+		super.jeashAddToStage();
+		for(i in 0...jeashChildren.length)
+			jeashChildren[i].jeashAddToStage();
+	}
+
+	override private function jeashInsertBefore(obj:DisplayObject)
+	{
+		super.jeashInsertBefore(obj);
 		for(i in 0...jeashChildren.length)
 			jeashChildren[i].jeashAddToStage();
 	}
@@ -252,9 +257,13 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 
 		if(index == jeashChildren.length)
+		{
 			jeashChildren.push(obj);
-		else
+			if (jeashIsOnStage()) obj.jeashAddToStage();
+		} else {
+			if (jeashIsOnStage()) obj.jeashInsertBefore(jeashChildren[index]);
 			jeashChildren.insert(index, obj);
+		}
 		obj.jeashSetParent(this);
 	}
 
@@ -375,7 +384,8 @@ class DisplayObjectContainer extends InteractiveObject
 			}
 			jeashChildren[index] = child;
 		}
-		jeashSwapSurface(index, i-1);
+
+		jeashSwapSurface(index, orig);
 
 		#if debug
 			for(i in 0...jeashChildren.length)
