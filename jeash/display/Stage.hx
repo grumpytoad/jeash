@@ -344,7 +344,6 @@ class Stage extends flash.display.DisplayObjectContainer
 	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
 			ctrl:Bool, alt:Bool, shift:Bool )
 	{
-		//untyped console.log(code);
 		var event = new flash.events.KeyboardEvent(
 				pressed ? flash.events.KeyboardEvent.KEY_DOWN:
 				flash.events.KeyboardEvent.KEY_UP,

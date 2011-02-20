@@ -39,9 +39,10 @@ class Shape extends DisplayObject
 
    public function new()
    {
-      super();
-      mGraphics = new Graphics();
-      name = "Shape " + DisplayObject.mNameID++;
+	   Lib.canvas;
+	   mGraphics = new Graphics();
+	   super();
+	   name = "Shape " + DisplayObject.mNameID++;
    }
 
 
