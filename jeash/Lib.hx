@@ -231,7 +231,13 @@ class Lib
 		Lib.canvas;
 		if ( mStage == null )
 		{
-			mStage = new flash.display.Stage(jeashGetWidth(), jeashGetHeight());
+			var width = jeashGetWidth();
+			var height = jeashGetHeight();
+			mStage = new flash.display.Stage(width, height);
+
+			// This ensures that a canvas hitTest hits the root movieclip
+			Lib.current.graphics.drawRect(0, 0, width, height);
+
 			mStage.addChild(jeashGetCurrent());
 		}
 

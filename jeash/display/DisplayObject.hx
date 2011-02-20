@@ -113,6 +113,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mGraphicsBounds : Rectangle;
 	var mScale9Grid : Rectangle;
 
+	var jeashScaleX : Float;
+	var jeashScaleY : Float;
+
 	static var mNameID = 0;
 
 	var mScrollRect:Rectangle;
@@ -135,7 +138,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		parent = null;
 		super(null);
 		x = y = 0;
-		scaleX = scaleY = 1.0;
+		jeashScaleX = jeashScaleY = scaleX = scaleY = 1.0;
 		alpha = 1.0;
 		rotation = 0.0;
 		__swf_depth = 0;
@@ -314,8 +317,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function hitTestObject(obj:DisplayObject)
 	{
-		// TODO
-		throw "DisplayObject.hitTestObject not implemented in Jeash";
+		/* TODO This is too expensive
+		jeashUpdateMatrix(untyped parent.mFullMatrix);
+		for (x in 0...Std.int(flash.Lib.current.stage.stageWidth))
+			for (y in 0...Std.int(flash.Lib.current.stage.stageHeight))
+			{
+				var point1 = new Point(x - mFullMatrix.tx, y - mFullMatrix.ty);
+				var point2 = new Point(x - obj.mFullMatrix.tx, y - obj.mFullMatrix.ty);
+				if (jeashGetObjectUnderPoint(point1) != null && obj.jeashGetObjectUnderPoint(point2) != null) 
+					return true;
+			}
+		*/
 		return false;
 	}
 
@@ -388,20 +400,33 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		BuildBounds();
 		
 		var h = mBoundsRect.height;
+
 		if (this.height == null) this.height = h;
 		if (jeashBoundsHeight == null) jeashBoundsHeight = h;
-		if (this.height != scaleY*jeashBoundsHeight && h>0)
-			scaleY *= this.height/jeashBoundsHeight;
+
+		if (scaleY != jeashScaleY)
+			jeashScaleY = scaleY;
+		else
+			if (this.height != scaleY*jeashBoundsHeight && h>0)
+				this.jeashScaleY = this.height/jeashBoundsHeight;
+
 		jeashBoundsHeight = h;
 		this.height = scaleY*h;
 
 		var w = mBoundsRect.width;
+
 		if (this.width == null) this.width = w;
 		if (jeashBoundsWidth == null) jeashBoundsWidth = w;
-		if (this.width != scaleX*jeashBoundsWidth && w>0)
-			scaleX *= this.width/jeashBoundsWidth;
+
+		if (scaleX != jeashScaleX) 
+			jeashScaleX = scaleX;
+		else
+			if (this.width != jeashScaleX*jeashBoundsWidth && w>0)
+				this.jeashScaleX = this.width/jeashBoundsWidth;
+
 		jeashBoundsWidth = w;
-		this.width = scaleX*w;
+		this.width = jeashScaleX*w;
+		scaleX = jeashScaleX;
 
 		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
 
@@ -550,7 +575,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 						return this;
 				case DEVICE_SPACE:
 
-					var extent = gfx.GetExtent(new Matrix());
 					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
 						return this;
 			}
@@ -604,7 +628,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		var gfx = GetGraphics();
 		if (gfx==null)
-			mBoundsRect = new Rectangle(mMatrix.tx,mMatrix.ty,0,0);
+			mBoundsRect = new Rectangle(x,y,0,0);
 		else
 		{
 			mBoundsRect = gfx.GetExtent(new Matrix());
@@ -716,4 +740,5 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			return Lib.jeashIsOnStage(gfx.mSurface);
 		return false;
 	}
+
 }

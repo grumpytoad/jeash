@@ -596,11 +596,6 @@ class Graphics
 	{
 		if (jeash.Lib.mOpenGL) return false;
 
-		// root movieclip should hit
-		if (mDrawList.length == 0) 
-			if (inX >= 0 && inX <= mSurface.width && inY >= 0 && inY <= mSurface.height) 
-				return true;
-
 		var ctx : CanvasRenderingContext2D = mSurface.getContext("2d");
 		ctx.save();
 		for(d in mDrawList)
