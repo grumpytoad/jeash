@@ -182,11 +182,11 @@ class DisplayObjectContainer extends InteractiveObject
 
 	}
 
-	override function jeashRenderContentsToCache(inParentMatrix:Matrix, inCanvas:HTMLCanvasElement)
+	override function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
 	{
-		super.jeashRenderContentsToCache(inParentMatrix, inCanvas);
+		super.jeashRenderContentsToCache(parentMatrix, canvas);
 		for(obj in jeashChildren)
-			obj.jeashRenderContentsToCache(inParentMatrix, inCanvas);
+			obj.jeashRenderContentsToCache(mMatrix, canvas);
 	}
 
 	#if js

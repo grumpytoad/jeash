@@ -394,7 +394,6 @@ class Graphics
 			for (name in glAttributes)
 			{
 				var index = gl.getAttribLocation(shaderProgram, name);
-				//trace(index);
 				if (index >= 0)
 					gl.enableVertexAttribArray(index);
 					
@@ -446,7 +445,7 @@ class Graphics
 		return gradient;
 	}
 
-	public function jeashRender(?inMaskHandle:HTMLCanvasElement, ?inMatrix:Matrix)
+	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix)
 	{
 		if (!mChanged) return;
 
@@ -458,10 +457,10 @@ class Graphics
 		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
 
 		var extent = GetExtent(new Matrix());
-		if (inMaskHandle != null)
-			ctx.setTransform(inMatrix.a, inMatrix.b, inMatrix.c, inMatrix.d, 0, 0);
-
 		var len : Int = mDrawList.length;
+		if (maskHandle != null)
+			ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);
+
 		for ( i in 0...len ) {
 			var d = mDrawList[(len-1)-i];
 			ctx.save();
@@ -580,14 +579,9 @@ class Graphics
 		}
 
 		// merge into parent canvas context - used only when caching.
-		if ( inMaskHandle != null && len > 0) {
-			if (!jeash.Lib.mOpenGL)
+		if ( maskHandle != null && len > 0) {
+			if (jeash.Lib.mOpenGL)
 			{
-				//var maskCtx = inMaskHandle.getContext('2d');
-				//maskCtx.drawImage(mSurface, inMatrix.tx + extent.x, inMatrix.ty + extent.y);
-
-			} else {
-
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, mSurface);
 			}
 

@@ -314,10 +314,14 @@ class Lib
 		surface.style.setProperty("opacity", Std.string(alpha), "" );
 	}
 
-	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix)
+	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix, alpha:Float)
 	{
 		var ctx = surface.getContext("2d");
 		var maskCtx = mask.getContext("2d");
+
+		maskCtx.globalCompositeOperation = "source-over";
+		maskCtx.globalAlpha = alpha;
+
 		maskCtx.drawImage(surface, matrix.tx, matrix.ty);
 	}
 

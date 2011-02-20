@@ -314,6 +314,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function hitTestObject(obj:DisplayObject)
 	{
+		// TODO
 		throw "DisplayObject.hitTestObject not implemented in Jeash";
 		return false;
 	}
@@ -457,10 +458,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 				if (inMask != null)
 				{
-					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m);
+					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m, parent.alpha * alpha);
 				} else {
 					Lib.jeashSetSurfaceTransform(gfx.mSurface, m);
-					Lib.jeashSetSurfaceOpacity(gfx.mSurface, alpha);
+					Lib.jeashSetSurfaceOpacity(gfx.mSurface, parent.alpha * alpha);
 				}
 
 			} else {
@@ -504,9 +505,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function jeashRenderContentsToCache(inParentMatrix:Matrix, inCanvas:HTMLCanvasElement)
+	function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
 	{
-		jeashRender(inParentMatrix, inCanvas);
+		jeashRender(parentMatrix, canvas);
 	}
 
 	dynamic public function MatrixUniforms()
