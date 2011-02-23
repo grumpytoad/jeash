@@ -54,6 +54,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	var jeashMouseOverObjects:Array<InteractiveObject>;
 	var jeashStageMatrix:Matrix;
 	var jeashMouseDown:Bool;
+	var jeashStageActive:Bool;
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
@@ -81,8 +82,8 @@ class Stage extends flash.display.DisplayObjectContainer
 	{
 		super();
 		mFocusObject = null;
-		jeashWindowWidth = jeashWidth = stageWidth = width;
-		jeashWindowHeight = jeashHeight = stageHeight = height;
+		jeashWidth = stageWidth = width;
+		jeashHeight = stageHeight = height;
 		stageFocusRect = false;
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
@@ -97,6 +98,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		jeashPointInPathMode = Graphics.jeashDetectIsPointInPathMode();
 		jeashMouseOverObjects = [];
 		jeashMouseDown = false;
+		jeashStageActive = false;
 	}
 
 	// @r551
@@ -456,6 +458,15 @@ class Stage extends flash.display.DisplayObjectContainer
 	function jeashStageRender (?_) 
 	{
 		this.jeashClear();
+
+		if (!jeashStageActive)
+		{
+			jeashOnResize(jeashWidth, jeashHeight);
+			var event = new flash.events.Event( flash.events.Event.ACTIVATE );
+			event.target = this;
+			jeashBroadcast(event);
+			jeashStageActive = true;
+		}
 
 		var event = new flash.events.Event( flash.events.Event.ENTER_FRAME );
 		this.jeashBroadcast(event);
