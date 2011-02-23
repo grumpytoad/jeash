@@ -406,6 +406,7 @@ class Lib
 	static inline function ParsePriority()
 	{
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		if (tgt == null) throw "Fatal error: Jeash requires a <div id=\"haxe:jeash\" /> tag in the current document, please see the wiki for details.";
 		var attr : Attr = cast tgt.attributes.getNamedItem(VENDOR_HTML_TAG + 'priority');
 		if (attr != null) mPriority = attr.value.split(':');
 		if (mPriority == null) mPriority = DEFAULT_PRIORITY;
