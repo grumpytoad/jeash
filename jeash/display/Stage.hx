@@ -82,8 +82,8 @@ class Stage extends flash.display.DisplayObjectContainer
 	{
 		super();
 		mFocusObject = null;
-		jeashWidth = stageWidth = width;
-		jeashHeight = stageHeight = height;
+		jeashWindowWidth =jeashWidth = stageWidth = width;
+		jeashWindowHeight =jeashHeight = stageHeight = height;
 		stageFocusRect = false;
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
