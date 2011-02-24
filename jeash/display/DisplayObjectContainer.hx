@@ -102,18 +102,18 @@ class DisplayObjectContainer extends InteractiveObject
 		}
 	}
 
-	override function DoAdded(inObj:DisplayObject)
+	override function jeashDoAdded(inObj:DisplayObject)
 	{
-		super.DoAdded(inObj);
+		super.jeashDoAdded(inObj);
 		for(child in jeashChildren)
-			child.DoAdded(inObj);
+			child.jeashDoAdded(inObj);
 	}
 
-	override function DoRemoved(inObj:DisplayObject)
+	override function jeashDoRemoved(inObj:DisplayObject)
 	{
-		super.DoAdded(inObj);
+		super.jeashDoAdded(inObj);
 		for(child in jeashChildren)
-			child.DoRemoved(inObj);
+			child.jeashDoRemoved(inObj);
 	}
 
 	override public function GetBackgroundRect()

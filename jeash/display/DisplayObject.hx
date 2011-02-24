@@ -245,7 +245,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	override public function toString() { return name; }
 
-	function DoAdded(inObj:DisplayObject)
+	function jeashDoAdded(inObj:DisplayObject)
 	{
 		if (inObj==this)
 		{
@@ -259,7 +259,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		dispatchEvent(evt);
 	}
 
-	function DoRemoved(inObj:DisplayObject)
+	function jeashDoRemoved(inObj:DisplayObject)
 	{
 		if (inObj==this)
 		{
@@ -270,6 +270,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var evt = new flash.events.Event(flash.events.Event.REMOVED_FROM_STAGE, false, false);
 		evt.target = inObj;
 		dispatchEvent(evt);
+
+		var gfx = GetGraphics();
+		if (gfx != null)
+			Lib.jeashRemoveSurface(gfx.mSurface);
 	}
 	public function DoMouseEnter() {}
 	public function DoMouseLeave() {}
@@ -285,12 +289,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (this.parent==null && parent!=null)
 		{
 			this.parent = parent;
-			DoAdded(this);
+			jeashDoAdded(this);
 		}
 		else if (this.parent != null && parent==null)
 		{
 			this.parent = parent;
-			DoRemoved(this);
+			jeashDoRemoved(this);
 		}
 		else
 			this.parent = parent;
