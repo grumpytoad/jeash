@@ -454,7 +454,8 @@ class Graphics
 		// clear the canvas
 		ClearCanvas();
 
-		var ctx : CanvasRenderingContext2D = mSurface.getContext('2d');
+		var ctx = getContext();
+		if (ctx==null) return;
 
 		var extent = GetExtent(new Matrix());
 		var len : Int = mDrawList.length;
@@ -596,7 +597,9 @@ class Graphics
 	{
 		if (jeash.Lib.mOpenGL) return false;
 
-		var ctx : CanvasRenderingContext2D = mSurface.getContext("2d");
+		var ctx : CanvasRenderingContext2D = getContext();
+		if (ctx==null) return false;
+
 		ctx.save();
 		for(d in mDrawList)
 		{
@@ -623,11 +626,9 @@ class Graphics
 	{
 		ClosePolygon(true);
 
-		try
-		{
-			var ctx = mSurface.getContext('2d');
+		var ctx = getContext();
+		if (ctx != null) 
 			ctx.drawImage(inTexture.handle(),mPenX,mPenY);
-		} catch (e:Dynamic) {}
 	}
 
 
@@ -1177,6 +1178,16 @@ class Graphics
 		}
 		ctx.restore();
 		return rv;
+	}
+
+	inline function getContext() : CanvasRenderingContext2D
+	{
+	       	try {
+			return mSurface.getContext("2d");
+		} catch (e:Dynamic) {
+			flash.Lib.trace("HitTest not implemented for: " + mSurface);
+			return null;
+		}
 	}
 
 }

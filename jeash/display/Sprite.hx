@@ -35,8 +35,8 @@ import flash.Lib;
 
 class Sprite extends DisplayObjectContainer
 {
-	var mGraphics:Graphics;
-	public var graphics(GetGraphics,null):Graphics;
+	var jeashGraphics:Graphics;
+	public var graphics(jeashGetGraphics,null):Graphics;
 	public var buttonMode:Bool;
 
 	#if debug
@@ -46,7 +46,7 @@ class Sprite extends DisplayObjectContainer
 	public function new()
 	{
 		Lib.canvas;
-		mGraphics = new Graphics();
+		jeashGraphics = new Graphics();
 		super();
 		buttonMode = false;
 		name = "Sprite " + DisplayObject.mNameID++;
@@ -64,9 +64,31 @@ class Sprite extends DisplayObjectContainer
 			stage.jeashStopDrag(this);
 	}
 
-	override public function GetGraphics() 
+	override function jeashGetGraphics() 
 	{ 
-		return mGraphics; 
+		return jeashGraphics; 
 	}
+
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject
+	{
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+		{
+			var local = globalToLocal(point);
+			switch (stage.jeashPointInPathMode)
+			{
+				case USER_SPACE:
+					if (gfx.jeashHitTest(local.x, local.y))
+						return cast this;
+				case DEVICE_SPACE:
+
+					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
+						return cast this;
+			}
+		}
+
+		return null;
+	}
+
 }
 

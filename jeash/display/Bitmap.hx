@@ -34,31 +34,31 @@ class Bitmap extends jeash.display.DisplayObject {
 	public var pixelSnapping : PixelSnapping;
 	public var smoothing : Bool;
 
-	var mGraphics:Graphics;
+	var jeashGraphics:Graphics;
 
 	public function new(?inBitmapData : BitmapData, ?inPixelSnapping : PixelSnapping, ?inSmoothing : Bool) : Void {
 		super();
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
-		mGraphics = new Graphics();
+		jeashGraphics = new Graphics();
 		SetBitmapData(inBitmapData);
 	}
 
 	public function SetBitmapData(inBitmapData:BitmapData) : BitmapData
 	{
 		bitmapData = inBitmapData;
-		mGraphics.clear();
+		jeashGraphics.clear();
 		if (inBitmapData!=null)
 		{
-			mGraphics.beginBitmapFill(inBitmapData,false,smoothing);
-			mGraphics.drawRect(0,0,inBitmapData.width,inBitmapData.height);
-			mGraphics.endFill();
+			jeashGraphics.beginBitmapFill(inBitmapData,false,smoothing);
+			jeashGraphics.drawRect(0,0,inBitmapData.width,inBitmapData.height);
+			jeashGraphics.endFill();
 		}
 		return inBitmapData;
 	}
 
 
-	override public function GetGraphics() { return mGraphics; }
+	override function jeashGetGraphics() { return jeashGraphics; }
 
 }
 

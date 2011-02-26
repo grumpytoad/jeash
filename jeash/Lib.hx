@@ -102,8 +102,8 @@ class Lib
 		// ... this should go in Stage.hx
 		__scr = cast js.Lib.document.getElementById(title);
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
-		__scr.style.overflow = "none";
-		__scr.style.position = "absolute"; // necessary for chrome ctx.isPointInPath
+		__scr.style.setProperty("overflow", "hidden", "");
+		__scr.style.setProperty("position", "absolute", ""); // necessary for chrome ctx.isPointInPath
 		__scr.appendChild( Lib.canvas );
 
 	}
@@ -318,6 +318,35 @@ class Lib
 	public static function jeashSetSurfaceOpacity(surface:HTMLElement, alpha:Float)
 	{
 		surface.style.setProperty("opacity", Std.string(alpha), "" );
+	}
+
+	public static function jeashSetSurfaceFont(surface:HTMLElement, font:String, bold:Int, size:Float, color:Int, align:String)
+	{
+		surface.style.setProperty("font-family", font, "");
+		surface.style.setProperty("font-weight", Std.string(bold) , "");
+		surface.style.setProperty("font-color", '0x' + StringTools.hex(color) , "");
+		surface.style.setProperty("font-size", size + 'pt', "");
+	}
+
+	public static function jeashSetSurfaceBorder(surface:HTMLElement, color:Int, size:Int)
+	{
+		surface.style.setProperty("border-color", '0x' + StringTools.hex(color) , "");
+		surface.style.setProperty("border-style", 'solid' , "");
+		surface.style.setProperty("border-width", size + 'px', "");
+	}
+
+	public static function jeashAppendText(surface:HTMLElement, text:String)
+	{
+		for ( i in 0...surface.childNodes.length )
+			surface.removeChild(surface.childNodes[i]);
+		surface.appendChild(cast js.Lib.document.createTextNode(text));
+	}
+
+	public static function jeashSetTextDimensions(surface:HTMLElement, width:Float, height:Float)
+	{
+		surface.style.setProperty("width", width + "px", "");
+		surface.style.setProperty("height", height + "px", "");
+		surface.style.setProperty("overflow", "hidden", "");
 	}
 
 	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix, alpha:Float)

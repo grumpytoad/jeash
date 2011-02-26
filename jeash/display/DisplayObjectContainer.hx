@@ -399,8 +399,8 @@ class DisplayObjectContainer extends InteractiveObject
 	{
 		if (jeashChildren[c1] == null) throw "Null element at index " + c1 + " length " + jeashChildren.length;
 		if (jeashChildren[c2] == null) throw "Null element at index " + c2 + " length " + jeashChildren.length;
-		var gfx1 = jeashChildren[c1].GetGraphics();
-		var gfx2 = jeashChildren[c2].GetGraphics();
+		var gfx1 = jeashChildren[c1].jeashGetGraphics();
+		var gfx2 = jeashChildren[c2].jeashGetGraphics();
 		if (gfx1 != null && gfx2 != null)
 			Lib.jeashSwapSurface(gfx1.mSurface, gfx2.mSurface);
 	}

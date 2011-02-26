@@ -194,7 +194,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function SetBuffers<T>( inputData:Hash<{ size:Int, data:Array<Float>}>, ?indices:Array<Int> )
 	{
 		var gl : WebGLRenderingContext = jeash.Lib.glContext;
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 		if (gfx == null) return;
 
 		gl.useProgram(gfx.mShaderGL);
@@ -272,7 +272,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		evt.target = inObj;
 		dispatchEvent(evt);
 
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			Lib.jeashRemoveSurface(gfx.mSurface);
 	}
@@ -445,7 +445,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mFullMatrix = mMatrix.mult(parentMatrix);
 	}
 
-	public function GetGraphics() : flash.display.Graphics
+	function jeashGetGraphics() : flash.display.Graphics
 	{ return null; }
 
 	public function GetOpaqueBackground() { return mOpaqueBackground; }
@@ -459,7 +459,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		if (mGraphicsBounds==null)
 		{
-			var gfx = GetGraphics();
+			var gfx = jeashGetGraphics();
 			if (gfx!=null)
 				mGraphicsBounds = gfx.GetExtent(new Matrix());
 		}
@@ -469,7 +469,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
 		jeashUpdateMatrix(inParentMatrix);
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 
 		if (gfx!=null)
 		{
@@ -567,25 +567,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		jeashRenderContentsToCache(matrix, inSurface);
 	}
 
-	public function jeashGetObjectUnderPoint(point:Point)
+	public function jeashGetObjectUnderPoint(point:Point):DisplayObject
 	{
-		var gfx = GetGraphics();
-		if (gfx != null)
-		{
-			var local = globalToLocal(point);
-			switch (stage.jeashPointInPathMode)
-			{
-				case USER_SPACE:
-					if (gfx.jeashHitTest(local.x, local.y))
-						return this;
-				case DEVICE_SPACE:
-
-					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
-						return this;
-			}
-		}
-
-		return null;
+		if (point.x >= x && point.x <= x+width && point.y >= y && point.y <= y+height)
+			return this;
+		else
+			return null;
 	}
 
 	// Masking
@@ -631,7 +618,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	function BuildBounds()
 	{
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 		if (gfx==null)
 			mBoundsRect = new Rectangle(x,y,0,0);
 		else
@@ -719,15 +706,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	private function jeashAddToStage()
 	{
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
 	}
 
 	private function jeashInsertBefore(obj:DisplayObject)
 	{
-		var gfx1 = GetGraphics();
-		var gfx2 = obj.jeashIsOnStage() ? obj.GetGraphics() : null;
+		var gfx1 = jeashGetGraphics();
+		var gfx2 = obj.jeashIsOnStage() ? obj.jeashGetGraphics() : null;
 		if (gfx1 != null)
 		{
 			if (gfx2 != null )
@@ -740,7 +727,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	private function jeashIsOnStage()
 	{
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			return Lib.jeashIsOnStage(gfx.mSurface);
 		return false;

@@ -41,7 +41,7 @@ import jeash.media.VideoElement;
 
 class Video extends DisplayObject {
 	
-	private var mGraphics:Graphics;
+	private var jeashGraphics:Graphics;
 	
 	private var windowHack:Bool;
 	private var netStream:NetStream;
@@ -61,8 +61,8 @@ class Video extends DisplayObject {
 	public function new(width : Int = 320, height : Int = 240) : Void {
 		super();
 		
-		mGraphics = new Graphics();
-		mGraphics.drawRect(0, 0, width, height);
+		jeashGraphics = new Graphics();
+		jeashGraphics.drawRect(0, 0, width, height);
 		
 		this.width = width;
 		this.height = height;
@@ -80,10 +80,9 @@ class Video extends DisplayObject {
 		removeEventListener(Event.ADDED_TO_STAGE, added);
 	}
 	
-	//displayobject override
-	override public function GetGraphics():Graphics
+	override function jeashGetGraphics():Graphics
 	{ 
-		return mGraphics; 
+		return jeashGraphics; 
 	}
 	
 	/*
@@ -99,7 +98,7 @@ class Video extends DisplayObject {
 		this.netStream = ns;
 		var scope:Video = this;
 		
-		mGraphics.SetSurface(ns.jeashVideoElement);
+		jeashGraphics.SetSurface(ns.jeashVideoElement);
 
 		ns.jeashVideoElement.width = width;
 		ns.jeashVideoElement.height = height;
@@ -109,10 +108,10 @@ class Video extends DisplayObject {
 	
 	public function clear():Void
 	{
-		if (mGraphics != null)
-			jeash.Lib.jeashRemoveSurface(mGraphics.mSurface);
-		mGraphics = new Graphics();
-		mGraphics.drawRect(0, 0, width, height);
+		if (jeashGraphics != null)
+			jeash.Lib.jeashRemoveSurface(jeashGraphics.mSurface);
+		jeashGraphics = new Graphics();
+		jeashGraphics.drawRect(0, 0, width, height);
 	}
 
 	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)

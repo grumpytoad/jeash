@@ -107,16 +107,19 @@ class TextField extends flash.display.InteractiveObject
 	var mSelectionAnchored:Bool;
 	var mSelectionAnchor:Int;
 
-	var mGraphics:Graphics;
+	var jeashGraphics:Graphics;
 	var mSurface(default,null):HTMLCanvasElement;
 
 	public var mTryFreeType:Bool;
 	public var mDownChar:Int;
 
+	var jeashChanged:Bool;
+
 	public function new()
 	{
 		super();
-		mSurface = cast js.Lib.document.createElement("canvas");
+		mSurface = cast js.Lib.document.createElement("div");
+		jeashGraphics = new Graphics( mSurface );
 
 		mHTMLMode = false;
 		multiline = false;
@@ -152,16 +155,20 @@ class TextField extends flash.display.InteractiveObject
 		border = false;
 		backgroundColor = 0xffffff;
 		background = false;
+
+		jeashChanged = true;
 	}
 
 	public function replaceSelectedText( value:String )
 	{
 		mHTMLText = mHTMLText.substr( 0, selectionBeginIndex - 1 ) + value + mHTMLText.substr( selectionEndIndex );
+		jeashChanged = true;
 	}
 
 	public function replaceText( beginIndex:Int, endIndex:Int, newText:String )
 	{
 		mHTMLText = mHTMLText.substr( 0, beginIndex - 1 ) + newText + mHTMLText.substr( endIndex );
+		jeashChanged = true;
 	}
 
 	public function getCharIndexAtPoint(x:Float, y:Float):Int
@@ -214,12 +221,30 @@ class TextField extends flash.display.InteractiveObject
 
 	override public function jeashUpdateMatrix(parentMatrix:Matrix)
 	{
-		super.jeashUpdateMatrix(parentMatrix);
+		var h = mSurface.clientHeight;
 
-		if (this.height!=mHeight)
-			mHeight = this.height;
-		if (this.width!=mWidth)
-			mWidth = this.width;
+		if (this.height == null) this.height = h;
+
+		var w = mSurface.clientWidth;
+
+		if (this.width == null) this.width = w;
+
+		// TODO: scaleX / scaleY
+
+		if (wordWrap)
+			mMatrix = new Matrix(1.0, 0.0, 0.0, 1.0);
+		else
+			mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
+
+		var rad = this.rotation * Math.PI / 180.0;
+		if (rad != 0.0)
+			mMatrix.rotate(rad);
+
+		mMatrix.tx = this.x;
+		mMatrix.ty = this.y;
+
+		mFullMatrix = mMatrix.mult(parentMatrix);
+
 	}
 
 	function GetType() { return mType; }
@@ -252,91 +277,58 @@ class TextField extends flash.display.InteractiveObject
 		return tf;
 	}
 
-	override public function jeashRender(parentMatrix:Matrix, ?inParentMask:HTMLCanvasElement)
+	override public function jeashRender(parentMatrix:Matrix, ?mask:HTMLCanvasElement)
 	{
-		//mGraphics.clear();
+
+		if (jeashChanged)
+		{
+
+			var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
+			var size = textFormat.size;
+			var font = textFormat.font;
+			var bold = textFormat.bold == false ? 400 : 700;
+			var align = textFormat.align;
+			var color = textFormat.color;
+
+			// smaller flash fonts seem to be bolder than in HTML
+			if ( size < 18 ) bold += 300;
+
+			var posX = null, posY = null;
+			if ( border == false )
+			{
+				posX = 2.;
+				posY = 1. + size;
+			} else {
+				posX = 12.;
+				posY = 11. + size;
+			}
+
+			Lib.jeashSetSurfaceFont(mSurface, font, bold, size, color, mAlign);
+			Lib.jeashAppendText(mSurface, mHTMLText);
+
+			if ( border )
+				Lib.jeashSetSurfaceBorder(mSurface, color, 1);
+
+			jeashChanged = false;
+		} 
 
 		jeashUpdateMatrix(parentMatrix);
+		var m = mFullMatrix.clone();
 
-		var ctxt = mSurface.getContext("2d");
-
-		ctxt.save();
-
-		ctxt.setTransform(mFullMatrix.a, mFullMatrix.b, mFullMatrix.c, mFullMatrix.d, mFullMatrix.tx, mFullMatrix.ty);
-
-		var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
-		var size = textFormat.size;
-		var font = textFormat.font;
-		var bold = textFormat.bold == false ? 400 : 700;
-		var align = textFormat.align;
-		var color = textFormat.color;
-
-		// smaller flash fonts seem to be bolder than in HTML
-		if ( size < 18 ) bold += 300;
-
-		var posX = null, posY = null;
-		if ( border == false )
+		if (mask != null)
 		{
-			posX = 2.;
-			posY = 1. + size;
+			throw "Cannot render DIV to surface";
 		} else {
-			posX = 12.;
-			posY = 11. + size;
+			if (wordWrap) Lib.jeashSetTextDimensions(mSurface, width, height);
+			Lib.jeashSetSurfaceTransform(mSurface, m);
+			Lib.jeashSetSurfaceOpacity(mSurface, parent.alpha * alpha);
 		}
-
-		ctxt.font = bold + " " + size + "px " + font;
-
-		if ( mAlign != null )
-			ctxt.textAlign = mAlign;
-
-		ctxt.fillStyle = '#' + StringTools.hex(color);
-		var pos = 0;
-		while (pos < mHTMLText.length - 1)
-		{
-			var index = mHTMLText.indexOf(" ", pos);
-			var c = (index < 0 ) ? mHTMLText.substr(pos) : mHTMLText.substr(pos, index - pos) + " ";
-			pos += c.length;
-			var estX = ctxt.measureText(c).width;
-			if ( wordWrap && posX + estX > mWidth )
-			{
-				if ( posY + 12 + size > mHeight ) break;
-				posX = border ? 12 : 2;
-				if ( wordWrap )
-					posY += 8 + size;
-			}
-
-			ctxt.fillText(c, posX, posY);
-			posX += estX;
-
-		}
-
-		ctxt.restore();
-		ctxt.save();
-
-		if ( border )
-		{
-			ctxt.beginPath();
-			ctxt.strokeStyle = '#' + StringTools.hex(color);
-			ctxt.strokeRect(10, 10, mWidth+2, mHeight+2 );
-		}
-
-		ctxt.restore();
-
-		// merge into parent canvas context
-		if (inParentMask != null)
-		{
-			if (!jeash.Lib.mOpenGL)
-			{
-				var maskCtx = inParentMask.getContext('2d');
-				maskCtx.drawImage(mSurface, parentMatrix.tx, parentMatrix.ty);
-			}
-		}
-
 	}
 
 	function SetDefaultTextFormat( tf:TextFormat )
 	{
 		this.defaultTextFormat = EvaluateTextFormat( tf, this.defaultTextFormat );
+		jeashChanged = true;
 		return this.defaultTextFormat;
 	}
 
@@ -344,6 +336,7 @@ class TextField extends flash.display.InteractiveObject
 	public function SetTextColour(inCol)
 	{
 		mTextFormat.color = inCol;
+		jeashChanged = true;
 		return inCol;
 	}
 
@@ -359,6 +352,7 @@ class TextField extends flash.display.InteractiveObject
 		mText = inText;
 		mHTMLText = inText;
 		mHTMLMode = false;
+		jeashChanged = true;
 		return mText;
 	}
 
@@ -420,8 +414,12 @@ class TextField extends flash.display.InteractiveObject
 		mHTMLMode = true;
 		if (mInput)
 			ConvertHTMLToText(true);
+		jeashChanged = true;
 		return mHTMLText;
 	}
+
+	override function jeashGetGraphics() : flash.display.Graphics
+	{ return jeashGraphics; }
 
 }
 

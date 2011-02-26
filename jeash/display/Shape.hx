@@ -29,25 +29,46 @@ package jeash.display;
 import flash.display.Graphics;
 import flash.display.InteractiveObject;
 import flash.geom.Matrix;
+import flash.geom.Point;
 import flash.Lib;
 
 class Shape extends DisplayObject
 {
-   var mGraphics:Graphics;
+	var jeashGraphics:Graphics;
 
-   public var graphics(GetGraphics,null):Graphics;
+	public var graphics(jeashGetGraphics,null):Graphics;
+
+	public function new()
+	{
+		Lib.canvas;
+		jeashGraphics = new Graphics();
+		super();
+		name = "Shape " + DisplayObject.mNameID++;
+	}
 
 
-   public function new()
-   {
-	   Lib.canvas;
-	   mGraphics = new Graphics();
-	   super();
-	   name = "Shape " + DisplayObject.mNameID++;
-   }
+	override function jeashGetGraphics() { return jeashGraphics; }
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject
+	{
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+		{
+			var local = globalToLocal(point);
+			switch (stage.jeashPointInPathMode)
+			{
+				case USER_SPACE:
+					if (gfx.jeashHitTest(local.x, local.y))
+						return cast this;
+				case DEVICE_SPACE:
 
+					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
+						return cast this;
+			}
+		}
 
-   override public function GetGraphics() { return mGraphics; }
+		return null;
+	}
+
 }
 
 
