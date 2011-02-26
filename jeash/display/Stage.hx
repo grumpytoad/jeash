@@ -226,7 +226,12 @@ class Stage extends flash.display.DisplayObjectContainer
 			case "keydown":
 				var evt:KeyboardEvent = cast evt; 
 				var keyCode = if (evt.keyIdentifier != null)
-					Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+					try {
+						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+					} catch (e:Dynamic) {
+						flash.Lib.trace("keydown error: " + e);
+						evt.keyCode;
+					}
 				else
 					Keyboard.jeashConvertMozillaCode(evt.keyCode);
 
@@ -238,7 +243,12 @@ class Stage extends flash.display.DisplayObjectContainer
 			case "keyup":
 				var evt:KeyboardEvent = cast evt; 
 				var keyCode = if (evt.keyIdentifier != null)
-					Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+					try {
+						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+					} catch (e:Dynamic) {
+						flash.Lib.trace("keyup error: " + e);
+						evt.keyCode;
+					}
 				else
 					Keyboard.jeashConvertMozillaCode(evt.keyCode);
 

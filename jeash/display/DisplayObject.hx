@@ -44,6 +44,7 @@ import flash.geom.Transform;
 import flash.filters.BitmapFilterSet;
 import flash.filters.FilterSet;
 import flash.display.BitmapData;
+import flash.Lib;
 
 typedef BufferData =
 {

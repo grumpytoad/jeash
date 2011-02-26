@@ -93,7 +93,7 @@ class URLLoader extends flash.events.EventDispatcher
 	}
 
 	function onError (msg) {
-		trace(msg);
+		flash.Lib.trace(msg);
 		DispatchIOErrorEvent();
 	}
 

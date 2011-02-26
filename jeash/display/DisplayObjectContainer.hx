@@ -31,7 +31,7 @@ import flash.events.Event;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
 import flash.geom.Point;
-
+import flash.Lib;
 
 /**
 * @author	Hugh Sanderson

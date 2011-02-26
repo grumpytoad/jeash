@@ -29,6 +29,7 @@ package jeash.display;
 import flash.display.Graphics;
 import flash.display.InteractiveObject;
 import flash.geom.Matrix;
+import flash.Lib;
 
 class Shape extends DisplayObject
 {

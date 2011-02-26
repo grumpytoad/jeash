@@ -31,6 +31,7 @@ import flash.display.InteractiveObject;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
 import flash.geom.Point;
+import flash.Lib;
 
 class Sprite extends DisplayObjectContainer
 {
