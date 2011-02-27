@@ -119,6 +119,7 @@ class TextField extends flash.display.InteractiveObject
 	{
 		super();
 		mSurface = cast js.Lib.document.createElement("div");
+		Lib.jeashSetSurfacePadding(mSurface, 0, 0, true);
 		jeashGraphics = new Graphics( mSurface );
 
 		mHTMLMode = false;
@@ -149,7 +150,7 @@ class TextField extends flash.display.InteractiveObject
 		mDownChar = 0;
 		mSelectDrag = -1;
 
-		mTextFormat = defaultTextFormat;
+		//mTextFormat = defaultTextFormat;
 
 		borderColor = 0x000000;
 		border = false;
@@ -285,13 +286,12 @@ class TextField extends flash.display.InteractiveObject
 
 			var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
 			var size = textFormat.size;
+			var lineHeight = Std.int(size) + 1;
+			flash.Lib.trace(size);
 			var font = textFormat.font;
 			var bold = textFormat.bold == false ? 400 : 700;
 			var align = textFormat.align;
 			var color = textFormat.color;
-
-			// smaller flash fonts seem to be bolder than in HTML
-			if ( size < 18 ) bold += 300;
 
 			var posX = null, posY = null;
 			if ( border == false )
@@ -303,11 +303,20 @@ class TextField extends flash.display.InteractiveObject
 				posY = 11. + size;
 			}
 
-			Lib.jeashSetSurfaceFont(mSurface, font, bold, size, color, mAlign);
-			Lib.jeashAppendText(mSurface, mHTMLText);
+			var span : HTMLElement = cast js.Lib.document.createElement("span");
+			Lib.jeashSetSurfaceFont(span, font, bold, size, color, mAlign, lineHeight);
+			Lib.jeashAppendText(mSurface, span, mHTMLText);
+
+			Lib.jeashSetSurfacePadding(span, 0, 0, true);
 
 			if ( border )
-				Lib.jeashSetSurfaceBorder(mSurface, color, 1);
+				// prevent applying border on multiline inline HTML elements.
+				if ( wordWrap )
+					Lib.jeashSetSurfaceBorder(mSurface, color, 1);
+				else
+					Lib.jeashSetSurfaceBorder(span, color, 1);
+
+			Lib.jeashSetTextDimensions(mSurface, width, height, autoSize.toLowerCase());
 
 			jeashChanged = false;
 		} 
@@ -319,7 +328,6 @@ class TextField extends flash.display.InteractiveObject
 		{
 			throw "Cannot render DIV to surface";
 		} else {
-			if (wordWrap) Lib.jeashSetTextDimensions(mSurface, width, height);
 			Lib.jeashSetSurfaceTransform(mSurface, m);
 			Lib.jeashSetSurfaceOpacity(mSurface, parent.alpha * alpha);
 		}

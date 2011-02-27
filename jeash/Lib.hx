@@ -320,12 +320,13 @@ class Lib
 		surface.style.setProperty("opacity", Std.string(alpha), "" );
 	}
 
-	public static function jeashSetSurfaceFont(surface:HTMLElement, font:String, bold:Int, size:Float, color:Int, align:String)
+	public static function jeashSetSurfaceFont(surface:HTMLElement, font:String, bold:Int, size:Float, color:Int, align:String, lineHeight:Int)
 	{
 		surface.style.setProperty("font-family", font, "");
 		surface.style.setProperty("font-weight", Std.string(bold) , "");
 		surface.style.setProperty("font-color", '0x' + StringTools.hex(color) , "");
-		surface.style.setProperty("font-size", size + 'pt', "");
+		surface.style.setProperty("font-size", size + 'px', "");
+		surface.style.setProperty("line-height", lineHeight + 'px', "");
 	}
 
 	public static function jeashSetSurfaceBorder(surface:HTMLElement, color:Int, size:Int)
@@ -333,20 +334,40 @@ class Lib
 		surface.style.setProperty("border-color", '0x' + StringTools.hex(color) , "");
 		surface.style.setProperty("border-style", 'solid' , "");
 		surface.style.setProperty("border-width", size + 'px', "");
+		surface.style.setProperty("border-collapse", "collapse", "");
 	}
 
-	public static function jeashAppendText(surface:HTMLElement, text:String)
+	public static function jeashSetSurfacePadding(surface:HTMLElement, padding:Float, margin:Float, display:Bool)
+	{
+		surface.style.setProperty("padding", padding + 'px', "");
+		surface.style.setProperty("margin", margin + 'px' , "");
+		surface.style.setProperty("top", (padding+1) + "px", "");
+		surface.style.setProperty("left", (padding+1) + "px", "");
+		surface.style.setProperty("display", (display ? "inline" : "block") , "");
+	}
+
+	public static function jeashAppendText(surface:HTMLElement, container:HTMLElement, text:String)
 	{
 		for ( i in 0...surface.childNodes.length )
 			surface.removeChild(surface.childNodes[i]);
-		surface.appendChild(cast js.Lib.document.createTextNode(text));
+		container.appendChild(cast js.Lib.document.createTextNode(text));
+
+		container.style.setProperty("position", "relative", "");
+
+		surface.appendChild(cast container);
 	}
 
-	public static function jeashSetTextDimensions(surface:HTMLElement, width:Float, height:Float)
+	public static function jeashSetTextDimensions(surface:HTMLElement, width:Float, height:Float, align:String)
 	{
 		surface.style.setProperty("width", width + "px", "");
 		surface.style.setProperty("height", height + "px", "");
 		surface.style.setProperty("overflow", "hidden", "");
+		surface.style.setProperty("text-align", align, "");
+	}
+
+	public static function jeashSetSurfaceAlign(surface:HTMLElement, align:String)
+	{
+		surface.style.setProperty("text-align", align, "");
 	}
 
 	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix, alpha:Float)
