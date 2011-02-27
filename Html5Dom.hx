@@ -30,6 +30,58 @@ typedef HTMLAudioElement = Dynamic;
 typedef HTMLVideoElement = Dynamic;
 
 /*
+* <----------------- DOM-Level-3-XPath ------------------>
+*/
+
+extern interface XPathException {
+	public var code:Int;
+}
+
+extern interface XPathEvaluator {
+	public function createExpression(expression:DOMString, resolver:XPathNSResolver):XPathExpression; // raises (XPathException, DOMException)
+	public function createNSResolver(nodeResolver:Node):XPathNSResolver;
+	public function evaluate(expression:DOMString, contextNode:Node, resolver:XPathNSResolver, type:Int, result:DOMObject):DOMObject; // raises (XPathException, DOMException)
+}
+
+extern interface XPathExpression {
+	public function evaluate(contextNode:Node, type:Int, result:DOMObject):DOMObject; // raises (XPathException, DOMException)
+}
+
+extern interface XPathNSResolver {
+	public function lookupNamespaceURI(prefix:DOMString):DOMString;
+}
+
+extern class XPathResult {
+	public static var ANY_TYPE:Int = 0; 
+	public static var NUMBER_TYPE:Int = 1; 
+	public static var STRING_TYPE:Int = 2;
+	public static var BOOLEAN_TYPE:Int = 3;
+	public static var UNORDERED_NODE_ITERATOR_TYPE:Int = 4;
+	public static var ORDERED_NODE_ITERATOR_TYPE:Int = 5;
+	public static var UNORDERED_NODE_SNAPSHOT_TYPE:Int = 6;
+	public static var ORDERED_NODE_SNAPSHOT_TYPE:Int = 7;
+	public static var ANY_UNORDERED_NODE_TYPE:Int = 8;
+	public static var FIRST_ORDERED_NODE_TYPE:Int = 9;
+
+	public var resultType(default,null):Int;
+	public var numberValue(default,null):Float;
+	public var stringValue(default,null):DOMString;
+	public var booleanValue(default,null):Bool;
+	public var singleNodeValue(default,null):Node;
+	public var invalidIteratorState(default,null):Bool;
+	public var snapshotLength(default,null):Int;
+
+	public function iterateNext():Node; // raises (XPathException, DOMException)
+	public function snapshotItem(index:Int):Node; // raises (XPathException, DOMException)
+}
+
+extern interface XPathNamespace
+{
+	public var XPATH_NAMESPACE_NODE:Int;
+	public var ownerElement(default,null):Element;
+}
+
+/*
 * <----------------- DomParser Non-Standardised ------------------>
 */
 
@@ -1534,7 +1586,7 @@ interface Selection {
     public function stringifier(): DOMString;
 }
 
-extern interface HTMLDocument implements Document {
+extern interface HTMLDocument implements Document, implements XPathEvaluator {
     public var title:       DOMString;
     public var referrer     (default, null): DOMString;
     public var domain       (default, null): DOMString;
@@ -2338,7 +2390,7 @@ extern interface HTMLFrameElement implements HTMLElement {
     public var noResize:        Bool;
     public var scrolling:       DOMString;
     public var src:             DOMString;
-    public var contentDocument  (default, null): Document;
+    public var contentDocument  (default, null): HTMLDocument;
     public var contentWindow    (default, null): Window;
 }
 //Tested
@@ -2353,7 +2405,7 @@ extern interface HTMLIFrameElement implements HTMLElement {
     public var scrolling:       DOMString;
     public var src:             DOMString;
     public var width:           DOMString;
-    public var contentDocument  (default, null): Document;
+    public var contentDocument  (default, null): HTMLDocument;
     public var contentWindow    (default, null): Window;
 }
 //Unable to Test
@@ -3438,7 +3490,7 @@ extern interface Window implements ArrayAccess<WindowProxy>, implements EventTar
     public var top              (default, null): Window;
     public var window           (default, null): WindowProxy;
     public var self             (default, null): WindowProxy;
-    public var document         (default, null): Document;
+    public var document         (default, null): HTMLDocument;
     public var name:            DOMString;
     public var location         (default, null): Location;
     public var history          (default, null): History;
