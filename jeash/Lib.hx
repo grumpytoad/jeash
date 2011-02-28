@@ -324,14 +324,14 @@ class Lib
 	{
 		surface.style.setProperty("font-family", font, "");
 		surface.style.setProperty("font-weight", Std.string(bold) , "");
-		surface.style.setProperty("font-color", '0x' + StringTools.hex(color) , "");
+		surface.style.setProperty("color", '#' + StringTools.hex(color) , "");
 		surface.style.setProperty("font-size", size + 'px', "");
 		surface.style.setProperty("line-height", lineHeight + 'px', "");
 	}
 
 	public static function jeashSetSurfaceBorder(surface:HTMLElement, color:Int, size:Int)
 	{
-		surface.style.setProperty("border-color", '0x' + StringTools.hex(color) , "");
+		surface.style.setProperty("border-color", '#' + StringTools.hex(color) , "");
 		surface.style.setProperty("border-style", 'solid' , "");
 		surface.style.setProperty("border-width", size + 'px', "");
 		surface.style.setProperty("border-collapse", "collapse", "");
