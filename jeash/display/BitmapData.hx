@@ -301,8 +301,15 @@ class BitmapData implements IBitmapDrawable
 
 		if (data.inLoader != null)
 		{
-			data.inLoader.content.width = width;
-			data.inLoader.content.height = height;
+			// workaround for async images being cached before loading.
+			untyped 
+			{
+				if (data.inLoader.content != null && data.inLoader.jeashGraphics != null)
+				{
+					data.inLoader.content.jeashGraphics.mChanged = true;
+					data.inLoader.content.jeashGraphics.mNoClip = true;
+				}
+			}
 
 			var e = new flash.events.Event( flash.events.Event.COMPLETE );
 			e.target = data.inLoader;

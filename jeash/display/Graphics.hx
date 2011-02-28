@@ -554,6 +554,7 @@ class Graphics
 					// Hack to workaround premature width calculations during async image load
 					if (!mNoClip)
 						ctx.clip();
+
 					var img = bitmap.texture_buffer;
 					var matrix = bitmap.matrix;
 
