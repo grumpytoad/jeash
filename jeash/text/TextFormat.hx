@@ -50,7 +50,7 @@ class TextFormat
    public var url : String;
 
   public function new(?in_font : String,
-                      ?in_size : Int,
+                      ?in_size : Float,
                       ?in_color : UInt,
                       ?in_bold : Bool,
                       ?in_italic : Bool,
