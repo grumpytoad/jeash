@@ -82,6 +82,7 @@ class Loader extends flash.display.DisplayObjectContainer
 			mImage.LoadFromFile(request.url, contentLoaderInfo);
 			content = new Bitmap(mImage);
 			Reflect.setField(contentLoaderInfo, "content", this.content);
+			addChild(content);
 		} catch(e:Dynamic) {
 			trace("Error " + e);
 			contentLoaderInfo.DispatchIOErrorEvent();
@@ -93,16 +94,6 @@ class Loader extends flash.display.DisplayObjectContainer
 			mShape = new Shape();
 			addChild(mShape);
 		}
-		//else
-		//	mShape.graphics.clear();
-
-		#if !js
-			mShape.graphics.blit(mImage);
-			contentLoaderInfo.DispatchCompleteEvent();
-		#end
-
 	}
-
-
 }
 

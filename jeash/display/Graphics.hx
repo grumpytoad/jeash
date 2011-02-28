@@ -465,7 +465,11 @@ class Graphics
 		for ( i in 0...len ) {
 			var d = mDrawList[(len-1)-i];
 			ctx.save();
-			ctx.translate(-extent.x, -extent.y);
+
+			// detect draw beyond boundary, do not translate
+			if (Math.abs(extent.x) < mSurface.width && Math.abs(extent.y) < mSurface.height)
+				ctx.translate(-extent.x, -extent.y);
+
 			ctx.beginPath();
 
 			if (d.lineJobs.length > 0) {
