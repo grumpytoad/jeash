@@ -301,9 +301,8 @@ class TextField extends flash.display.InteractiveObject
 
 			var span : HTMLElement = cast js.Lib.document.createElement("span");
 			Lib.jeashSetSurfaceFont(mSurface, font, bold, size, color, align, lineHeight);
-			Lib.jeashAppendText(mSurface, span, mHTMLText);
-
-			Lib.jeashSetSurfacePadding(span, 0, 0, true);
+			Lib.jeashAppendText(mSurface, span, mHTMLText, wordWrap);
+			Lib.jeashSetSurfacePadding(span, 0, 4, true);
 
 			if ( border )
 				// prevent applying border on multiline inline HTML elements.

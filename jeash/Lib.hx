@@ -342,18 +342,21 @@ class Lib
 	{
 		surface.style.setProperty("padding", padding + 'px', "");
 		surface.style.setProperty("margin", margin + 'px' , "");
-		surface.style.setProperty("top", (padding+1) + "px", "");
+		surface.style.setProperty("top", (padding+2) + "px", "");
+		surface.style.setProperty("right", (padding+1) + "px", "");
 		surface.style.setProperty("left", (padding+1) + "px", "");
+		surface.style.setProperty("bottom", (padding+1) + "px", "");
 		surface.style.setProperty("display", (display ? "inline" : "block") , "");
 	}
 
-	public static function jeashAppendText(surface:HTMLElement, container:HTMLElement, text:String)
+	public static function jeashAppendText(surface:HTMLElement, container:HTMLElement, text:String, wrap:Bool)
 	{
 		for ( i in 0...surface.childNodes.length )
 			surface.removeChild(surface.childNodes[i]);
 		container.appendChild(cast js.Lib.document.createTextNode(text));
 
 		container.style.setProperty("position", "relative", "");
+		if (!wrap) container.style.setProperty("white-space", "nowrap", "");
 
 		surface.appendChild(cast container);
 	}
