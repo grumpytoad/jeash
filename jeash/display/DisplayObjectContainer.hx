@@ -176,7 +176,7 @@ class DisplayObjectContainer extends InteractiveObject
 		{
 			if (obj.visible && obj.mMaskingObj==null)
 			{
-				obj.jeashRender(mMatrix, inMask);
+				obj.jeashRender(mFullMatrix, inMask);
 			}
 		}
 
