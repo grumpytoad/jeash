@@ -175,7 +175,7 @@ class Stage extends flash.display.DisplayObjectContainer
 				old_obj.jeashFireEvent( event.jeashCreateSimilar(events[0], new_obj, old_obj) );
 
 			if (new_obj!=null)
-				new_obj.jeashFireEvent( event.jeashCreateSimilar(events[1], old_obj) );
+				new_obj.jeashFireEvent( event.jeashCreateSimilar(events[1], old_obj, new_obj) );
 
 			// rollOver/rollOut goes only over the non-common objects in the tree...
 			var common = 0;

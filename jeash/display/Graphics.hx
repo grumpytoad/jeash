@@ -799,8 +799,10 @@ class Graphics
 
 
 	public function drawRoundRect(x:Float,y:Float,width:Float,height:Float,
-			ellipseWidth:Float, ellipseHeight:Float)
+			ellipseWidth:Float, ellipseHeight:Float = null)
 	{
+		if (ellipseHeight == null) ellipseHeight = ellipseWidth;
+
 		if (ellipseHeight<1 || ellipseHeight<1)
 		{
 			drawRect(x,y,width,height);

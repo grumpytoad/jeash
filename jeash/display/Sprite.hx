@@ -69,26 +69,5 @@ class Sprite extends DisplayObjectContainer
 		return jeashGraphics; 
 	}
 
-	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject
-	{
-		var gfx = jeashGetGraphics();
-		if (gfx != null)
-		{
-			var local = globalToLocal(point);
-			switch (stage.jeashPointInPathMode)
-			{
-				case USER_SPACE:
-					if (gfx.jeashHitTest(local.x, local.y))
-						return cast this;
-				case DEVICE_SPACE:
-
-					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
-						return cast this;
-			}
-		}
-
-		return null;
-	}
-
 }
 

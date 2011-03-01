@@ -27,7 +27,7 @@
 package jeash.events;
 
 class TextEvent extends Event {
-	var text : String;
+	public var text : String;
 	function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?text : String) 
 	{
 		super(type, bubbles, cancelable);

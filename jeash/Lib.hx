@@ -29,6 +29,7 @@ package jeash;
 import Html5Dom;
 import flash.display.Stage;
 import flash.display.MovieClip;
+import flash.display.Graphics;
 import flash.events.Event;
 import flash.events.MouseEvent;
 import flash.events.KeyboardEvent;
@@ -38,10 +39,8 @@ import flash.display.DisplayObject;
 import flash.display.InteractiveObject;
 import flash.geom.Rectangle;
 import flash.geom.Matrix;
-
 import flash.geom.Point;
-
-import flash.display.Graphics;
+import flash.net.URLRequest;
 
 /**
  * @author	Hugh Sanderson
@@ -117,6 +116,12 @@ class Lib
 			else
 				trace( arg );
 		}
+	}
+
+	static public function getURL( request:URLRequest )
+	{
+		var document : HTMLDocument = cast js.Lib.document;
+		document.open(request.url);
 	}
 
 	static function jeashGetCanvas() : HTMLCanvasElement
@@ -349,13 +354,18 @@ class Lib
 		surface.style.setProperty("display", (display ? "inline" : "block") , "");
 	}
 
-	public static function jeashAppendText(surface:HTMLElement, container:HTMLElement, text:String, wrap:Bool)
+	public static function jeashAppendText(surface:HTMLElement, container:HTMLElement, text:String, wrap:Bool, isHtml:Bool)
 	{
 		for ( i in 0...surface.childNodes.length )
 			surface.removeChild(surface.childNodes[i]);
-		container.appendChild(cast js.Lib.document.createTextNode(text));
+
+		if (isHtml)
+			container.innerHTML = text;
+		else
+			container.appendChild(cast js.Lib.document.createTextNode(text));
 
 		container.style.setProperty("position", "relative", "");
+		container.style.setProperty("cursor", "default", "");
 		if (!wrap) container.style.setProperty("white-space", "nowrap", "");
 
 		surface.appendChild(cast container);
@@ -372,6 +382,16 @@ class Lib
 	public static function jeashSetSurfaceAlign(surface:HTMLElement, align:String)
 	{
 		surface.style.setProperty("text-align", align, "");
+	}
+
+	public static function jeashSurfaceHitTest(surface:HTMLElement, x:Float, y:Float)
+	{
+		for ( i in 0...surface.childNodes.length )
+		{
+			var node : HTMLElement = cast surface.childNodes[i];
+			if ( x >= node.offsetLeft && x <= (node.offsetLeft + node.offsetWidth) && y >= node.offsetTop && y <= (node.offsetTop + node.offsetHeight) ) return true;
+		}
+		return false;
 	}
 
 	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix, alpha:Float)

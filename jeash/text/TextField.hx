@@ -29,6 +29,7 @@ package jeash.text;
 import flash.display.Graphics;
 import flash.geom.Matrix;
 import flash.geom.Rectangle;
+import flash.geom.Point;
 import flash.display.InteractiveObject;
 import flash.display.DisplayObject;
 import flash.text.TextFormatAlign;
@@ -76,6 +77,7 @@ class TextField extends flash.display.InteractiveObject
 	public var gridFitType : String;
 	public var length(default,null) : Int;
 	public var numLines(GetNumLines, null) : Int;
+	public var thickness:Int;
 	
 	public var condenseWhite:Bool;
 
@@ -301,7 +303,7 @@ class TextField extends flash.display.InteractiveObject
 
 			var span : HTMLElement = cast js.Lib.document.createElement("span");
 			Lib.jeashSetSurfaceFont(mSurface, font, bold, size, color, align, lineHeight);
-			Lib.jeashAppendText(mSurface, span, mHTMLText, wordWrap);
+			Lib.jeashAppendText(mSurface, span, mHTMLText, wordWrap, mHTMLMode);
 			Lib.jeashSetSurfacePadding(span, 0, 4, true);
 
 			if ( border )
@@ -412,11 +414,8 @@ class TextField extends flash.display.InteractiveObject
 
 	public function SetHTMLText(inHTMLText:String)
 	{
-		//mParagraphs = new Paragraphs();
 		mHTMLText = inHTMLText;
 		mHTMLMode = true;
-		if (mInput)
-			ConvertHTMLToText(true);
 		jeashChanged = true;
 		return mHTMLText;
 	}
@@ -427,6 +426,13 @@ class TextField extends flash.display.InteractiveObject
 	public function appendText(msg:String)
 	{
 		this.text += msg;
+	}
+
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject
+	{
+		var local = globalToLocal(point);
+		if (Lib.jeashSurfaceHitTest(mSurface, local.x, local.y)) return this;
+		else return null;
 	}
 }
 
