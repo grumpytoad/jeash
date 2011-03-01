@@ -326,6 +326,7 @@ class Lib
 		surface.style.setProperty("font-weight", Std.string(bold) , "");
 		surface.style.setProperty("color", '#' + StringTools.hex(color) , "");
 		surface.style.setProperty("font-size", size + 'px', "");
+		surface.style.setProperty("text-align", align, "");
 		surface.style.setProperty("line-height", lineHeight + 'px', "");
 	}
 

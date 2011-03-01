@@ -88,11 +88,8 @@ class TextField extends flash.display.InteractiveObject
 	public var caretIndex : Int;
 	//public var mParagraphs:Paragraphs;
 
-	//var mLineInfo:Array<LineInfo>;
-
 	static var sSelectionOwner:TextField = null;
 
-	var mAlign:String;
 	var mHTMLMode:Bool;
 	var mSelStart:Int;
 	var mSelEnd:Int;
@@ -287,7 +284,6 @@ class TextField extends flash.display.InteractiveObject
 			var textFormat = EvaluateTextFormat( mTextFormat, defaultTextFormat );
 			var size = textFormat.size;
 			var lineHeight = Std.int(size) + 1;
-			flash.Lib.trace(size);
 			var font = textFormat.font;
 			var bold = textFormat.bold == false ? 400 : 700;
 			var align = textFormat.align;
@@ -304,7 +300,7 @@ class TextField extends flash.display.InteractiveObject
 			}
 
 			var span : HTMLElement = cast js.Lib.document.createElement("span");
-			Lib.jeashSetSurfaceFont(span, font, bold, size, color, mAlign, lineHeight);
+			Lib.jeashSetSurfaceFont(mSurface, font, bold, size, color, align, lineHeight);
 			Lib.jeashAppendText(mSurface, span, mHTMLText);
 
 			Lib.jeashSetSurfacePadding(span, 0, 0, true);
@@ -429,5 +425,9 @@ class TextField extends flash.display.InteractiveObject
 	override function jeashGetGraphics() : flash.display.Graphics
 	{ return jeashGraphics; }
 
+	public function appendText(msg:String)
+	{
+		this.text += msg;
+	}
 }
 
