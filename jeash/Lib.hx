@@ -118,10 +118,21 @@ class Lib
 		}
 	}
 
-	static public function getURL( request:URLRequest )
+	static public function getURL( request:URLRequest, ?target:String )
 	{
 		var document : HTMLDocument = cast js.Lib.document;
-		document.open(request.url);
+		var window : Window = cast js.Lib.window;
+		if (target == null || target == "_self")
+		{
+			document.open(request.url);
+		} else {
+			switch (target)
+			{
+				case "_blank": window.open(request.url);
+				case "_parent": window.parent.open(request.url);
+				case "_top": window.top.open(request.url);
+			}
+		}
 	}
 
 	static function jeashGetCanvas() : HTMLCanvasElement

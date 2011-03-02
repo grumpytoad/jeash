@@ -117,7 +117,7 @@ class Video extends DisplayObject {
 	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
 		jeashUpdateMatrix(parentMatrix);
-		var gfx = GetGraphics();
+		var gfx = jeashGetGraphics();
 
 		if (gfx!=null)
 		{
