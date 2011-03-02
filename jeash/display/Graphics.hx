@@ -659,7 +659,7 @@ class Graphics
 		else
 		{
 			mCurrentLine.grad = null;
-			mCurrentLine.thickness = Math.round(thickness);
+			mCurrentLine.thickness = thickness;
 			mCurrentLine.colour = color==null ? 0 : color;
 			mCurrentLine.alpha = alpha==null ? 1.0 : alpha;
 			mCurrentLine.miter_limit = miterLimit==null ? 3.0 : miterLimit;
@@ -1196,6 +1196,5 @@ class Graphics
 			return null;
 		}
 	}
-
 }
 

@@ -492,10 +492,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 				if (inMask != null)
 				{
-					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m, parent.alpha * alpha);
+					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
 				} else {
 					Lib.jeashSetSurfaceTransform(gfx.mSurface, m);
-					Lib.jeashSetSurfaceOpacity(gfx.mSurface, parent.alpha * alpha);
+					Lib.jeashSetSurfaceOpacity(gfx.mSurface, (parent != null ? parent.alpha : 1) * alpha);
 				}
 
 			} else {
