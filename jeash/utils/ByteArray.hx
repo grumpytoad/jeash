@@ -47,6 +47,15 @@ class ByteArray {
 	public var position : Int;
 	public var length(GetLength,null) : Int;
 
+	var TWOeN23 : Float;
+	var pow : Float->Float->Float;
+	var LN2 : Float;
+	var abs : Float->Float;
+	var log : Float->Float;
+	//var fromCharCode : Int -> String;
+	var floor : Float->Int;
+	//var parseInt : String->Int->Int;
+
 	inline function GetBytesAvailable():Int
 	{
 		return length - position;
@@ -78,6 +87,17 @@ class ByteArray {
 	public function new() {
 		this.position = 0;
 		this.data = [];
+
+		this.TWOeN23 = Math.pow(2, -23);
+		this.pow = Math.pow;
+		this.LN2 = Math.log(2);
+		this.abs = Math.abs;
+		this.log = Math.log;
+		//this.fromCharCode = String.fromCharCode;
+		this.floor = Math.floor;
+		//this.parseInt = untyped window.parseInt;
+
+		this.bigEndian = false;
 	}
 
 	public function readByte() : Int 
@@ -135,27 +155,138 @@ class ByteArray {
 
 	public function readDouble() : Float 
 	{
-		return IEEE754.bytesToFloat( read(8), bigEndian );
+		var data = this.data, pos, b1, b2, b3, b4, b5, b6, b7, b8;
+		if (bigEndian) {
+			pos = (this.position += 8) - 8;
+			b1 = data[pos] & 0xFF;
+			b2 = data[++pos] & 0xFF;
+			b3 = data[++pos] & 0xFF;
+			b4 = data[++pos] & 0xFF;
+			b5 = data[++pos] & 0xFF;
+			b6 = data[++pos] & 0xFF;
+			b7 = data[++pos] & 0xFF;
+			b8 = data[++pos] & 0xFF;
+		} else {
+			pos = (this.position += 8);
+			b1 = data[--pos] & 0xFF;
+			b2 = data[--pos] & 0xFF;
+			b3 = data[--pos] & 0xFF;
+			b4 = data[--pos] & 0xFF;
+			b5 = data[--pos] & 0xFF;
+			b6 = data[--pos] & 0xFF;
+			b7 = data[--pos] & 0xFF;
+			b8 = data[--pos] & 0xFF;
+		}
+		var sign = 1 - ((b1 >> 7) << 1);									// sign = bit 0
+		var exp = (((b1 << 4) & 0x7FF) | (b2 >> 4)) - 1023;					// exponent = bits 1..11
+
+		// This crazy toString() stuff works around the fact that js ints are
+		// only 32 bits and signed, giving us 31 bits to work with
+		var sig =untyped {
+		 	parseInt(((((b2&0xF) << 16) | (b3 << 8) | b4 ) * pow(2, 32)).toString(2), 2) +
+			parseInt(((b5 >> 7) * pow(2,31)).toString(2), 2) +
+			parseInt((((b5&0x7F) << 24) | (b6 << 16) | (b7 << 8) | b8).toString(2), 2);	// significand = bits 12..63
+		}
+
+		if (sig == 0 && exp == -1023)
+			return 0.0;
+
+		return sign*(1.0 + pow(2, -52)*sig)*pow(2, exp);
 	}
 
-	public function writeDouble(value : Float) 
+	public function writeDouble(x : Float) 
 	{
-		var bytes = IEEE754.doubleToBytes( value, bigEndian );
-		for ( i in 0...bytes.length )
-			data[ this.position++ ] = bytes.get(i);
+		if (x==0.0) {
+			for (_ in 0...8) 
+				data[this.position++] = 0;
+		}
+
+		var exp = floor(log(abs(x)) / LN2);
+		var sig : Int = floor(abs(x) / pow(2, exp) * pow(2, 52));
+		var sig_h = (sig & cast 34359738367);
+		var sig_l = floor((sig / pow(2,32)) );
+		var b1 = (exp + 0x3FF) >> 4 | (exp>0 ? ((x<0) ? 1<<7 : 1<<6) : ((x<0) ? 1<<7 : 0)),
+		    b2 = (exp + 0x3FF) << 4 & 0xFF | (sig_l >> 16 & 0xF),
+		    b3 = (sig_l >> 8) & 0xFF,
+		    b4 = sig_l & 0xFF,
+		    b5 = (sig_h >> 24) & 0xFF,
+		    b6 = (sig_h >> 16) & 0xFF,
+		    b7 = (sig_h >> 8) & 0xFF,
+		    b8 = sig_h & 0xFF;
+
+		if (bigEndian) {
+			data[this.position++] = b1;
+			data[this.position++] = b2;
+			data[this.position++] = b3;
+			data[this.position++] = b4;
+			data[this.position++] = b5;
+			data[this.position++] = b6;
+			data[this.position++] = b7;
+			data[this.position++] = b8;
+		} else {
+			data[this.position++] = b8;
+			data[this.position++] = b7;
+			data[this.position++] = b6;
+			data[this.position++] = b5;
+			data[this.position++] = b4;
+			data[this.position++] = b3;
+			data[this.position++] = b2;
+			data[this.position++] = b1;
+		}
 	}
 
 	public function readFloat() : Float 
 	{
-		return IEEE754.bytesToFloat( read(4), bigEndian );
+		var data = this.data, pos, b1, b2, b3, b4;
+
+		if (bigEndian) {
+			pos = (this.position += 4) - 4;
+			b1 = data[pos] & 0xFF;
+			b2 = data[++pos] & 0xFF;
+			b3 = data[++pos] & 0xFF;
+			b4 = data[++pos] & 0xFF;
+		} else {
+			pos = (this.position += 4);
+			b1 = data[--pos] & 0xFF;
+			b2 = data[--pos] & 0xFF;
+			b3 = data[--pos] & 0xFF;
+			b4 = data[--pos] & 0xFF;
+		}
+
+		var sign = 1 - ((b1 >> 7) << 1);
+		var exp = (((b1 << 1) & 0xFF) | (b2 >> 7)) - 127;
+		var sig = ((b2 & 0x7F) << 16) | (b3 << 8) | b4;
+		if (sig == 0 && exp == -127)
+			return 0.0;
+
+		return sign*(1 + TWOeN23*sig)*pow(2, exp);
 	}
 
-	public function writeFloat( value : Float ) 
+	public function writeFloat( x : Float ) 
 	{
-		var bytes = IEEE754.floatToBytes( value, bigEndian );
+		if (x==0.0) {
+			for (_ in 0...4)
+				data[this.position++] = 0;
+		}
 
-		for ( i in 0...bytes.length )
-			data[ this.position++ ] = bytes.get(i);
+		var exp = floor(log(abs(x)) / LN2);
+		var sig = (floor(abs(x) / pow(2, exp) * pow(2, 23)) & 0x7FFFFF);
+		var b1 = (exp + 0x7F) >> 1 | (exp>0 ? ((x<0) ? 1<<7 : 1<<6) : ((x<0) ? 1<<7 : 0)),
+		    b2 = (exp + 0x7F) << 7 & 0xFF | (sig >> 16 & 0x7F),
+		    b3 = (sig >> 8) & 0xFF,
+		    b4 = sig & 0xFF;
+
+		if (bigEndian) {
+			data[this.position++] = b1;
+			data[this.position++] = b2;
+			data[this.position++] = b3;
+			data[this.position++] = b4;
+		} else {
+			data[this.position++] = b4;
+			data[this.position++] = b3;
+			data[this.position++] = b2;
+			data[this.position++] = b1;
+		}
 	}
 
 	public function readInt()
@@ -289,644 +420,3 @@ class ByteArray {
 		return endian;
 	}
 }
-
-/*
- * Copyright (c) 2008, The Caffeine-hx project contributors
- * Original author : Russell Weir, based on code originally by Quanfei Wan
- * Contributors: Niel Drummond
- * All rights reserved.
- */
-
-private enum Status {
-	Normal;
-	Overflow;
-	Underflow;
-	Denormalized;
-	Quiet;
-	Signalling;
-}
-
-private class IEEE754 {
-	inline static var bias = 1024;
-	inline static var cnst = 2102;
-
-	var bigEndian(default,setEndian) : Bool;
-	var input : Float;
-
-	var rounding : Bool;
-	var Size : Int;
-	var BinaryPower : Int;
-	var BinVal : Array<Int>;
-
-	var ExpBias : Int;
-	var MaxExp : Int;
-	var MinExp : Int;
-	var MinUnnormExp : Int;
-	var Result : Array<Int>;
-
-	var StatCond : Status;
-	var StatCond64 : Status;
-
-	function new(size : Int) {
-		this.Size = size;
-		this.BinaryPower = 0;
-
-		this.StatCond = Normal;
-		this.StatCond64 = Normal;
-		if (this.Size == 32) {
-			this.ExpBias = 127;
-			this.MaxExp = 127;
-			this.MinExp = -126;
-			this.MinUnnormExp = -149;
-		}
-		else {
-			this.Size = 64;
-			this.ExpBias = 1023;
-			this.MaxExp = 1023;
-			this.MinExp = -1022;
-			this.MinUnnormExp = -1074;
-		}
-
-	}
-
-	function setEndian( b ) {
-		bigEndian = b;
-		return b;
-	}
-
-	function initBuffers() {
-		this.BinVal = new Array();
-		for(i in 0 ... cnst)
-			this.BinVal[i] = 0;
-
-		this.Result = new Array();
-		for(i in 0...this.Size)
-			this.Result[i] = 0;
-	}
-
-	function littleToBigEndian(inbuf : Bytes) {
-		var c : Int = if(Size==32) 4; else 8;
-		var nb = Bytes.alloc(c);
-		var idx = c - 1;
-		for(i in 0...c) {
-			nb.set(idx, inbuf.get(i));
-			idx--;
-		}
-		return nb;
-	}
-
-	function bufToEndian(inbuf : Bytes) {
-		var rv = inbuf;
-		if(!bigEndian)
-			rv = littleToBigEndian(rv);
-		return rv;
-	}
-
-	function infinity(negative:Bool) {
-		if(negative) {
-			var bb = new BytesBuffer();
-			var cnt = 2;
-			if(this.Size == 32) {
-				bb.addByte(0xFF);
-				bb.addByte(0x80);
-			}
-			else {
-				bb.addByte(0xFF);
-				bb.addByte(0xF0);
-				cnt = 6;
-			}
-			for(i in 0...cnt)
-				bb.addByte(0x00);
-			return bufToEndian(bb.getBytes());
-		}
-		else {
-			var bb = new BytesBuffer();
-			var cnt = 2;
-			if(this.Size == 32) {
-				bb.addByte(0x7F);
-				bb.addByte(0x80);
-			}
-			else {
-				bb.addByte(0x7F);
-				bb.addByte(0xF0);
-				cnt = 6;
-			}
-			for(i in 0...cnt)
-				bb.addByte(0x00);
-			return bufToEndian(bb.getBytes());
-		}
-	}
-
-
-
-
-	///////////////////////////////////////////
-	//           BYTES -> Float              //
-	///////////////////////////////////////////
-	function convert(v : Float) : Bytes
-	{
-		this.input = v;
-		this.StatCond = Normal;
-		this.StatCond64 = Normal;
-		if(input == Math.POSITIVE_INFINITY) {
-			return infinity(false);
-		}
-		else if(input == Math.NEGATIVE_INFINITY) {
-			return infinity(true);
-		}
-		else if(Math.isNaN(input)) {
-			var bb = new BytesBuffer();
-			var cnt = 2;
-			if(this.Size == 32) {
-				bb.addByte(0xFF);
-				bb.addByte(0xC0);
-			}
-			else {
-				bb.addByte(0xFF);
-				bb.addByte(0xF8);
-				cnt = 6;
-			}
-			for(i in 0...cnt)
-				bb.addByte(0x00);
-			return bufToEndian(bb.getBytes());
-		}
-
-		this.BinaryPower = 0;
-		var binexpnt = 0;
-
-		initBuffers();
-
-		this.Result[0] = 0;
-		if(input < 0)
-			this.Result[0] = 1;
-
-
-		//convert and seperate input to integer and decimal parts
-		var value = Math.abs(input);
-		var vp = splitFloat(value);
-		var intpart = vp.integral;
-		var decpart = vp.decimal;
-
-		//convert integer part
-		var index1 = bias;
-		while ((intpart / 2.0 != 0.0) && (index1 >= 0))
-		{
-			var fip = intpart;
-			while(fip > 2147483647.0)
-				fip /= 10.0;
-			var mod = Std.int(fip) % 2;
-			this.BinVal[index1] = mod;
-			if (mod == 0)
-				intpart = intpart / 2.0;
-			else
-				intpart = intpart / 2.0 - 0.5;
-			intpart = splitFloat(intpart * 10.0).integral/10.0;
-			index1--;
-		}
-
-		//convert decimal part
-		index1 = bias + 1;
-		while ((decpart > 0.0) && (index1 < cnst))
-		{
-			decpart *= 2;
-			if (decpart >= 1.0) {
-				this.BinVal[index1] = 1;
-				decpart--;
-				index1++;
-			}
-			else { this.BinVal[index1] = 0; index1++; }
-		}
-
-		//obtain exponent value
-		index1 = 0;
-		while ((index1 < cnst) && (this.BinVal[index1] != 1))
-			index1++;
-		this.BinaryPower = bias - index1;
-
-		if (this.BinaryPower < this.MinExp)
-		{
-			this.BinaryPower = this.MinExp - 1;
-		}
-		return Convert2Bin();
-
-	}
-
-
-	function Convert2Bin() {
-		var power = this.BinaryPower;
-		var lastbit = 0;
-		var rounded = 0;
-		var binexpnt : Int = 0;
-		var binexpnt2 = 0;
-
-		var index1 = 0;
-		var index2 : Int = if (this.Size == 32) 9 else 12;
-		var index3 = 0;
-
-		if (rounding && StatCond64 == Normal)
-		{
-			while ((index1 < cnst) && (this.BinVal[index1] != 1))
-				index1++;
-
-			binexpnt = bias - index1;
-
-			if (binexpnt >= this.MinExp)
-				index1++;
-			else {
-				binexpnt = this.MinExp - 1;
-				index1 = bias - binexpnt;
-			}
-
-			lastbit = this.Size - 1 - index2 + index1;
-
-			if (this.BinVal[lastbit + 1] == 1)
-			{
-				rounded = 0;
-
-				if (this.BinVal[lastbit] == 1)
-					rounded = 1;
-				else  
-				{
-					index3 = lastbit + 2;
-					while ((rounded == 0) && (index3 < cnst))
-					{
-						rounded = this.BinVal[index3];
-						index3++;
-					}
-
-				}
-
-				index3 = lastbit;
-				while ((rounded == 1) && (index3 >= 0))
-				{
-					if (this.BinVal[index3] == 0)
-					{
-						this.BinVal[index3] = 1;
-						rounded = 0;
-					}
-
-					else
-					{
-						this.BinVal[index3] = 0;
-					}
-					index3--;
-				}
-			}
-			index1 = index1 - 2;
-			if (index1 < 0) index1 = 0;
-		}
-
-		while ((index1 < cnst) && (this.BinVal[index1] != 1))
-			index1++;
-		binexpnt2 = bias - index1;
-
-		if(StatCond64 == Normal) {
-			binexpnt = binexpnt2;
-			if ((binexpnt >= this.MinExp) && (binexpnt <= this.MaxExp))
-				index1++;
-			else if (binexpnt < this.MinExp) {
-				if (binexpnt2 == bias - cnst) {
-					//value is truely zero
-					this.StatCond = Normal;
-				} else if (binexpnt2 < this.MinUnnormExp)
-					this.StatCond = Underflow;
-				else
-					this.StatCond = Denormalized;
-				binexpnt = this.MinExp - 1;
-				index1 = bias - binexpnt;
-			}
-		}
-		else
-		{
-			binexpnt = power;
-			index1 = bias - binexpnt;
-			if (binexpnt > this.MaxExp)
-				binexpnt = this.MaxExp + 1;
-			else if (binexpnt < this.MinExp)
-				binexpnt = this.MinExp - 1;
-		}
-
-		while ((index2 < this.Size) && (index1 < cnst))
-		{
-			this.Result[index2] = this.BinVal[index1];
-			index2++;
-			index1++;
-		}
-
-		if (binexpnt > this.MaxExp || this.StatCond64 != Normal) {
-			if(StatCond64 == Normal) {
-				return infinity(this.Result[0] == 1);
-			}
-			else {
-				this.StatCond = this.StatCond64;
-			}
-		}
-
-		if (this.Size == 32) index1 = 8;
-		else index1 = 11;
-		this.BinaryPower = binexpnt;
-		binexpnt += this.ExpBias;
-		var fbxp : Float = binexpnt * 1.0;
-		while ((fbxp / 2.0) != 0.0)
-		{
-			var mod = Std.int(fbxp) % 2;
-			this.Result[index1] = mod;
-			if (mod == 0)
-				fbxp = fbxp / 2.0;
-			else
-				fbxp = fbxp / 2.0 - 0.5;
-			index1--;
-			fbxp = splitFloat(fbxp * 10.0).integral/10.0;
-		}
-		binexpnt = Std.int(fbxp);
-		return toBytes();
-	}
-
-	public function toBytes() {
-		var c : Int = if(Size==32) 4; else 8;
-		var out = Bytes.alloc(c);
-		var index = 0;
-		var pos = 0;
-		while(index < this.Size)
-		{
-			var temp = 0;
-			var v = 0;
-			for(i in 0...4)
-				temp += Std.int(Math.pow(2, 3 - i)) * this.Result[index + i];
-			v = temp << 4;
-			temp = 0;
-			index += 4;
-			for(i in 0...4)
-				temp += Std.int(Math.pow(2, 3 - i)) * this.Result[index + i];
-			v = v | temp;
-			out.set(pos++,v);
-			index += 4;
-		}
-		if(!bigEndian) {
-			var out2 = Bytes.alloc(c);
-			var idx = c - 1;
-			for(i in 0...c) {
-				out2.set(idx, out.get(i));
-				idx--;
-			}
-			out = out2;
-		}
-		return out;
-	}
-
-
-	///////////////////////////////////////////
-	//           BYTES -> Float              //
-	///////////////////////////////////////////
-	/**
-	  This method must receive a bigEndian buffer
-	 **/
-	function bytesToBin(b : Bytes) {
-		initBuffers();
-		var index1 = 0;
-		var p = 0;
-
-		var me = this;
-		var store = function (temp : Float, idx) {
-			for(i in 0...4) {
-				temp *= 2.0;
-				if (temp >= 1.0)
-				{
-					me.Result[idx + i] = 1;
-					temp -= 1;
-				}
-				else
-					me.Result[idx + i] = 0;
-			}
-		}
-		while(index1 < this.Size)
-		{
-			var nibble = (b.get(p) & 0xF0) >> 4;
-			store(nibble / 16, index1);
-			index1 += 4;
-			var nibble = (b.get(p) & 0x0F);
-			store(nibble / 16, index1);
-			index1 += 4;
-			p++;
-		}
-
-
-		var binexpnt = 0;
-		var index2 = if(this.Size == 32) { 9; } else { 12;}
-		for( i in 1...index2)
-			binexpnt += Std.int(this.Result[i] * Math.pow(2, index2 - i - 1));
-
-		binexpnt -= this.ExpBias;
-		this.BinaryPower = binexpnt;
-
-		index1 = bias - binexpnt;
-
-		if ((binexpnt >= this.MinExp) && (binexpnt <= this.MaxExp))
-		{
-			this.BinVal[index1] = 1;
-			index1++;
-		}
-
-		var index3 = index1;
-
-		var zeroFirst : Bool = false;
-		if (this.Result[index2] == 0)
-			zeroFirst = true;
-		this.BinVal[index1] = this.Result[index2];
-		index2++;
-		index1++;
-
-		var zeroRest : Bool = true;
-		while ((index2 < this.Size) && (index1 < cnst))
-		{
-			if (this.Result[index2] == 1)
-				zeroRest = false;
-			this.BinVal[index1] = this.Result[index2];
-			index2++;
-			index1++;
-		}
-
-		while ((index3 < cnst) && (this.BinVal[index3] != 1))
-			index3++;
-		var binexpnt2 = bias - index3;
-
-		if (binexpnt < this.MinExp)
-		{
-			if (binexpnt2 == bias - cnst)
-				//value is truely zero
-				this.StatCond = Normal;
-			else if (binexpnt2 < this.MinUnnormExp)
-				this.StatCond = Underflow;
-			else
-				this.StatCond = Denormalized;
-		}
-
-		else if (binexpnt > this.MaxExp)
-		{
-			if (zeroFirst && zeroRest)
-			{
-				//Infinity
-				this.StatCond = Overflow;
-				if(Result[0] == 1)
-					return Math.NEGATIVE_INFINITY;
-				else
-					return Math.POSITIVE_INFINITY;
-			}
-			else if (!zeroFirst && zeroRest && (this.Result[0] == 1))
-				this.StatCond = Quiet;
-			else if (!zeroFirst)
-				this.StatCond = Quiet;
-			else
-				this.StatCond = Signalling;
-			return Math.NaN;
-		}
-
-		return Convert2Dec();
-	}
-
-	function Convert2Dec()
-	{
-		var LN10 = Math.log(10);
-		var s = if (this.Size == 32) { 9; } else { 12; }
-		var dp : Int = 0;
-		var val : Float = 0.0;
-
-		if ((this.BinaryPower < this.MinExp) || (this.BinaryPower > this.MaxExp))
-		{
-			dp = 0;
-			val = 0;
-		}
-		else
-		{
-			dp = -1;
-			val = 1;
-		}
-
-		var foo = [];
-		for (i in s...this.Size)
-		{
-			val += Std.int(this.Result[i])*Math.pow(2, dp + s - i);
-			foo.push( val );
-		}
-
-		var decValue : Float = val * Math.pow(2, this.BinaryPower);
-
-		/*
-		if (this.Size == 32)
-		{
-			s = 8;
-			if (val > 0)
-			{
-				var power = Math.floor( Math.log(decValue) / LN10 );
-				decValue += 0.5 * Math.pow(10, power - s + 1);
-				val += 5E-8;
-			}
-		}
-		else s = 17;
-		*/
-		if (this.Size == 32) s = 8; else s = 17;
-
-		if (this.Result[0] == 1)
-		{
-			decValue = - decValue;
-		}
-		return Std.parseFloat(Std.string(decValue).substr(0,s));
-	}
-
-	///////////////////////////////////////////
-	//           Static Methods              //
-	///////////////////////////////////////////
-
-	/**
-	  Convert haxe Float to 4 byte float type
-	 **/
-	public static function floatToBytes(v : Float, ?bigEndian = false) : Bytes {
-		var ieee = new IEEE754(32);
-		ieee.bigEndian = bigEndian;
-		ieee.rounding = true;
-		return ieee.convert(v);
-	}
-
-	/**
-	  Convert haxe Float to 8 byte double type
-	 **/
-	public static function doubleToBytes(v : Float, ?bigEndian = false) : Bytes {
-		var ieee = new IEEE754(64);
-		ieee.bigEndian = bigEndian;
-		ieee.rounding = true;
-		return ieee.convert(v);
-	}
-
-	/**
-	  Read haxe Float from 4 or 8 byte buffer
-	 **/
-	public static function bytesToFloat(b : Bytes, ?bigEndian = false) {
-		if(b.length != 4 && b.length != 8)
-			throw "Bytes must be 4 or 8 bytes long";
-		var size = if(b.length == 4) { 32; } else { 64; }
-		var ieee = new IEEE754(size);
-		ieee.bigEndian = bigEndian;
-		ieee.rounding = true;
-		if(!bigEndian)
-			return ieee.bytesToBin(ieee.littleToBigEndian(b));
-		else
-			return ieee.bytesToBin(b);
-	}
-
-	/**
-	  Splits a float into it's Math.floor and decimal portions. Loss of
-	  precision results from using Std.string on the supplied value.
-	 **/
-	public static function splitFloat(v:Float) : { integral :Float, decimal : Float} {
-		var rv = {
-integral : 0.0,
-	   decimal : 0.0
-		};
-		var val = Std.string(v).toLowerCase();
-		var p = val.indexOf("e");
-		var exp = 0;
-		if(p >= 0) {
-			exp = Std.parseInt(val.substr(p+1));
-		} else {
-			p = val.indexOf(".");
-			if(p >= 0) {
-				rv.integral = Std.parseFloat(val.substr(0, p));
-				rv.decimal = Std.parseFloat("0." + val.substr(p+1));
-			}
-			else
-				rv.integral = Std.parseFloat(val);
-			return rv;
-		}
-		var fp : String = val.substr(0,p);
-		p = fp.indexOf(".");
-		fp = StringTools.replace(fp,".","");
-		var dp : String = "0.";
-		if(exp > 0) {
-			p += exp;
-			if(p == fp.length) {
-				rv.integral = Std.parseFloat(fp);
-			}
-			else if(p > fp.length) {
-				rv.integral = v;
-			}
-			else {
-				rv.integral = Std.parseFloat(fp.substr(0,p));
-				rv.decimal = Std.parseFloat("0." + fp.substr(p+1));
-			}
-		} else {
-			exp += p;
-			if(exp == 0) {
-				rv.decimal = Std.parseFloat("0." + fp);
-			}
-			else if(exp < 0) {
-				rv.decimal = Std.parseFloat("0." + fp + "e" + Std.string(exp));
-			}
-			else {
-				rv.integral = Std.parseFloat(fp.substr(0,exp));
-				rv.decimal = Std.parseFloat("0." + fp.substr(exp));
-			}
-		}
-		return rv;
-	}
-}
-
