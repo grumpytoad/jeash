@@ -164,7 +164,7 @@ class BitmapData implements IBitmapDrawable
 
 	public function fillRect(rect: Rectangle, color: UInt) : Void
 	{
-		rect = clipRect (rect);
+		//rect = clipRect (rect);
 		if (rect == null) return;
 
 		var r: Int = (color & 0xFF0000) >>> 16;
@@ -182,6 +182,8 @@ class BitmapData implements IBitmapDrawable
 			imagedata.data[i * 4 + 3] = a;
 		}
 		ctx.putImageData (imagedata, rect.x, rect.y);
+
+		//if (graphics != null) graphics.mChanged = true;
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
@@ -301,16 +303,6 @@ class BitmapData implements IBitmapDrawable
 
 		if (data.inLoader != null)
 		{
-			// workaround for async images being cached before loading.
-			untyped 
-			{
-				if (data.inLoader.content != null && data.inLoader.jeashGraphics != null)
-				{
-					data.inLoader.content.jeashGraphics.mChanged = true;
-					data.inLoader.content.jeashGraphics.mNoClip = true;
-				}
-			}
-
 			var e = new flash.events.Event( flash.events.Event.COMPLETE );
 			e.target = data.inLoader;
 			data.inLoader.dispatchEvent( e );
@@ -343,7 +335,6 @@ class BitmapData implements IBitmapDrawable
 	{
 	}
 
-	// IBitmapDrawable inferface...
 	public function drawToSurface(inSurface : Dynamic,
 			matrix:flash.geom.Matrix,
 			colorTransform:flash.geom.ColorTransform,
@@ -359,5 +350,25 @@ class BitmapData implements IBitmapDrawable
 
 		ctx.drawImage(handle(), 0, 0);
 		ctx.restore();
+	}
+
+	public function colorTransform(rect:Rectangle, colorTransform:ColorTransform)
+	{
+		//rect = clipRect (rect);
+		if (rect == null) return;
+
+		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+		for (i in 0...imagedata.data.length >> 2)
+		{
+			imagedata.data[i * 4] = Std.int((imagedata.data[i * 4] * colorTransform.redMultiplier) + colorTransform.redOffset);
+			imagedata.data[i * 4 + 1] = Std.int((imagedata.data[i * 4 + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
+			imagedata.data[i * 4 + 2] = Std.int((imagedata.data[i * 4 + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
+			imagedata.data[i * 4 + 3] = Std.int((imagedata.data[i * 4 + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
+		}
+		ctx.putImageData (imagedata, rect.x, rect.y);
+
+		//if (graphics != null) graphics.mChanged = true;
+
 	}
 }

@@ -322,17 +322,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function hitTestObject(obj:DisplayObject)
 	{
-		/* TODO This is too expensive
-		jeashUpdateMatrix(untyped parent.mFullMatrix);
-		for (x in 0...Std.int(flash.Lib.current.stage.stageWidth))
-			for (y in 0...Std.int(flash.Lib.current.stage.stageHeight))
-			{
-				var point1 = new Point(x - mFullMatrix.tx, y - mFullMatrix.ty);
-				var point2 = new Point(x - obj.mFullMatrix.tx, y - obj.mFullMatrix.ty);
-				if (jeashGetObjectUnderPoint(point1) != null && obj.jeashGetObjectUnderPoint(point2) != null) 
-					return true;
-			}
-		*/
 		return false;
 	}
 
@@ -423,7 +412,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (this.width == null) this.width = w;
 		if (jeashBoundsWidth == null) jeashBoundsWidth = w;
 
-		if (scaleX != jeashScaleX) 
+		if (scaleX != jeashScaleX)
 			jeashScaleX = scaleX;
 		else
 			if (this.width != jeashScaleX*jeashBoundsWidth && w>0)
@@ -482,14 +471,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			if (!jeash.Lib.mOpenGL)
 			{
-				var extent = gfx.GetExtent(new Matrix());
-				// detect draw beyond boundary, do not adjust matrix
-				if (Math.abs(extent.x) < gfx.mSurface.width && Math.abs(extent.y) < gfx.mSurface.height)
-				{
-					m.tx = m.tx + extent.x*m.a + extent.y*m.c;
-					m.ty = m.ty + extent.x*m.b + extent.y*m.d;
-				}
-
 				if (inMask != null)
 				{
 					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);

@@ -251,7 +251,7 @@ class Graphics
 	public static var BLEND_SHADER = 14;
 
 	public var mSurface(default,null):HTMLCanvasElement;
-	public var mChanged(default,null):Bool;
+	public var mChanged:Bool;
 
 	// Current set of points
 	private var mPoints:GfxPoints;
@@ -447,17 +447,17 @@ class Graphics
 
 	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix)
 	{
-		if (!mChanged) return;
+		if (!mChanged) return false;
 
 		ClosePolygon(true);
 
 		// clear the canvas
-		ClearCanvas();
+		if (mDrawList.length > 0)
+			ClearCanvas();
 
 		var ctx = getContext();
-		if (ctx==null) return;
+		if (ctx==null) return false;
 
-		var extent = GetExtent(new Matrix());
 		var len : Int = mDrawList.length;
 		if (maskHandle != null)
 			ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);
@@ -465,12 +465,6 @@ class Graphics
 		for ( i in 0...len ) {
 			var d = mDrawList[(len-1)-i];
 			ctx.save();
-
-			// detect draw beyond boundary, do not translate
-			if (Math.abs(extent.x) < mSurface.width && Math.abs(extent.y) < mSurface.height)
-				ctx.translate(-extent.x, -extent.y);
-
-			ctx.beginPath();
 
 			if (d.lineJobs.length > 0) {
 				//TODO lj.pixel_hinting and lj.scale_mode
@@ -518,9 +512,12 @@ class Graphics
 						}
 
 					}
+					ctx.closePath();
 					ctx.stroke();
 				}
 			} else {
+				ctx.beginPath();
+
 				for ( p in d.points ) {
 
 					switch (p.type) {
@@ -532,6 +529,7 @@ class Graphics
 							ctx.lineTo(p.x, p.y);
 					}
 				}
+				ctx.closePath();
 			}
 
 			var fillColour = d.fillColour;
@@ -555,32 +553,17 @@ class Graphics
 					if (!mNoClip)
 						ctx.clip();
 
+
 					var img = bitmap.texture_buffer;
 					var matrix = bitmap.matrix;
 
-					try {
-						if(matrix != null) {
-							ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
-						}
-						ctx.drawImage( img, 0, 0 );
-
-						ctx.restore();
-					} catch (e:Dynamic) {
-						try {
-							// fallback - should work for most canvas-browsers
-
-							var svd = Decompose.singularValueDecomposition( matrix );   
-							ctx.translate( svd.dx , svd.dy  );
-							ctx.rotate( -svd.angle1 );
-							ctx.scale( svd.sx, svd.sy );
-							ctx.rotate( -svd.angle2 );
-
-							ctx.drawImage( img, 0,0 );
-							ctx.restore();
-						} catch (e2:Dynamic) {
-							ctx.restore();
-						}
+					if(matrix != null) {
+						ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
 					}
+
+					ctx.drawImage( img, 0, 0 );
+
+					ctx.restore();
 			}
 		}
 
@@ -594,6 +577,8 @@ class Graphics
 		}
 
 		mChanged = false;
+
+		return true;
 
 	}
 
@@ -927,7 +912,6 @@ class Graphics
 	inline function ClearCanvas()
 	{
 		mSurface.width = mSurface.width;
-
 	}
 
 	public function clear()

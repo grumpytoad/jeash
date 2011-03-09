@@ -440,6 +440,7 @@ class Lib
 
 				for (type in HTML_DIV_EVENT_TYPES) 
 					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+
 				for (type in HTML_WINDOW_EVENT_TYPES) 
 
 				{

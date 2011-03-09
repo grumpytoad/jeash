@@ -30,7 +30,7 @@ import flash.display.DisplayObject;
 import flash.display.PixelSnapping;
 
 class Bitmap extends jeash.display.DisplayObject {
-	public var bitmapData(default,SetBitmapData) : BitmapData;
+	public var bitmapData(default,jeashSetBitmapData) : BitmapData;
 	public var pixelSnapping : PixelSnapping;
 	public var smoothing : Bool;
 
@@ -40,20 +40,13 @@ class Bitmap extends jeash.display.DisplayObject {
 		super();
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
-		jeashGraphics = new Graphics();
-		SetBitmapData(inBitmapData);
+		jeashSetBitmapData(inBitmapData);
 	}
 
-	public function SetBitmapData(inBitmapData:BitmapData) : BitmapData
+	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData
 	{
 		bitmapData = inBitmapData;
-		jeashGraphics.clear();
-		if (inBitmapData!=null)
-		{
-			jeashGraphics.beginBitmapFill(inBitmapData,false,smoothing);
-			jeashGraphics.drawRect(0,0,inBitmapData.width,inBitmapData.height);
-			jeashGraphics.endFill();
-		}
+		jeashGraphics = inBitmapData.graphics;
 		return inBitmapData;
 	}
 
