@@ -209,8 +209,13 @@ class BitmapData implements IBitmapDrawable
 		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return 0;
 
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData(x, y, 1, 1);
-		return (imagedata.data[0] << 16) | (imagedata.data[1] << 8) | (imagedata.data[2]);
+		try {
+			var imagedata = ctx.getImageData(x, y, 1, 1);
+			return (imagedata.data[0] << 16) | (imagedata.data[1] << 8) | (imagedata.data[2]);
+		} catch (e:DOMException) {
+			flash.Lib.trace(e);
+			return 0;
+		}
 	}
 
 	public function getPixel32(x:Int, y:Int)
@@ -218,8 +223,13 @@ class BitmapData implements IBitmapDrawable
 		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return 0;
 
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData(x, y, 1, 1);
-		return (imagedata.data[3] << 24) | (imagedata.data[0] << 16) | imagedata.data[1] << 8 | imagedata.data[2];
+		try {
+			var imagedata = ctx.getImageData(x, y, 1, 1);
+			return (imagedata.data[3] << 24) | (imagedata.data[0] << 16) | imagedata.data[1] << 8 | imagedata.data[2];
+		} catch (e:DOMException) {
+			flash.Lib.trace(e);
+			return 0;
+		}
 	}
 
 	public function setPixel(x:Int, y:Int, color:UInt)
@@ -267,14 +277,14 @@ class BitmapData implements IBitmapDrawable
 		return mTextureBuffer;
 	}
 
-	public function getWidth() : Int {
+	inline function getWidth() : Int {
 		if ( mTextureBuffer != null ) {
 			return mTextureBuffer.width;
 		} else {
 			return 0;
 		}
 	}
-	public function getHeight() : Int {
+	inline function getHeight() : Int {
 		if ( mTextureBuffer != null ) {
 			return mTextureBuffer.height;
 		} else {
