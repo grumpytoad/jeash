@@ -323,7 +323,7 @@ class Lib
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix)
 	{
-		surface.style.setProperty("-moz-transform", matrix.toString(), "");
+		surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
 		surface.style.setProperty("-moz-transform-origin", "0 0", "");
 		surface.style.setProperty("-webkit-transform", matrix.toString(), "");
 		surface.style.setProperty("-webkit-transform-origin", "0 0", "");

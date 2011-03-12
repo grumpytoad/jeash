@@ -245,7 +245,12 @@ class Matrix
 		ty = 0;
 	}
 
-	public function toString()
+	public inline function toMozString()
+	{
+		return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", " + tx + "px, " + ty + "px)";
+	}
+
+	public inline function toString()
 	{
 		return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", " + tx + ", " + ty + ")";
 	}
