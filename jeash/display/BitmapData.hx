@@ -59,6 +59,7 @@ class BitmapData implements IBitmapDrawable
 	public var width(getWidth,null):Int;
 	public var height(getHeight,null):Int;
 	public var graphics(getGraphics,null):Graphics;
+	public var rect : Rectangle;
 
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
@@ -81,19 +82,16 @@ class BitmapData implements IBitmapDrawable
 			mTextureBuffer.height = inHeight;
 
 			mTransparent = inTransparent;
+			rect = new Rectangle(0,0,inWidth,inHeight);
 			if ( inFillColour != null )
 			{
 				if (!mTransparent)
 					inFillColour |= 0xFF000000;
 
-				var rect = new Rectangle(0,0,inWidth,inHeight);
 				fillRect(rect,inFillColour);
-				var imgdata = mTextureBuffer.getContext("2d").getImageData(0,0,inWidth,inHeight);
 			}
 		}
 	}
-
-	public var rect : Rectangle;
 
 	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter)
 	{
@@ -103,7 +101,7 @@ class BitmapData implements IBitmapDrawable
 	public function draw( source:IBitmapDrawable,
 			matrix:Matrix = null,
 			colorTransform:ColorTransform = null,
-			blendMode:String = null,
+			blendMode:BlendMode = null,
 			clipRect:Rectangle = null,
 			smoothing:Bool = false ):Void
 	{
@@ -127,6 +125,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		if (sourceBitmapData.handle() == null || mTextureBuffer == null)
 			return;
+		if (sourceRect.width <= 0 || sourceRect.height <= 0) return;
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
 	}
@@ -166,6 +165,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		//rect = clipRect (rect);
 		if (rect == null) return;
+		if (rect.width <= 0 || rect.height <= 0) return;
 
 		var r: Int = (color & 0xFF0000) >>> 16;
 		var g: Int = (color & 0x00FF00) >>> 8;
@@ -174,6 +174,7 @@ class BitmapData implements IBitmapDrawable
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+
 		for (i in 0...imagedata.data.length >> 2)
 		{
 			imagedata.data[i * 4] = r;
@@ -183,7 +184,6 @@ class BitmapData implements IBitmapDrawable
 		}
 		ctx.putImageData (imagedata, rect.x, rect.y);
 
-		//if (graphics != null) graphics.mChanged = true;
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
@@ -310,6 +310,7 @@ class BitmapData implements IBitmapDrawable
 
 		data.bitmapData.width = width;
 		data.bitmapData.height = height;
+		data.bitmapData.rect = new Rectangle(0,0,width,height);
 
 		if (data.inLoader != null)
 		{
@@ -348,7 +349,7 @@ class BitmapData implements IBitmapDrawable
 	public function drawToSurface(inSurface : Dynamic,
 			matrix:flash.geom.Matrix,
 			colorTransform:flash.geom.ColorTransform,
-			blendMode: String,
+			blendMode: BlendMode,
 			clipRect:Rectangle,
 			smothing:Bool):Void
 	{
@@ -366,6 +367,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		//rect = clipRect (rect);
 		if (rect == null) return;
+		if (rect.width <= 0 || rect.height <= 0) return;
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
@@ -380,5 +382,17 @@ class BitmapData implements IBitmapDrawable
 
 		//if (graphics != null) graphics.mChanged = true;
 
+	}
+
+	public function hitTest(firstPoint:Point, firstAlphaThreshold:UInt, secondObject:Dynamic, secondBitmapDataPoint:Point = null, secondAlphaThreshold:UInt = 1):Bool
+	{
+		// TODO
+		throw "Not implemented yet, patches welcome. BitmapData::hitTest.";
+		return true;
+	}
+
+	public function scroll(x:Int, y:Int)
+	{
+		throw "Not implemented yet, patches welcome. BitmapData::scroll.";
 	}
 }

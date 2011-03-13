@@ -405,7 +405,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				this.jeashScaleY = this.height/jeashBoundsHeight;
 
 		jeashBoundsHeight = h;
-		this.height = scaleY*h;
+		this.height = jeashScaleY*h;
+		scaleY = jeashScaleY;
 
 		var w = mBoundsRect.width;
 
@@ -471,6 +472,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			if (!jeash.Lib.mOpenGL)
 			{
+				var extent = gfx.GetExtent(new Matrix());
+				// detect draw beyond boundary, do not adjust matrix
+				if (gfx.jeashShift)
+				{
+					m.tx = m.tx + extent.x*m.a + extent.y*m.c;
+					m.ty = m.ty + extent.x*m.b + extent.y*m.d;
+				}
+
+
 				if (inMask != null)
 				{
 					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
@@ -544,7 +554,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function drawToSurface(inSurface : Dynamic,
 			matrix:flash.geom.Matrix,
 			colorTransform:flash.geom.ColorTransform,
-			blendMode:String,
+			blendMode:BlendMode,
 			clipRect:flash.geom.Rectangle,
 			smoothing:Bool):Void
 	{

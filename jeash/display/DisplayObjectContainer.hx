@@ -111,7 +111,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override function jeashDoRemoved(inObj:DisplayObject)
 	{
-		super.jeashDoAdded(inObj);
+		super.jeashDoRemoved(inObj);
 		for(child in jeashChildren)
 			child.jeashDoRemoved(inObj);
 	}

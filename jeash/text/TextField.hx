@@ -90,6 +90,9 @@ class TextField extends flash.display.InteractiveObject
 	public var caretIndex : Int;
 	//public var mParagraphs:Paragraphs;
 
+	public var textWidth:Float;
+	public var textHeight:Float;
+
 	static var sSelectionOwner:TextField = null;
 
 	var mHTMLMode:Bool;
@@ -221,13 +224,8 @@ class TextField extends flash.display.InteractiveObject
 
 	override public function jeashUpdateMatrix(parentMatrix:Matrix)
 	{
-		var h = mSurface.clientHeight;
-
-		if (this.height == null) this.height = h;
-
-		var w = mSurface.clientWidth;
-
-		if (this.width == null) this.width = w;
+		this.height = mSurface.offsetHeight;
+		this.width = mSurface.offsetWidth;
 
 		// TODO: scaleX / scaleY
 
@@ -288,7 +286,12 @@ class TextField extends flash.display.InteractiveObject
 			var lineHeight = Std.int(size) + 1;
 			var font = textFormat.font;
 			var bold = textFormat.bold == false ? 400 : 700;
-			var align = textFormat.align;
+			var align = switch(textFormat.align) {
+				case LEFT: "left";
+				case RIGHT: "right";
+				case CENTER: "center";
+				case JUSTIFY: "justify";
+			}
 			var color = textFormat.color;
 
 			var posX = null, posY = null;
@@ -321,13 +324,8 @@ class TextField extends flash.display.InteractiveObject
 		jeashUpdateMatrix(parentMatrix);
 		var m = mFullMatrix.clone();
 
-		if (mask != null)
-		{
-			throw "Cannot render DIV to surface";
-		} else {
-			Lib.jeashSetSurfaceTransform(mSurface, m);
-			Lib.jeashSetSurfaceOpacity(mSurface, parent.alpha * alpha);
-		}
+		Lib.jeashSetSurfaceTransform(mSurface, m);
+		Lib.jeashSetSurfaceOpacity(mSurface, (parent != null ? parent.alpha : 1) * alpha);
 	}
 
 	function SetDefaultTextFormat( tf:TextFormat )
@@ -357,6 +355,12 @@ class TextField extends flash.display.InteractiveObject
 		mText = inText;
 		mHTMLText = inText;
 		mHTMLMode = false;
+
+		// workaround for code that needs the text width before the
+		// first rendering cycle
+		width = textWidth = inText.length * 2;
+		height = textHeight = 21;
+
 		jeashChanged = true;
 		return mText;
 	}
@@ -416,6 +420,12 @@ class TextField extends flash.display.InteractiveObject
 	{
 		mHTMLText = inHTMLText;
 		mHTMLMode = true;
+
+		// workaround for code that needs the text width before the
+		// first rendering cycle
+		width = textWidth = inHTMLText.length * 2;
+		height = textHeight = 21;
+
 		jeashChanged = true;
 		return mHTMLText;
 	}

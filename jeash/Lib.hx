@@ -416,6 +416,55 @@ class Lib
 		maskCtx.drawImage(surface, matrix.tx, matrix.ty);
 	}
 
+	public static function jeashDisableRightClick()
+	{
+		if (mMe != null)
+			untyped {
+				try {
+					mMe.__scr.oncontextmenu = function () { return false; }
+				} catch (e:Dynamic) {
+					flash.Lib.trace("Disable right click not supported in this browser.");
+				}
+			}
+	}
+
+	public static function jeashEnableRightClick()
+	{
+		if (mMe != null)
+			untyped {
+				try {
+					mMe.__scr.oncontextmenu = null;
+				} catch (e:Dynamic) {}
+			}
+	}
+
+	public static function jeashEnableFullScreen()
+	{
+		if (mMe != null)
+		{
+			var origWidth = mMe.__scr.style.getPropertyValue("width");
+			var origHeight = mMe.__scr.style.getPropertyValue("height");
+			mMe.__scr.style.setProperty("width", "100%", "");
+			mMe.__scr.style.setProperty("height", "100%", "");
+			Lib.jeashDisableFullScreen = function () {
+				mMe.__scr.style.setProperty("width", origWidth, "");
+				mMe.__scr.style.setProperty("height", origHeight, "");
+			}
+		}
+	}
+
+	public dynamic static function jeashDisableFullScreen() {}
+	public inline static function jeashFullScreenWidth() 
+	{ 
+		var window : Window = cast js.Lib.window;
+		flash.Lib.trace(window.innerWidth);
+		return window.innerWidth; 
+	}
+	public inline static function jeashFullScreenHeight() { 
+		var window : Window = cast js.Lib.window;
+		return window.innerHeight; 
+	}
+
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );

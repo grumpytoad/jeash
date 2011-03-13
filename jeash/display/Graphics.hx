@@ -287,6 +287,7 @@ class Graphics
 	public var mTextureUniformGL:WebGLUniformLocation;
 
 	private static var gl:WebGLRenderingContext;
+	public var jeashShift(default,null):Bool;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -327,6 +328,7 @@ class Graphics
 		ClearLine();
 		mLineJobs = [];
 		mChanged = true;
+		jeashShift = false;
 
 		if (jeash.Lib.mOpenGL )
 		{
@@ -458,14 +460,19 @@ class Graphics
 		var ctx = getContext();
 		if (ctx==null) return false;
 
+		var extent = GetExtent(new Matrix());
 		var len : Int = mDrawList.length;
 		if (maskHandle != null)
 			ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);
+
+		jeashShift = if (Math.abs(extent.x) < mSurface.width && Math.abs(extent.y) < mSurface.height)
+			true; else false;
 
 		for ( i in 0...len ) {
 			var d = mDrawList[(len-1)-i];
 			ctx.save();
 
+			if (jeashShift) ctx.translate(-extent.x, -extent.y);
 			if (d.lineJobs.length > 0) {
 				//TODO lj.pixel_hinting and lj.scale_mode
 				for (lj in d.lineJobs) {
@@ -548,6 +555,7 @@ class Graphics
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
 					ctx.save();
+					if (jeashShift) ctx.translate(-extent.x, -extent.y);
 
 					// Hack to workaround premature width calculations during async image load
 					if (!mNoClip)

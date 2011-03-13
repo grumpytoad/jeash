@@ -40,7 +40,8 @@ class Bitmap extends jeash.display.DisplayObject {
 		super();
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
-		jeashSetBitmapData(inBitmapData);
+		if (inBitmapData != null)
+			jeashSetBitmapData(inBitmapData);
 	}
 
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData

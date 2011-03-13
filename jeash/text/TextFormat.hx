@@ -29,7 +29,7 @@ import Html5Dom;
 
 class TextFormat
 {
-   public var align : String;
+   public var align : TextFormatAlign;
    public var blockIndent : Int;
    public var bold : Bool;
    public var bullet : Bool;
@@ -57,7 +57,7 @@ class TextFormat
                       ?in_underline : Bool,
                       ?in_url : String,
                       ?in_target : String,
-                      ?in_align : String,
+                      ?in_align : TextFormatAlign,
                       ?in_leftMargin : Int,
                       ?in_rightMargin : Int,
                       ?in_indent : Int,

@@ -34,6 +34,7 @@ import flash.geom.Matrix;
 import flash.events.FocusEvent;
 import flash.events.Event;
 import flash.display.StageScaleMode;
+import flash.display.StageDisplayState;
 import flash.display.Graphics;
 import flash.geom.Point;
 import flash.geom.Rectangle;
@@ -58,8 +59,8 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
-	public var stageWidth(GetStageWidth,null):Int;
-	public var stageHeight(GetStageHeight,null):Int;
+	public var stageWidth(jeashGetStageWidth,null):Int;
+	public var stageHeight(jeashGetStageHeight,null):Int;
 	public var frameRate(default,jeashSetFrameRate):Float;
 	public var quality(jeashGetQuality,jeashSetQuality):String;
 	public var scaleMode:StageScaleMode;
@@ -67,8 +68,13 @@ class Stage extends flash.display.DisplayObjectContainer
 	public var stageFocusRect:Bool;
 	public var focus(GetFocus,SetFocus):InteractiveObject;
 	public var backgroundColor(default,SetBackgroundColour):Int;
-	public function GetStageWidth() { return jeashWindowWidth; }
-	public function GetStageHeight() { return jeashWindowHeight; }
+	public var showDefaultContextMenu(jeashGetShowDefaultContextMenu,jeashSetShowDefaultContextMenu):Bool;
+	public var displayState(jeashGetDisplayState,jeashSetDisplayState):StageDisplayState;
+	public var fullScreenWidth(jeashGetFullScreenWidth,null):UInt;
+	public var fullScreenHeight(jeashGetFullScreenHeight,null):UInt;
+
+	public function jeashGetStageWidth() { return jeashWindowWidth; }
+	public function jeashGetStageHeight() { return jeashWindowHeight; }
 
 	private var mFocusObject : InteractiveObject;
 	static var jeashMouseChanges : Array<String> = [ jeash.events.MouseEvent.MOUSE_OUT, jeash.events.MouseEvent.MOUSE_OVER, jeash.events.MouseEvent.ROLL_OUT, jeash.events.MouseEvent.ROLL_OVER ];
@@ -98,7 +104,8 @@ class Stage extends flash.display.DisplayObjectContainer
 		jeashPointInPathMode = Graphics.jeashDetectIsPointInPathMode();
 		jeashMouseOverObjects = [];
 		jeashMouseDown = false;
-		jeashStageActive = false;
+		showDefaultContextMenu = true;
+		displayState = StageDisplayState.NORMAL;
 	}
 
 	// @r551
@@ -495,5 +502,29 @@ class Stage extends flash.display.DisplayObjectContainer
 	override function jeashSetMouseX(x:Float) { this.mouseX = x; return x; }
 	override function jeashGetMouseY() { return this.mouseY; }
 	override function jeashSetMouseY(y:Float) { this.mouseY = y; return y; }
+
+	function jeashGetShowDefaultContextMenu() { return this.showDefaultContextMenu; }
+	function jeashSetShowDefaultContextMenu(showDefaultContextMenu:Bool)
+	{
+		if (showDefaultContextMenu != this.showDefaultContextMenu && this.showDefaultContextMenu != null)
+			if (!showDefaultContextMenu) Lib.jeashDisableRightClick(); else Lib.jeashEnableRightClick();
+		this.showDefaultContextMenu = showDefaultContextMenu;
+		return showDefaultContextMenu;
+	}
+
+	function jeashGetDisplayState() { return this.displayState; }
+	function jeashSetDisplayState(displayState:StageDisplayState)
+	{
+		if (displayState != this.displayState && this.displayState != null)
+			switch (displayState) {
+				case NORMAL: Lib.jeashDisableFullScreen();
+				case FULL_SCREEN: Lib.jeashEnableFullScreen();
+			}
+		this.displayState = displayState;
+		return displayState;
+	}
+
+	function jeashGetFullScreenWidth() { return Lib.jeashFullScreenWidth(); }
+	function jeashGetFullScreenHeight() { return Lib.jeashFullScreenHeight(); }
 }
 
