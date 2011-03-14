@@ -105,7 +105,8 @@ class Stage extends flash.display.DisplayObjectContainer
 		jeashMouseOverObjects = [];
 		jeashMouseDown = false;
 		showDefaultContextMenu = true;
-		displayState = StageDisplayState.NORMAL;
+		// bug in 2.07 release
+		// displayState = StageDisplayState.NORMAL;
 	}
 
 	// @r551
@@ -166,7 +167,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	}
 
 	// @r551 without touch events
-	function jeashCheckInOuts(event:jeash.events.MouseEvent, stack:Array<InteractiveObject>)
+	inline function jeashCheckInOuts(event:jeash.events.MouseEvent, stack:Array<InteractiveObject>)
 	{
 		var prev = jeashMouseOverObjects;
 		var events = jeashMouseChanges;
@@ -310,7 +311,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	}
 
 	// @r551 should be in MouseEvent.hx, haxe issue 300
-	public function jeashCreateMouseEvent(type:String, event:Html5Dom.MouseEvent, local:Point, target:InteractiveObject): flash.events.MouseEvent
+	public inline function jeashCreateMouseEvent(type:String, event:Html5Dom.MouseEvent, local:Point, target:InteractiveObject): flash.events.MouseEvent
 	{
 		// cross-browser delta sniff
 		var delta = if ( type == flash.events.MouseEvent.MOUSE_WHEEL )
@@ -503,7 +504,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	override function jeashGetMouseY() { return this.mouseY; }
 	override function jeashSetMouseY(y:Float) { this.mouseY = y; return y; }
 
-	function jeashGetShowDefaultContextMenu() { return this.showDefaultContextMenu; }
+	inline function jeashGetShowDefaultContextMenu() { return this.showDefaultContextMenu; }
 	function jeashSetShowDefaultContextMenu(showDefaultContextMenu:Bool)
 	{
 		if (showDefaultContextMenu != this.showDefaultContextMenu && this.showDefaultContextMenu != null)
@@ -512,7 +513,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		return showDefaultContextMenu;
 	}
 
-	function jeashGetDisplayState() { return this.displayState; }
+	inline function jeashGetDisplayState() { return this.displayState; }
 	function jeashSetDisplayState(displayState:StageDisplayState)
 	{
 		if (displayState != this.displayState && this.displayState != null)
@@ -524,7 +525,7 @@ class Stage extends flash.display.DisplayObjectContainer
 		return displayState;
 	}
 
-	function jeashGetFullScreenWidth() { return Lib.jeashFullScreenWidth(); }
-	function jeashGetFullScreenHeight() { return Lib.jeashFullScreenHeight(); }
+	inline function jeashGetFullScreenWidth() { return Lib.jeashFullScreenWidth(); }
+	inline function jeashGetFullScreenHeight() { return Lib.jeashFullScreenHeight(); }
 }
 
