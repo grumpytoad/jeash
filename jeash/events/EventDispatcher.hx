@@ -31,7 +31,7 @@ import flash.events.EventPhase;
 
 class Listener
 {
-	public var mListner : Function;
+	public var mListner : Dynamic->Void;
 	public var mUseCapture : Bool;
 	public var mPriority : Int;
 	static var sIDs = 1;
@@ -79,9 +79,9 @@ class EventDispatcher implements IEventDispatcher
 		mEventMap = new EventMap();
 	}
 
-	public function addEventListener(type:String, inListener:Function,
+	public function addEventListener(type:String, inListener:Dynamic->Void,
 			?useCapture:Bool /*= false*/, ?inPriority:Int /*= 0*/,
-			?useWeakReference:Bool /*= false*/):Int
+			?useWeakReference:Bool /*= false*/):Void
 	{
 		var capture:Bool = useCapture==null ? false : useCapture;
 		var priority:Int = inPriority==null ? 0 : inPriority;
@@ -96,7 +96,7 @@ class EventDispatcher implements IEventDispatcher
 		var l =  new Listener(inListener,capture,priority);
 		list.push(l);
 		// trace("Add listener " + type +" now:" + list);
-		return l.mID;
+		//return l.mID;
 	}
 
 	public function dispatchEvent(event : Event) : Bool
@@ -135,7 +135,7 @@ class EventDispatcher implements IEventDispatcher
 	{
 		return mEventMap.exists(type);
 	}
-	public function removeEventListener(type : String, listener : Function,
+	public function removeEventListener(type : String, listener : Dynamic->Void,
 			?inCapture : Bool) : Void
 	{
 		if (!mEventMap.exists(type)) return;
