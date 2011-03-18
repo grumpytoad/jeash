@@ -465,6 +465,21 @@ class Lib
 		return window.innerHeight; 
 	}
 
+	public inline static function jeashSetCursor(hand:Bool) {
+		if (mMe != null) 
+			if (hand) 
+				mMe.__scr.style.setProperty("cursor", "pointer", "");
+			else
+				mMe.__scr.style.setProperty("cursor", "default", "");
+	}
+
+	public inline static function jeashSetSurfaceVisible(surface:HTMLElement, visible:Bool) {
+		if (visible) 
+			surface.style.setProperty("display", "block", "");
+		else
+			surface.style.setProperty("display", "none", "");
+	}
+
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );

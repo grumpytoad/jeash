@@ -24,19 +24,35 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.events;
+package jeash.text;
 
-import flash.events.Event;
+import flash.text.FontStyle;
+import flash.text.FontType;
 
-interface IEventDispatcher
+class Font
 {
-   public function addEventListener(type:String, listener:Dynamic->Void,
-       ?useCapture:Bool /*= false*/, ?priority:Int /*= 0*/,
-       ?useWeakReference:Bool /*= false*/):Void;
+	public var fontName(default,null):String;
+	public var fontStyle(default,null):FontStyle;
+	public var fontType(default,null):FontType;
 
-   public function dispatchEvent(event : Event) : Bool;
-   public function hasEventListener(type : String) : Bool;
-   public function removeEventListener(type : String, listener : Dynamic->Void,
-              ?useCapture : Bool) : Void;
-   public function willTrigger(type : String) : Bool;
+	public function new () {}
+
+	public function hasGlyph() { return false; }
+
+	public static function enumerateFonts(?enumerateDeviceFonts:Bool):Array<Font>
+	{
+		var sans = new Font();
+		sans.fontName = "sans";
+		sans.fontStyle = REGULAR;
+		sans.fontType = DEVICE;
+
+		var serif = new Font();
+		serif.fontName = "serif";
+		serif.fontStyle = REGULAR;
+		serif.fontType = DEVICE;
+
+		return [sans, serif];
+	}
+
+	public static function registerFont(font:Class<Dynamic>) {}
 }

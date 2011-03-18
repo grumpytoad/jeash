@@ -32,16 +32,17 @@ import flash.geom.Matrix;
 import flash.geom.Rectangle;
 import flash.geom.Point;
 import flash.Lib;
+import flash.events.MouseEvent;
 
 class Sprite extends DisplayObjectContainer
 {
 	var jeashGraphics:Graphics;
 	public var graphics(jeashGetGraphics,null):Graphics;
+	public var useHandCursor(default,jeashSetUseHandCursor):Bool;
 	public var buttonMode:Bool;
 
-	#if debug
-	static var spriteIndex : Int = 0;
-	#end
+	var jeashCursorCallbackOver:Dynamic->Void;
+	var jeashCursorCallbackOut:Dynamic->Void;
 
 	public function new()
 	{
@@ -69,5 +70,27 @@ class Sprite extends DisplayObjectContainer
 		return jeashGraphics; 
 	}
 
+	function jeashSetUseHandCursor(cursor:Bool)
+	{
+		if (cursor == this.useHandCursor) return cursor;
+
+		if (jeashCursorCallbackOver != null)
+			removeEventListener(MouseEvent.ROLL_OVER, jeashCursorCallbackOver);
+		if (jeashCursorCallbackOut != null)
+			removeEventListener(MouseEvent.ROLL_OUT, jeashCursorCallbackOut);
+
+		if (!cursor)
+		{
+			Lib.jeashSetCursor(false);
+		} else {
+			jeashCursorCallbackOver = function (_) { Lib.jeashSetCursor(true); }
+			jeashCursorCallbackOut = function (_) { Lib.jeashSetCursor(false); }
+			addEventListener(MouseEvent.ROLL_OVER, jeashCursorCallbackOver);
+			addEventListener(MouseEvent.ROLL_OUT, jeashCursorCallbackOut);
+		}
+		this.useHandCursor = cursor;
+
+		return cursor;
+	}
 }
 

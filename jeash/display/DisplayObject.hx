@@ -73,7 +73,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var cacheAsBitmap:Bool;
 	public var width:Float;
 	public var height:Float;
-	public var visible(default,default):Bool;
+	public var visible(default,jeashSetVisible):Bool;
 	public var opaqueBackground(GetOpaqueBackground,SetOpaqueBackground):Null<Int>;
 	public var mouseX(jeashGetMouseX, jeashSetMouseX):Float;
 	public var mouseY(jeashGetMouseY, jeashSetMouseY):Float;
@@ -713,14 +713,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		dispatchEvent(event);
 	}
 
-	private function jeashAddToStage()
+	function jeashAddToStage()
 	{
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
 	}
 
-	private function jeashInsertBefore(obj:DisplayObject)
+	function jeashInsertBefore(obj:DisplayObject)
 	{
 		var gfx1 = jeashGetGraphics();
 		var gfx2 = obj.jeashIsOnStage() ? obj.jeashGetGraphics() : null;
@@ -734,12 +734,25 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	private function jeashIsOnStage()
+	function jeashIsOnStage()
 	{
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			return Lib.jeashIsOnStage(gfx.mSurface);
 		return false;
+	}
+
+	function jeashSetVisible(visible:Bool)
+	{
+		if (visible == this.visible) return visible;
+		var gfx = jeashGetGraphics();
+		if (gfx != null)
+			if (visible)
+				Lib.jeashSetSurfaceVisible(gfx.mSurface, true);
+			else
+				Lib.jeashSetSurfaceVisible(gfx.mSurface, false);
+		this.visible = visible;
+		return visible;
 	}
 
 }
