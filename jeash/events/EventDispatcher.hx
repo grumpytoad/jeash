@@ -70,6 +70,10 @@ class EventDispatcher implements IEventDispatcher
 	var mEventMap : EventMap;
 	static var mIDBase = 0;
 
+	static private function compareListeners(l1:Listener,l2:Listener):Int{
+		return l1.mPriority==l2.mPriority?0:(l1.mPriority>l2.mPriority?-1:1);
+	}
+
 	public function new(?target : IEventDispatcher) : Void
 	{
 		if(mTarget != null)
@@ -107,6 +111,8 @@ class EventDispatcher implements IEventDispatcher
 		var capture = event.eventPhase==EventPhase.CAPTURING_PHASE;
 		if (list!=null)
 		{
+			list.sort(compareListeners);
+			
 			var idx = 0;
 			while(idx<list.length)
 			{
@@ -184,7 +190,6 @@ class EventDispatcher implements IEventDispatcher
 	{
 		trace(mEventMap);
 	}
-
 
 	/**
 	 * Creates and dispatches a typical Event.COMPLETE
