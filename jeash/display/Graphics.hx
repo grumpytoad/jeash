@@ -1184,7 +1184,7 @@ class Graphics
 	       	try {
 			return mSurface.getContext("2d");
 		} catch (e:Dynamic) {
-			flash.Lib.trace("HitTest not implemented for: " + mSurface);
+			flash.Lib.trace("2d canvas API not implemented for: " + mSurface);
 			return null;
 		}
 	}

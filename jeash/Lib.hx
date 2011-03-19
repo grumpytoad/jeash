@@ -251,9 +251,6 @@ class Lib
 			var height = jeashGetHeight();
 			mStage = new flash.display.Stage(width, height);
 
-			// This ensures that a canvas hitTest hits the root movieclip
-			Lib.current.graphics.drawRect(0, 0, width, height);
-
 			mStage.addChild(jeashGetCurrent());
 		}
 
@@ -267,6 +264,14 @@ class Lib
 			surface.style.position = "absolute";
 			surface.style.left = x + "px";
 			surface.style.top = y + "px";
+
+			// disable blue selection rectangle 
+			untyped {
+				try {
+					surface.onmouseover = surface.onselectstart = function () { return false; }
+				} catch (e:Dynamic) {}
+			}
+
 			for ( i in 0...mMe.__scr.childNodes.length )
 				if (before != null)
 					mMe.__scr.insertBefore(surface, before);
@@ -520,6 +525,10 @@ class Lib
 							case 2: res | (cur);
 							}
 							});
+
+				// This ensures that a canvas hitTest hits the root movieclip
+				Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);
+				Lib.current.graphics.drawRect(0, 0, width, height);
 
 				jeashGetStage().jeashUpdateNextWake();
 			}
