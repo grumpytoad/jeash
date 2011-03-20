@@ -524,7 +524,7 @@ class Lib
 							case 1: res | (cur << 8);
 							case 2: res | (cur);
 							}
-							});
+							}); else 0xFFFFFF;
 
 				// This ensures that a canvas hitTest hits the root movieclip
 				Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);

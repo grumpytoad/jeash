@@ -41,8 +41,7 @@ import flash.geom.Rectangle;
 import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.geom.Transform;
-import flash.filters.BitmapFilterSet;
-import flash.filters.FilterSet;
+import flash.filters.BitmapFilter;
 import flash.display.BitmapData;
 import flash.Lib;
 
@@ -82,7 +81,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var rotation:Float;
 	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
 	public var mask(GetMask,SetMask):DisplayObject;
-	public var filters(GetFilters,SetFilters):Array<Dynamic>;
+	public var filters(jeashGetFilters,jeashSetFilters):Array<Dynamic>;
 	public var blendMode : flash.display.BlendMode;
 	public var loaderInfo:LoaderInfo;
 
@@ -125,8 +124,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mMask:DisplayObject;
 	var mMaskingObj:DisplayObject;
 	var mMaskHandle:Dynamic;
-	var mFilters:Array<Dynamic>;
-	var mFilterSet:FilterSet;
+	var jeashFilters:Array<BitmapFilter>;
 
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
@@ -291,6 +289,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		{
 			this.parent = parent;
 			jeashDoAdded(this);
+
+			// object added through addChild - update width and height
+			BuildBounds();
+			this.width = mBoundsRect.width;
+			this.height = mBoundsRect.height;
 		}
 		else if (this.parent != null && parent==null)
 		{
@@ -463,10 +466,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 		if (gfx!=null)
 		{
-			var blend:Int = __BlendIndex();
-
-			Graphics.setBlendMode(blend);
-
 			var m = mFullMatrix.clone();
 			gfx.jeashRender(inMask, m);
 
@@ -479,7 +478,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 					m.tx = m.tx + extent.x*m.a + extent.y*m.c;
 					m.ty = m.ty + extent.x*m.b + extent.y*m.d;
 				}
-
 
 				if (inMask != null)
 				{
@@ -597,32 +595,29 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mMask;
 	}
 
-	// Bitmap caching
-	public function SetFilters(inFilters:Array<Dynamic>)
+	// @r533
+	public function jeashSetFilters(filters:Array<Dynamic>)
 	{
-		var f = new Array<Dynamic>();
-		if (inFilters!=null)
-			for(filter in inFilters)
-				f.push( filter.clone() );
-		mFilters = f;
-
-		if (mFilters.length<1)
-			mFilterSet = null;
+		if (filters==null)
+			jeashFilters = null;
 		else
-			mFilterSet = new FilterSet(mFilters);
+		{
+			jeashFilters = new Array<BitmapFilter>();
+			for(filter in filters)
+				jeashFilters.push(filter.clone());
+		}
 
-		return GetFilters();
+		return filters;
 	}
 
-	public function GetFilters()
+	// @r533
+	public function jeashGetFilters()
 	{
-		var f = new Array<Dynamic>();
-		if (mFilters!=null)
-		{
-			for(filter in mFilters)
-				f.push( filter.clone() );
-		}
-		return f;
+		if (jeashFilters==null) return [];
+		var result = new Array<BitmapFilter>();
+		for(filter in jeashFilters)
+			result.push(filter.clone());
+		return result;
 	}
 
 	function BuildBounds()
