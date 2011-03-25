@@ -325,7 +325,7 @@ class Graphics
 		mNoClip = false;
 		//mSurfaceAlpha = 1.0;
 
-		ClearLine();
+		jeashClearLine();
 		mLineJobs = [];
 		mChanged = true;
 		jeashShift = false;
@@ -409,9 +409,6 @@ class Graphics
 	{
 		mSurface = inSurface;
 	}
-
-	// FIXME: needed by neash, but somehow unecessary in js so far
-	public static function setBlendMode(inBlendMode:Int) {}
 
 	private function createCanvasColor(color : Int, alpha : Float) {
 		var r:Float;
@@ -646,7 +643,7 @@ class Graphics
 		//with no parameters it clears the current line (to draw nothing)
 		if( thickness == null )
 		{
-			ClearLine();
+			jeashClearLine();
 			return;
 		}
 		else
@@ -910,7 +907,7 @@ class Graphics
 	}
 
 
-	public function ClearLine()
+	public function jeashClearLine()
 	{
 		mCurrentLine = new LineJob( null,-1,-1,  0.0,
 				0.0, 0x000, 1, CORNER_ROUND, END_ROUND,
@@ -924,7 +921,7 @@ class Graphics
 
 	public function clear()
 	{
-		ClearLine();
+		jeashClearLine();
 
 		mPenX = 0.0;
 		mPenY = 0.0;
