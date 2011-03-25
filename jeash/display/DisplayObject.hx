@@ -290,12 +290,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			this.parent = parent;
 			jeashDoAdded(this);
 
-			// object added through addChild - update width and height
-			BuildBounds();
-			if (mBoundsRect.width != 0)
-				this.width = mBoundsRect.width;
-			if (mBoundsRect.height != 0)
-				this.height = mBoundsRect.height;
 		}
 		else if (this.parent != null && parent==null)
 		{

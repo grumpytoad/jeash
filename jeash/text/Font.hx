@@ -78,12 +78,17 @@ class Font
 	static var jeashFontData : Hash<String>;
 	public static inline var DEFAULT_FONT_SCALE = 9.0;
 	public static inline var DEFAULT_FONT_NAME = "Bitstream_Vera_Sans";
+	public static inline var DEFAULT_CLASS_NAME = "jeash.text.Font";
 
 	public function new () 
 	{
 		jeashMetrics = [];
 		jeashFontScale = DEFAULT_FONT_SCALE;
-		fontName = DEFAULT_FONT_NAME;
+		var className = Type.getClassName(Type.getClass(this));
+		fontName = if (className == DEFAULT_CLASS_NAME)
+			DEFAULT_FONT_NAME;
+		else
+			className.split(".").pop();
 	}
 
 	public function hasGlyph() { return false; }
@@ -144,9 +149,13 @@ class Font
 	function jeashSetFontName(name:String)
 	{
 		this.fontName = name;
-		if (jeashFontData.exists(fontName))
-			jeashGlyphData = Unserializer.run(jeashFontData.get(fontName));
-		else throw "Glyph data for font '" + name + "' does not exist, please use Font::jeashOfResource, before using this font.";
+		if (!jeashFontData.exists(fontName))
+			try { jeashOfResource(name); } catch (e:Dynamic) {
+				flash.Lib.trace("Glyph data for font '" + name + "' does not exist, defaulting to '" + DEFAULT_FONT_NAME + "'.");
+				this.fontName = DEFAULT_FONT_NAME;
+			}
+
+		jeashGlyphData = Unserializer.run(jeashFontData.get(fontName));
 		return name;
 	}
 

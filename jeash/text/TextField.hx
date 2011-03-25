@@ -562,8 +562,8 @@ class TextField extends InteractiveObject
 		for(chr in inRow)
 		{
 			var adv = chr.adv;
-			//if (x+adv>mLimitRenderX)
-			//	break;
+			if (x+adv>mLimitRenderX)
+				break;
 
 			x_list.push(x);
 
@@ -631,7 +631,7 @@ class TextField extends InteractiveObject
 		mLimitRenderX = (autoSize == flash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
 		var wrap = (wordWrap && !mInput) ? mLimitRenderX : 999999;
 		var char_idx = 0;
-		var h = 0;
+		var h:Int = Math.round((mHeight - (mTextHeight*mParagraphs.length))/2);
 
 		var s0 = mSelStart;
 		var s1 = mSelEnd;
@@ -1038,6 +1038,22 @@ class TextField extends InteractiveObject
 		return getTextFormat();
 	}
 
+	override public function jeashUpdateMatrix(parentMatrix:Matrix)
+	{
+		// ignore width and height changes
+		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
+
+		var rad = this.rotation * Math.PI / 180.0;
+		if (rad != 0.0)
+			mMatrix.rotate(rad);
+
+		mMatrix.tx = this.x;
+		mMatrix.ty = this.y;
+
+		mFullMatrix = mMatrix.mult(parentMatrix);
+	}
+
+
 }
 
 import flash.geom.Matrix;
@@ -1130,4 +1146,5 @@ class FontInstance
 		if (mFont==null) return 0;
 		return mFont.jeashGetAdvance(inChar, mHeight);
 	}
+
 }
