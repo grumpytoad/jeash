@@ -61,6 +61,9 @@ class BitmapData implements IBitmapDrawable
 	public var graphics(getGraphics,null):Graphics;
 	public var rect : Rectangle;
 
+	var jeashImageData:ImageData;
+	var jeashLocked:Bool;
+
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
 			?inFillColour:Int)
@@ -69,6 +72,7 @@ class BitmapData implements IBitmapDrawable
 		// Load embedded images in the HTML file
 
 		var image : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
+		jeashLocked = false;
 		if ( image != null ) {
 			mTextureBuffer = cast js.Lib.document.createElement('canvas');
 			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:null, bitmapData:this};
@@ -83,6 +87,7 @@ class BitmapData implements IBitmapDrawable
 
 			mTransparent = inTransparent;
 			rect = new Rectangle(0,0,inWidth,inHeight);
+
 			if ( inFillColour != null )
 			{
 				if (!mTransparent)
@@ -91,6 +96,7 @@ class BitmapData implements IBitmapDrawable
 				fillRect(rect,inFillColour);
 			}
 		}
+
 	}
 
 	public function applyFilter(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point, filter:BitmapFilter)
@@ -173,17 +179,38 @@ class BitmapData implements IBitmapDrawable
 		var a: Int = (mTransparent)? (color >>> 24) : 0xFF;
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
-
-		for (i in 0...imagedata.data.length >> 2)
+		if (!jeashLocked)
 		{
-			imagedata.data[i * 4] = r;
-			imagedata.data[i * 4 + 1] = g;
-			imagedata.data[i * 4 + 2] = b;
-			imagedata.data[i * 4 + 3] = a;
-		}
-		ctx.putImageData (imagedata, rect.x, rect.y);
+			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
 
+			var offsetX : Int;
+			for (i in 0...imagedata.data.length >> 2)
+			{
+				offsetX = i * 4;
+				imagedata.data[offsetX] = r;
+				imagedata.data[offsetX + 1] = g;
+				imagedata.data[offsetX + 2] = b;
+				imagedata.data[offsetX + 3] = a;
+			}
+			ctx.putImageData (imagedata, rect.x, rect.y);
+		} else {
+			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
+			var offsetY : Int;
+			var offsetX : Int;
+			for (i in 0...Math.round(rect.height))
+			{
+				offsetY = (i * jeashImageData.width);
+				for (j in 0...Math.round(rect.width))
+				{
+					offsetX = 4 * (j + offsetY);
+					jeashImageData.data[s + offsetX] = r;
+					jeashImageData.data[s + offsetX + 1] = g;
+					jeashImageData.data[s + offsetX + 2] = b;
+					jeashImageData.data[s + offsetX + 3] = a;
+				}
+			}
+			ctx.putImageData (jeashImageData, 0, 0, rect.x, rect.y, rect.width, rect.height);
+		}
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray
@@ -340,10 +367,21 @@ class BitmapData implements IBitmapDrawable
 
 	public function lock() : Void
 	{
+		jeashLocked = true;
+
+		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		jeashImageData = ctx.getImageData (0, 0, width, height);
 	}
 
 	public function unlock(?changeRect : flash.geom.Rectangle) : Void
 	{
+		jeashLocked = false;
+
+		if (changeRect != null)
+		{
+			var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+			ctx.putImageData (jeashImageData, 0, 0, changeRect.x, changeRect.y, changeRect.width, changeRect.height);
+		}
 	}
 
 	public function drawToSurface(inSurface : Dynamic,
@@ -370,15 +408,37 @@ class BitmapData implements IBitmapDrawable
 		if (rect.width <= 0 || rect.height <= 0) return;
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
-		for (i in 0...imagedata.data.length >> 2)
+		if (!jeashLocked)
 		{
-			imagedata.data[i * 4] = Std.int((imagedata.data[i * 4] * colorTransform.redMultiplier) + colorTransform.redOffset);
-			imagedata.data[i * 4 + 1] = Std.int((imagedata.data[i * 4 + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
-			imagedata.data[i * 4 + 2] = Std.int((imagedata.data[i * 4 + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
-			imagedata.data[i * 4 + 3] = Std.int((imagedata.data[i * 4 + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
+			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+			var offsetX : Int;
+			for (i in 0...imagedata.data.length >> 2)
+			{
+				offsetX = i * 4;
+				imagedata.data[offsetX] = Std.int((imagedata.data[offsetX] * colorTransform.redMultiplier) + colorTransform.redOffset);
+				imagedata.data[offsetX + 1] = Std.int((imagedata.data[offsetX + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
+				imagedata.data[offsetX + 2] = Std.int((imagedata.data[offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
+				imagedata.data[offsetX + 3] = Std.int((imagedata.data[offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
+			}
+			ctx.putImageData (imagedata, rect.x, rect.y);
+		} else {
+			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
+			var offsetY : Int;
+			var offsetX : Int;
+			for (i in 0...Math.round(rect.height))
+			{
+				offsetY = (i * jeashImageData.width);
+				for (j in 0...Math.round(rect.width))
+				{
+					offsetX = 4 * (j + offsetY);
+					jeashImageData.data[s + offsetX] = Std.int((jeashImageData.data[s + offsetX] * colorTransform.redMultiplier) + colorTransform.redOffset);
+					jeashImageData.data[s + offsetX + 1] = Std.int((jeashImageData.data[s + offsetX + 1] * colorTransform.greenMultiplier) + colorTransform.greenOffset);
+					jeashImageData.data[s + offsetX + 2] = Std.int((jeashImageData.data[s + offsetX + 2] * colorTransform.blueMultiplier) + colorTransform.blueOffset);
+					jeashImageData.data[s + offsetX + 3] = Std.int((jeashImageData.data[s + offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
+				}
+			}
+			ctx.putImageData (jeashImageData, 0, 0, rect.x, rect.y, rect.width, rect.height);
 		}
-		ctx.putImageData (imagedata, rect.x, rect.y);
 
 		//if (graphics != null) graphics.mChanged = true;
 
