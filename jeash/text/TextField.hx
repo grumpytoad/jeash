@@ -365,9 +365,9 @@ class TextField extends InteractiveObject
 		}
 	}
 
-	/* override */public function GetWidth() : Float { return mWidth; }
-	/* override */public function GetHeight() : Float { return mHeight; }
-	/* override */public function SetWidth(inWidth:Float) : Float
+	override public function jeashGetWidth() : Float { return mWidth; }
+	override public function jeashGetHeight() : Float { return mHeight; }
+	override public function jeashSetWidth(inWidth:Float) : Float
 	{
 		if (inWidth!=mWidth)
 		{
@@ -377,7 +377,7 @@ class TextField extends InteractiveObject
 		return mWidth;
 	}
 
-	/* override */public function SetHeight(inHeight:Float) : Float
+	override public function jeashSetHeight(inHeight:Float) : Float
 	{
 		if (inHeight!=mHeight)
 		{
@@ -631,7 +631,9 @@ class TextField extends InteractiveObject
 		mLimitRenderX = (autoSize == flash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
 		var wrap = (wordWrap && !mInput) ? mLimitRenderX : 999999;
 		var char_idx = 0;
-		var h:Int = Math.round((mHeight - (mTextHeight*mParagraphs.length))/2);
+		flash.Lib.trace(mHeight);
+		flash.Lib.trace(mTextHeight);
+		var h:Int = 0;
 
 		var s0 = mSelStart;
 		var s1 = mSelEnd;
@@ -1038,7 +1040,7 @@ class TextField extends InteractiveObject
 		return getTextFormat();
 	}
 
-	override public function jeashUpdateMatrix(parentMatrix:Matrix)
+	override public function jeashUpdateMatrix()
 	{
 		// ignore width and height changes
 		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
@@ -1050,7 +1052,6 @@ class TextField extends InteractiveObject
 		mMatrix.tx = this.x;
 		mMatrix.ty = this.y;
 
-		mFullMatrix = mMatrix.mult(parentMatrix);
 	}
 
 
@@ -1078,7 +1079,7 @@ class FontInstance
 	var mCacheAsBitmap:Bool;
 	public var mTryFreeType:Bool;
 
-	public var height(GetHeight,null):Int;
+	public var height(jeashGetHeight,null):Int;
 
 
 	function new(inFont:Font,inHeight:Int)
@@ -1126,7 +1127,7 @@ class FontInstance
 		return f;
 	}
 
-	function GetHeight():Int { return mHeight; }
+	function jeashGetHeight():Int { return mHeight; }
 
 	function SetSolid(inCol:Int, inAlpha:Float)
 	{

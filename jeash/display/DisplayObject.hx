@@ -61,17 +61,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 {
 	public var x:Float;
 	public var y:Float;
-	public var scaleX:Float;
-	public var scaleY:Float;
-#if !js
-	public var scale9Grid(GetScale9Grid,SetScale9Grid):Rectangle;
-#end
+	//public var scaleX:Float;
+	//public var scaleY:Float;
+
+	public var scaleX(jeashGetScaleX,jeashSetScaleX):Float;
+	public var scaleY(jeashGetScaleY,jeashSetScaleY):Float;
+
 	public var accessibilityProperties:AccessibilityProperties;
 	public var alpha:Float;
 	public var name(default,default):String;
 	public var cacheAsBitmap:Bool;
-	public var width:Float;
-	public var height:Float;
+	//public var width:Float;
+	//public var height:Float;
+	public var width(jeashGetWidth,jeashSetWidth):Float;
+	public var height(jeashGetHeight,jeashSetHeight):Float;
+
 	public var visible(default,jeashSetVisible):Bool;
 	public var opaqueBackground(GetOpaqueBackground,SetOpaqueBackground):Null<Int>;
 	public var mouseX(jeashGetMouseX, jeashSetMouseX):Float;
@@ -129,15 +133,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mMatrix:Matrix;
 	var mFullMatrix:Matrix;
 
-	var jeashBoundsHeight:Float;
-	var jeashBoundsWidth:Float;
-
 	public function new()
 	{
 		parent = null;
 		super(null);
 		x = y = 0;
-		jeashScaleX = jeashScaleY = scaleX = scaleY = 1.0;
+		jeashScaleX = jeashScaleY = 1.0;
 		alpha = 1.0;
 		rotation = 0.0;
 		__swf_depth = 0;
@@ -388,52 +389,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inMatrix;
 	}
 
-	public function jeashUpdateMatrix(parentMatrix:Matrix)
-	{
-		BuildBounds();
-		
-		var h = mBoundsRect.height;
-
-		if (this.height == null) this.height = h;
-		if (jeashBoundsHeight == null) jeashBoundsHeight = h;
-
-		if (scaleY != jeashScaleY)
-			jeashScaleY = scaleY;
-		else
-			if (this.height != scaleY*jeashBoundsHeight && h>0)
-				this.jeashScaleY = this.height/jeashBoundsHeight;
-
-		jeashBoundsHeight = h;
-		this.height = jeashScaleY*h;
-		scaleY = jeashScaleY;
-
-		var w = mBoundsRect.width;
-
-		if (this.width == null) this.width = w;
-		if (jeashBoundsWidth == null) jeashBoundsWidth = w;
-
-		if (scaleX != jeashScaleX)
-			jeashScaleX = scaleX;
-		else
-			if (this.width != jeashScaleX*jeashBoundsWidth && w>0)
-				this.jeashScaleX = this.width/jeashBoundsWidth;
-
-		jeashBoundsWidth = w;
-		this.width = jeashScaleX*w;
-		scaleX = jeashScaleX;
-
-		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
-
-		var rad = this.rotation * Math.PI / 180.0;
-		if (rad != 0.0)
-			mMatrix.rotate(rad);
-
-		mMatrix.tx = this.x;
-		mMatrix.ty = this.y;
-
-		mFullMatrix = mMatrix.mult(parentMatrix);
-	}
-
 	function jeashGetGraphics() : flash.display.Graphics
 	{ return null; }
 
@@ -455,13 +410,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mGraphicsBounds;
 	}
 
-	public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement)
+	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
-		jeashUpdateMatrix(inParentMatrix);
+		jeashUpdateMatrix();
+
 		var gfx = jeashGetGraphics();
 
 		if (gfx!=null)
 		{
+			mFullMatrix = mMatrix.mult(parentMatrix);
 			var m = mFullMatrix.clone();
 			gfx.jeashRender(inMask, m);
 
@@ -745,5 +702,106 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		this.visible = visible;
 		return visible;
 	}
+
+	public function jeashGetHeight() : Float
+	{
+		BuildBounds();
+		return jeashScaleY * mBoundsRect.height;
+	}
+	public function jeashSetHeight(inHeight:Float) : Float
+	{
+		BuildBounds();
+		var h = mBoundsRect.height;
+		if (inHeight!=h)
+		{
+			if (h<=0) return 0;
+			jeashScaleY *= inHeight/h;
+			//untyped __js__("this.height = inHeight");
+			jeashUpdateMatrix();
+		}
+		return inHeight;
+	}
+
+	public function jeashGetWidth() : Float
+	{
+		BuildBounds();
+		return jeashScaleX * mBoundsRect.width;
+	}
+
+	public function jeashSetWidth(inWidth:Float) : Float
+	{
+		BuildBounds();
+		var w = mBoundsRect.width;
+		if (w!=inWidth)
+		{
+			if (w<=0) return 0;
+			jeashScaleX *= inWidth/w;
+			//untyped __js__("this.width = inWidth");
+			jeashUpdateMatrix();
+		}
+		return inWidth;
+	}
+
+	public function jeashGetScaleX() { return jeashScaleX; }
+	public function jeashGetScaleY() { return jeashScaleY; }
+	public function jeashSetScaleX(inS:Float)
+	{ jeashScaleX = inS; jeashUpdateMatrix(); return inS; }
+	public function jeashSetScaleY(inS:Float)
+	{ jeashScaleY = inS; jeashUpdateMatrix(); return inS; }
+
+	public function jeashUpdateMatrix()
+	{
+/*
+		
+		var h = mBoundsRect.height;
+
+		if (this.height == null) this.height = h;
+		if (jeashBoundsHeight == null) jeashBoundsHeight = h;
+
+		if (scaleY != jeashScaleY)
+			jeashScaleY = scaleY;
+		else
+			if (this.height != scaleY*jeashBoundsHeight && h>0)
+				this.jeashScaleY = this.height/jeashBoundsHeight;
+
+		jeashBoundsHeight = h;
+		this.height = jeashScaleY*h;
+		scaleY = jeashScaleY;
+
+		var w = mBoundsRect.width;
+
+		if (this.width == null) this.width = w;
+		if (jeashBoundsWidth == null) jeashBoundsWidth = w;
+
+		if (scaleX != jeashScaleX)
+			jeashScaleX = scaleX;
+		else
+			if (this.width != jeashScaleX*jeashBoundsWidth && w>0)
+				this.jeashScaleX = this.width/jeashBoundsWidth;
+
+		jeashBoundsWidth = w;
+		this.width = jeashScaleX*w;
+		scaleX = jeashScaleX;
+*/
+		var w = mBoundsRect.width;
+		if (untyped __js__("this.width"))
+			jeashScaleX = untyped __js__("this.width")/w;
+
+
+		var h = mBoundsRect.height;
+		if (untyped __js__("this.height"))
+			jeashScaleY = untyped __js__("this.height")/h;
+
+		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
+
+		var rad = this.rotation * Math.PI / 180.0;
+		if (rad != 0.0)
+			mMatrix.rotate(rad);
+
+		mMatrix.tx = this.x;
+		mMatrix.ty = this.y;
+
+	}
+
 
 }
