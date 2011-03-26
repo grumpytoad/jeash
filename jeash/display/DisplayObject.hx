@@ -61,8 +61,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 {
 	public var x:Float;
 	public var y:Float;
-	//public var scaleX:Float;
-	//public var scaleY:Float;
 
 	public var scaleX(jeashGetScaleX,jeashSetScaleX):Float;
 	public var scaleY(jeashGetScaleY,jeashSetScaleY):Float;
@@ -71,8 +69,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var alpha:Float;
 	public var name(default,default):String;
 	public var cacheAsBitmap:Bool;
-	//public var width:Float;
-	//public var height:Float;
 	public var width(jeashGetWidth,jeashSetWidth):Float;
 	public var height(jeashGetHeight,jeashSetHeight):Float;
 
@@ -716,7 +712,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		{
 			if (h<=0) return 0;
 			jeashScaleY *= inHeight/h;
-			//untyped __js__("this.height = inHeight");
 			jeashUpdateMatrix();
 		}
 		return inHeight;
@@ -736,7 +731,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		{
 			if (w<=0) return 0;
 			jeashScaleX *= inWidth/w;
-			//untyped __js__("this.width = inWidth");
 			jeashUpdateMatrix();
 		}
 		return inWidth;
@@ -751,38 +745,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function jeashUpdateMatrix()
 	{
-/*
-		
-		var h = mBoundsRect.height;
-
-		if (this.height == null) this.height = h;
-		if (jeashBoundsHeight == null) jeashBoundsHeight = h;
-
-		if (scaleY != jeashScaleY)
-			jeashScaleY = scaleY;
-		else
-			if (this.height != scaleY*jeashBoundsHeight && h>0)
-				this.jeashScaleY = this.height/jeashBoundsHeight;
-
-		jeashBoundsHeight = h;
-		this.height = jeashScaleY*h;
-		scaleY = jeashScaleY;
-
-		var w = mBoundsRect.width;
-
-		if (this.width == null) this.width = w;
-		if (jeashBoundsWidth == null) jeashBoundsWidth = w;
-
-		if (scaleX != jeashScaleX)
-			jeashScaleX = scaleX;
-		else
-			if (this.width != jeashScaleX*jeashBoundsWidth && w>0)
-				this.jeashScaleX = this.width/jeashBoundsWidth;
-
-		jeashBoundsWidth = w;
-		this.width = jeashScaleX*w;
-		scaleX = jeashScaleX;
-*/
 		var w = mBoundsRect.width;
 		if (untyped __js__("this.width"))
 			jeashScaleX = untyped __js__("this.width")/w;
