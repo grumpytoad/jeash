@@ -35,6 +35,7 @@ import flash.display.Shape;
 import flash.events.Event;
 import flash.events.IOErrorEvent;
 import flash.system.LoaderContext;
+import flash.geom.Rectangle;
 
 /**
 * @author	Hugh Sanderson
@@ -69,8 +70,8 @@ class Loader extends flash.display.DisplayObjectContainer
 			contentLoaderInfo.contentType = switch(extension) {
 			case "swf": "application/x-shockwave-flash";
 			case "jpg","jpeg": transparent = false; "image/jpeg";
-			case "png": "image/gif";
-			case "gif": "image/png";
+			case "png": "image/png";
+			case "gif": "image/gif";
 			default:
 				throw "Unrecognized file " + request.url;
 			}
@@ -79,6 +80,7 @@ class Loader extends flash.display.DisplayObjectContainer
 		mImage = new BitmapData(0,0,transparent);
 
 		try {
+			contentLoaderInfo.addEventListener(Event.COMPLETE, handleLoad, false, 2147483647);
 			mImage.LoadFromFile(request.url, contentLoaderInfo);
 			content = new Bitmap(mImage);
 			Reflect.setField(contentLoaderInfo, "content", this.content);
@@ -95,5 +97,30 @@ class Loader extends flash.display.DisplayObjectContainer
 			addChild(mShape);
 		}
 	}
+	
+	private function handleLoad(e:Event):Void
+	{
+		contentLoaderInfo.removeEventListener(Event.COMPLETE, handleLoad);
+		jeashInvalidateBounds();
+	}
+	
+	override function BuildBounds()
+	{
+		super.BuildBounds();
+				
+		if(mImage!=null)
+		{
+			var r:Rectangle = new Rectangle(0, 0, mImage.width, mImage.height);		
+			
+			if (r.width!=0 || r.height!=0)
+			{
+				if (mBoundsRect.width==0 && mBoundsRect.height==0)
+					mBoundsRect = r.clone();
+				else
+					mBoundsRect.extendBounds(r);
+			}
+		}
+	}
+	
 }
 

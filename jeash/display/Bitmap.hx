@@ -28,6 +28,7 @@ package jeash.display;
 
 import flash.display.DisplayObject;
 import flash.display.PixelSnapping;
+import flash.geom.Rectangle;
 
 class Bitmap extends jeash.display.DisplayObject {
 	public var bitmapData(default,jeashSetBitmapData) : BitmapData;
@@ -46,6 +47,7 @@ class Bitmap extends jeash.display.DisplayObject {
 
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData
 	{
+		jeashInvalidateBounds();
 		bitmapData = inBitmapData;
 		jeashGraphics = inBitmapData.graphics;
 		return inBitmapData;
@@ -53,6 +55,24 @@ class Bitmap extends jeash.display.DisplayObject {
 
 
 	override function jeashGetGraphics() { return jeashGraphics; }
+	
+	override function BuildBounds()
+	{
+		super.BuildBounds();
+				
+		if(bitmapData!=null)
+		{
+			var r:Rectangle = new Rectangle(0, 0, bitmapData.width, bitmapData.height);		
+			
+			if (r.width!=0 || r.height!=0)
+			{
+				if (mBoundsRect.width==0 && mBoundsRect.height==0)
+					mBoundsRect = r.clone();
+				else
+					mBoundsRect.extendBounds(r);
+			}
+		}
+	}
 
 }
 

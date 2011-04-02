@@ -89,7 +89,7 @@ class DisplayObjectContainer extends InteractiveObject
 			{
 				if (obj.visible)
 				{
-					var r = obj.GetScreenBounds();
+					var r = obj.getBounds(this);
 					if (r.width!=0 || r.height!=0)
 					{
 						if (mBoundsRect.width==0 && mBoundsRect.height==0)
@@ -100,6 +100,19 @@ class DisplayObjectContainer extends InteractiveObject
 				}
 			}
 		}
+	}
+
+	//** FINAL **//	
+	override function jeashInvalidateMatrix( ? local : Bool = false) : Void
+	{
+		//invalidate children only if they are not already invalidated
+		if(mMtxChainDirty==false && mMtxDirty==false)		
+		{				
+			for(child in jeashChildren)
+				child.jeashInvalidateMatrix();
+		}			
+		mMtxChainDirty= mMtxChainDirty || !local;	//note that a parent has an invalid matrix 
+		mMtxDirty = mMtxDirty || local; 		//invalidate the local matrix
 	}
 
 	override function jeashDoAdded(inObj:DisplayObject)

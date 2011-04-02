@@ -59,12 +59,13 @@ typedef BufferData =
  */
 class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 {
-	public var x:Float;
-	public var y:Float;
-
+	
+	public var x(jeashGetX,jeashSetX):Float;
+	public var y(jeashGetY,jeashSetY):Float;
 	public var scaleX(jeashGetScaleX,jeashSetScaleX):Float;
 	public var scaleY(jeashGetScaleY,jeashSetScaleY):Float;
-
+	public var rotation(jeashGetRotation,jeashSetRotation):Float;
+	
 	public var accessibilityProperties:AccessibilityProperties;
 	public var alpha:Float;
 	public var name(default,default):String;
@@ -78,7 +79,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mouseY(jeashGetMouseY, jeashSetMouseY):Float;
 	public var parent:DisplayObjectContainer;
 	public var stage(GetStage,null):Stage;
-	public var rotation:Float;
+	
 	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
 	public var mask(GetMask,SetMask):DisplayObject;
 	public var filters(jeashGetFilters,jeashSetFilters):Array<Dynamic>;
@@ -108,13 +109,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var mIndicesCount(default,null):Int;
 	public var mBuffers : Hash<BufferData>;
 
-	var mSizeDirty:Bool;
+	var mBoundsDirty:Bool;
+	var mMtxChainDirty:Bool;
+	var mMtxDirty:Bool;
+	
 	var mBoundsRect : Rectangle;
 	var mGraphicsBounds : Rectangle;
 	var mScale9Grid : Rectangle;
-
+	var mMatrix:Matrix;
+	var mFullMatrix:Matrix;
+	
+	var jeashX : Float;
+	var jeashY : Float;
 	var jeashScaleX : Float;
 	var jeashScaleY : Float;
+	var jeashRotation : Float;
 
 	static var mNameID = 0;
 
@@ -125,10 +134,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var mMaskingObj:DisplayObject;
 	var mMaskHandle:Dynamic;
 	var jeashFilters:Array<BitmapFilter>;
-
-	var mMatrix:Matrix;
-	var mFullMatrix:Matrix;
-
+	
+	
 	public function new()
 	{
 		parent = null;
@@ -279,22 +286,32 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (parent == this.parent)
 			return;
 
+		mMtxChainDirty=true;
+
 		if (this.parent != null)
+		{
 			this.parent.__removeChild(this);
+			this.parent.jeashInvalidateBounds();	
+		}
+		
+		if(parent != null)
+		{
+			parent.jeashInvalidateBounds();
+		}
 
 		if (this.parent==null && parent!=null)
 		{
 			this.parent = parent;
 			jeashDoAdded(this);
-
 		}
 		else if (this.parent != null && parent==null)
 		{
 			this.parent = parent;
 			jeashDoRemoved(this);
 		}
-		else
+		else{
 			this.parent = parent;
+		}
 
 	}
 
@@ -353,12 +370,33 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mMatrix = trans.matrix.clone();
 		return trans;
 	}
+	
+	public function getFullMatrix(?childMatrix:Matrix=null) {
+		if(childMatrix==null)
+		{
+			return mFullMatrix.clone();
+		}
+		else
+		{
+			return childMatrix.mult(mFullMatrix);
+		}
+	}
 
 	public function getBounds(targetCoordinateSpace : DisplayObject) : Rectangle 
-	{
-		// TODO: map to co-ordinate space
-		BuildBounds();
-		return mBoundsRect.clone();
+	{		
+		if(mMtxDirty || mMtxChainDirty)
+			jeashValidateMatrix();
+		
+		if(mBoundsDirty)
+		{
+			BuildBounds();
+		}
+		
+		var mtx : Matrix = mFullMatrix.clone();
+		//perhaps inverse should be stored and updated lazily?
+		mtx.concat(targetCoordinateSpace.mFullMatrix.clone().invert());
+		var rect : Rectangle = mBoundsRect.transform(mtx);	//transform does cloning
+		return rect;
 	}
 	public function getRect(targetCoordinateSpace : DisplayObject) : Rectangle 
 	{
@@ -405,10 +443,102 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 		return mGraphicsBounds;
 	}
+	
+	/**
+	 * Bounds are invalidated when:
+	 * - a child is added or removed from a container
+	 * - a child is scaled, rotated, translated, or skewed
+	 * - the display of an object changes (graphics changed,
+	 * bitmap loaded, textbox resized)
+	 * - a child has its bounds invalidated
+	 * ---> Invalidates down to stage
+	 */
+	//** internal **//
+	//** FINAL **//	
+	public function jeashInvalidateBounds():Void{
+		//TODO :: adjust so that parent is only invalidated if it's bounds are changed by this change
+		mBoundsDirty=true;
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+	}
+	
+	/**
+	 * Matrices are invalidated when:
+	 * - the object is scaled, rotated, translated, or skewed
+	 * - an object's parent has its matrices invalidated
+	 * ---> 	Invalidates up through children
+	 */
+	//** protected **//
+	function jeashInvalidateMatrix( ? local : Bool = false):Void{
+		mMtxChainDirty= mMtxChainDirty || !local;	//note that a parent has an invalid matrix 
+		mMtxDirty = mMtxDirty || local; //invalidate the local matrix
+	}
+	
+	public function jeashValidateMatrix(){
+		
+		if(mMtxDirty || (mMtxChainDirty && parent!=null))
+		{
+			//validate parent matrix
+			if(mMtxChainDirty && parent!=null)
+			{
+				parent.jeashValidateMatrix();
+			}
+			
+			//validate local matrix
+			if(mMtxDirty)
+			{
+				//update matrix if necessary
+				//set non scale elements to identity
+				mMatrix.b = mMatrix.c = mMatrix.tx = mMatrix.ty = 0;
+			
+				//set scale
+				mMatrix.a=jeashScaleX;
+				mMatrix.d=jeashScaleY;
+			
+				//set rotation if necessary
+				var rad = jeashRotation * Math.PI / 180.0;
+		
+				if(rad!=0.0)
+					mMatrix.rotate(rad);
+			
+				//set translation
+				mMatrix.tx=jeashX;
+				mMatrix.ty=jeashY;	
+			}
+			
+			
+			if(parent!=null)
+				mFullMatrix = parent.getFullMatrix(mMatrix);
+			else
+				mFullMatrix = mMatrix;
+			
+			mMtxDirty = mMtxChainDirty = false;
+		}
+	}
+	
 
 	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
-		jeashUpdateMatrix();
+		
+		//TODO :: Reintegrate code for handling changes to bounds/matrices outside of getter/setter
+		//Perhaps, this could be better handle via a plugin, or proxy in tween engine, etc?
+		/*
+		var w = mBoundsRect.width;
+		if (untyped __js__("this.width"))
+			jeashScaleX = untyped __js__("this.width")/w;
+
+
+		var h = mBoundsRect.height;
+		if (untyped __js__("this.height"))
+			jeashScaleY = untyped __js__("this.height")/h;
+		 */
+		 
+		if(mMtxDirty || mMtxChainDirty){
+			jeashValidateMatrix();
+		}
+			
+		if(mBoundsDirty)
+			BuildBounds();
 
 		var gfx = jeashGetGraphics();
 
@@ -583,11 +713,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				mBoundsRect.height *= scaleY;
 			}
 		}
+		mBoundsDirty=false;
 	}
 
 	function GetScreenBounds()
 	{
-		BuildBounds();
+		if(mBoundsDirty)
+			BuildBounds();
 		return mBoundsRect.clone();
 	}
 
@@ -674,7 +806,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				Lib.jeashAppendSurface(gfx1.mSurface, gfx2.mSurface, 0, 0);
 			 else 
 				Lib.jeashAppendSurface(gfx1.mSurface, 0, 0);
-			
 		}
 	}
 
@@ -706,63 +837,111 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	public function jeashSetHeight(inHeight:Float) : Float
 	{
-		BuildBounds();
-		var h = mBoundsRect.height;
-		if (inHeight!=h)
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		var h = jeashScaleY * mBoundsRect.height;
+		if (h!=inHeight)
 		{
 			if (h<=0) return 0;
 			jeashScaleY *= inHeight/h;
-			jeashUpdateMatrix();
+			jeashInvalidateMatrix(true);
 		}
 		return inHeight;
 	}
 
 	public function jeashGetWidth() : Float
 	{
-		BuildBounds();
+		if(mBoundsDirty){
+			BuildBounds();
+		}
 		return jeashScaleX * mBoundsRect.width;
 	}
 
 	public function jeashSetWidth(inWidth:Float) : Float
 	{
-		BuildBounds();
-		var w = mBoundsRect.width;
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		var w = jeashScaleX * mBoundsRect.width;
 		if (w!=inWidth)
 		{
 			if (w<=0) return 0;
 			jeashScaleX *= inWidth/w;
-			jeashUpdateMatrix();
+			jeashInvalidateMatrix(true);
 		}
 		return inWidth;
 	}
 
+	public function jeashGetX():Float{
+		return jeashX;
+	}
+	
+	public function jeashGetY():Float{
+		return jeashY;
+	}
+	
+	public function jeashSetX(n:Float):Float{
+		jeashInvalidateMatrix(true);
+		jeashX=n;
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		return n;
+	}
+	
+	public function jeashSetY(n:Float):Float{
+		jeashInvalidateMatrix(true);
+		jeashY=n;
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		return n;
+	}
+
+
 	public function jeashGetScaleX() { return jeashScaleX; }
 	public function jeashGetScaleY() { return jeashScaleY; }
 	public function jeashSetScaleX(inS:Float)
-	{ jeashScaleX = inS; jeashUpdateMatrix(); return inS; }
+	{ 
+		if(jeashScaleX==inS)
+			return inS;		
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		if(!mMtxDirty)
+			jeashInvalidateMatrix(true);	
+		jeashScaleX=inS;
+		return inS;
+	}
+
 	public function jeashSetScaleY(inS:Float)
-	{ jeashScaleY = inS; jeashUpdateMatrix(); return inS; }
+	{ 
+		if(jeashScaleY==inS)
+			return inS;		
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		if(!mMtxDirty)
+			jeashInvalidateMatrix(true);	
+		jeashScaleY=inS;
+		return inS;
+	}
 
-	public function jeashUpdateMatrix()
-	{
-		var w = mBoundsRect.width;
-		if (untyped __js__("this.width"))
-			jeashScaleX = untyped __js__("this.width")/w;
+	private function jeashSetRotation(n:Float):Float{
+		if(!mMtxDirty)
+			jeashInvalidateMatrix(true);
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
 
-
-		var h = mBoundsRect.height;
-		if (untyped __js__("this.height"))
-			jeashScaleY = untyped __js__("this.height")/h;
-
-		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
-
-		var rad = this.rotation * Math.PI / 180.0;
-		if (rad != 0.0)
-			mMatrix.rotate(rad);
-
-		mMatrix.tx = this.x;
-		mMatrix.ty = this.y;
-
+		jeashRotation = n;
+		return n;
+	}
+	
+	private function jeashGetRotation():Float{
+		return jeashRotation;
 	}
 
 

@@ -1040,7 +1040,7 @@ class TextField extends InteractiveObject
 		return getTextFormat();
 	}
 
-	override public function jeashUpdateMatrix()
+	/*override public function jeashUpdateMatrix()
 	{
 		// ignore width and height changes
 		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
@@ -1052,7 +1052,7 @@ class TextField extends InteractiveObject
 		mMatrix.tx = this.x;
 		mMatrix.ty = this.y;
 
-	}
+	}*/
 
 
 }
