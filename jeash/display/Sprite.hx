@@ -48,6 +48,8 @@ class Sprite extends DisplayObjectContainer
 	{
 		Lib.canvas;
 		jeashGraphics = new Graphics();
+		if(jeashGraphics!=null)
+			jeashGraphics.owner = this;
 		super();
 		buttonMode = false;
 		name = "Sprite " + DisplayObject.mNameID++;

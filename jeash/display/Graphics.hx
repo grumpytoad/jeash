@@ -288,6 +288,9 @@ class Graphics
 
 	private static var gl:WebGLRenderingContext;
 	public var jeashShift(default,null):Bool;
+	public var owner:DisplayObject;
+	private var mBoundsDirty:Bool;
+	
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -942,6 +945,8 @@ class Graphics
 
 
 		mLineJobs = [];
+		
+		markBoundsDirty();
 	}
 
 	public function GetExtent(inMatrix:Matrix) : Rectangle
@@ -1155,6 +1160,7 @@ class Graphics
 		}
 
 		mChanged = true;
+		markBoundsDirty();
 	}
 
 	public static function jeashDetectIsPointInPathMode()
@@ -1174,6 +1180,18 @@ class Graphics
 		}
 		ctx.restore();
 		return rv;
+	}
+
+	public inline function markBoundsClean(){
+		mBoundsDirty=false;
+	}
+
+	inline function markBoundsDirty() {
+		if(!mBoundsDirty){
+			mBoundsDirty=true;
+			if(owner!=null)
+				owner.jeashInvalidateBounds();
+		}
 	}
 
 	inline function getContext() : CanvasRenderingContext2D

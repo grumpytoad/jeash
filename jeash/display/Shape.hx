@@ -42,6 +42,8 @@ class Shape extends DisplayObject
 	{
 		Lib.canvas;
 		jeashGraphics = new Graphics();
+		if(jeashGraphics!=null)
+			jeashGraphics.owner = this;
 		super();
 		name = "Shape " + DisplayObject.mNameID++;
 	}

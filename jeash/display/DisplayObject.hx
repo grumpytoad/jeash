@@ -707,6 +707,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		else
 		{
 			mBoundsRect = gfx.GetExtent(new Matrix());
+			gfx.markBoundsClean();
 			if (mScale9Grid!=null)
 			{
 				mBoundsRect.width *= scaleX;
@@ -841,11 +842,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			parent.jeashInvalidateBounds();
 		if(mBoundsDirty)
 			BuildBounds();
-		var h = jeashScaleY * mBoundsRect.height;
-		if (h!=inHeight)
+		var h = mBoundsRect.height;
+		if (jeashScaleY*h != inHeight)
 		{
 			if (h<=0) return 0;
-			jeashScaleY *= inHeight/h;
+			jeashScaleY = inHeight/h;
 			jeashInvalidateMatrix(true);
 		}
 		return inHeight;
@@ -865,11 +866,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			parent.jeashInvalidateBounds();
 		if(mBoundsDirty)
 			BuildBounds();
-		var w = jeashScaleX * mBoundsRect.width;
-		if (w!=inWidth)
+		var w = mBoundsRect.width;
+		if (jeashScaleX*w != inWidth)
 		{
 			if (w<=0) return 0;
-			jeashScaleX *= inWidth/w;
+			jeashScaleX = inWidth/w;
 			jeashInvalidateMatrix(true);
 		}
 		return inWidth;
