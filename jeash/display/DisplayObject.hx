@@ -439,7 +439,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		{
 			var gfx = jeashGetGraphics();
 			if (gfx!=null)
-				mGraphicsBounds = gfx.GetExtent(new Matrix());
+				mGraphicsBounds = gfx.getStandardExtent();//gfx.GetExtent(new Matrix());
 		}
 		return mGraphicsBounds;
 	}
@@ -537,20 +537,21 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			jeashValidateMatrix();
 		}
 			
-		if(mBoundsDirty)
-			BuildBounds();
+		//Do we actually need to know bounds at this point?
+		//if(mBoundsDirty)
+		//	BuildBounds();
 
 		var gfx = jeashGetGraphics();
 
 		if (gfx!=null)
 		{
-			mFullMatrix = mMatrix.mult(parentMatrix);
+			//mFullMatrix = mMatrix.mult(parentMatrix);
 			var m = mFullMatrix.clone();
 			gfx.jeashRender(inMask, m);
 
 			if (!jeash.Lib.mOpenGL)
 			{
-				var extent = gfx.GetExtent(new Matrix());
+				var extent = gfx.getStandardExtent();//gfx.GetExtent(new Matrix());
 				// detect draw beyond boundary, do not adjust matrix
 				if (gfx.jeashShift)
 				{
@@ -706,7 +707,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mBoundsRect = new Rectangle(x,y,0,0);
 		else
 		{
-			mBoundsRect = gfx.GetExtent(new Matrix());
+			mBoundsRect = gfx.getStandardExtent();//gfx.GetExtent(new Matrix());
 			gfx.markBoundsClean();
 			if (mScale9Grid!=null)
 			{
@@ -738,7 +739,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (this.parent != null)
 			this.parent.jeashGetInteractiveObjectStack(outStack);
 	}
-
 
 	// @r551
 	public function jeashFireEvent(event:flash.events.Event)

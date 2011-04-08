@@ -290,6 +290,10 @@ class Graphics
 	public var jeashShift(default,null):Bool;
 	public var owner:DisplayObject;
 	private var mBoundsDirty:Bool;
+	private var standardExtent:Rectangle;
+	private var originX:Float;
+	private var originY:Float;
+	private var nextDrawIndex:Int;
 	
 
 	public function new(?inSurface:HTMLCanvasElement)
@@ -314,6 +318,8 @@ class Graphics
 		mLastMoveID = 0;
 		mPenX = 0.0;
 		mPenY = 0.0;
+		originX = 0;
+		originY = 0;
 
 		mDrawList = new DrawList();
 
@@ -332,6 +338,7 @@ class Graphics
 		mLineJobs = [];
 		mChanged = true;
 		jeashShift = false;
+		nextDrawIndex = 0;
 
 		if (jeash.Lib.mOpenGL )
 		{
@@ -454,21 +461,22 @@ class Graphics
 		ClosePolygon(true);
 
 		// clear the canvas
-		if (mDrawList.length > 0)
-			ClearCanvas();
+		/*if (mDrawList.length > 0)
+			ClearCanvas();*/
 
 		var ctx = getContext();
 		if (ctx==null) return false;
 
-		var extent = GetExtent(new Matrix());
+		var extent = getStandardExtent();
+		//var extent = GetExtent(new Matrix());
 		var len : Int = mDrawList.length;
-		if (maskHandle != null)
-			ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);
+		/*if (maskHandle != null)
+			ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);*/
 
 		jeashShift = if (Math.abs(extent.x) < mSurface.width && Math.abs(extent.y) < mSurface.height)
 			true; else false;
 
-		for ( i in 0...len ) {
+		for ( i in nextDrawIndex...len ) {
 			var d = mDrawList[(len-1)-i];
 			ctx.save();
 
@@ -585,6 +593,7 @@ class Graphics
 		}
 
 		mChanged = false;
+		nextDrawIndex = len;
 
 		return true;
 
@@ -906,7 +915,6 @@ class Graphics
 				(smooth ? BMP_SMOOTH : 0) };
 
 		InitTextureGL(mBitmap.texture_buffer);
-
 	}
 
 
@@ -930,6 +938,7 @@ class Graphics
 		mPenY = 0.0;
 
 		mDrawList = new DrawList();
+		nextDrawIndex = 0;
 
 		mPoints = [];
 
@@ -949,6 +958,48 @@ class Graphics
 		markBoundsDirty();
 	}
 
+	public function getStandardExtent() : Rectangle
+	{
+		if(standardExtent!=null)
+			return standardExtent;
+
+		if (mDrawList.length == 0)
+			return standardExtent = new Rectangle();
+
+		var maxX, minX, maxY, minY;
+		maxX = minX = mDrawList[0].points[0].x;
+		maxY = minY = mDrawList[0].points[0].y;
+		
+		for (dl in mDrawList) {
+			for (p in dl.points) {
+				maxX=p.x>maxX?p.x:maxX;
+				minX=p.x<minX?p.x:minX;
+				maxY=p.y>maxY?p.y:maxY;
+				minY=p.y<minY?p.y:minY;
+			}
+			if (dl.bitmap != null)
+			{	
+				var width = dl.bitmap.texture_buffer.width;
+				var height = dl.bitmap.texture_buffer.height;
+				maxX=width>maxX?width:maxX;
+				minX=0<minX?0:minX;
+				maxY=height>maxY?height:maxY;
+				minY=0<minY?0:minY;
+			} 
+		}
+		
+		if((minX<0 && minX<originX) || (minY<0 && minY<originY)){
+			nextDrawIndex = 0;
+			ClearCanvas();		
+		}
+		originX=minX;
+		originY=minY;
+		
+		return standardExtent = new Rectangle(minX, minY, maxX-minX, maxY-minY);
+	}
+
+
+	/*
 	public function GetExtent(inMatrix:Matrix) : Rectangle
 	{
 		//flush();
@@ -996,6 +1047,8 @@ class Graphics
 		}
 		return new Rectangle(minX, minY, maxX-minX, maxY-minY);
 	}
+	 
+	 */
 
 	public function moveTo(inX:Float,inY:Float)
 	{
@@ -1114,7 +1167,6 @@ class Graphics
 		mCurrentLine.point_idx0 = mCurrentLine.point_idx1 = -1;
 	}
 
-	static var drawableCount;
 	private function ClosePolygon(inCancelFill)
 	{
 		var l =  mPoints.length;
@@ -1160,6 +1212,7 @@ class Graphics
 		}
 
 		mChanged = true;
+		standardExtent=null;
 		markBoundsDirty();
 	}
 
