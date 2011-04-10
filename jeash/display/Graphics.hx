@@ -476,11 +476,14 @@ class Graphics
 		jeashShift = if (Math.abs(extent.x) < mSurface.width && Math.abs(extent.y) < mSurface.height)
 			true; else false;
 
+
+		ctx.save();
+		
+		if (jeashShift) ctx.translate(-extent.x, -extent.y);
+
 		for ( i in nextDrawIndex...len ) {
 			var d = mDrawList[(len-1)-i];
-			ctx.save();
-
-			if (jeashShift) ctx.translate(-extent.x, -extent.y);
+	
 			if (d.lineJobs.length > 0) {
 				//TODO lj.pixel_hinting and lj.scale_mode
 				for (lj in d.lineJobs) {
@@ -558,13 +561,8 @@ class Graphics
 			}
 			ctx.fill();
 
-			ctx.restore();
-
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
-					ctx.save();
-					if (jeashShift) ctx.translate(-extent.x, -extent.y);
-
 					// Hack to workaround premature width calculations during async image load
 					if (!mNoClip)
 						ctx.clip();
@@ -579,9 +577,11 @@ class Graphics
 
 					ctx.drawImage( img, 0, 0 );
 
-					ctx.restore();
 			}
 		}
+		
+		ctx.restore();
+		
 
 		// merge into parent canvas context - used only when caching.
 		if ( maskHandle != null && len > 0) {
