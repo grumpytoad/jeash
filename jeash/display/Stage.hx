@@ -41,8 +41,6 @@ import flash.geom.Rectangle;
 
 class Stage extends flash.display.DisplayObjectContainer
 {
-	var jeashWidth : Int;
-	var jeashHeight : Int;
 	var jeashWindowWidth : Int;
 	var jeashWindowHeight : Int;
 	var jeashTimer : Dynamic;
@@ -88,8 +86,8 @@ class Stage extends flash.display.DisplayObjectContainer
 	{
 		super();
 		mFocusObject = null;
-		jeashWindowWidth =jeashWidth = stageWidth = width;
-		jeashWindowHeight =jeashHeight = stageHeight = height;
+		jeashWindowWidth = stageWidth = width;
+		jeashWindowHeight = stageHeight = height;
 		stageFocusRect = false;
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
@@ -98,8 +96,8 @@ class Stage extends flash.display.DisplayObjectContainer
 		SetBackgroundColour(0xffffff);
 		name = "Stage";
 		loaderInfo = LoaderInfo.create(null);
-		loaderInfo.parameters.width = Std.string(jeashWidth);
-		loaderInfo.parameters.height = Std.string(jeashHeight);
+		loaderInfo.parameters.width = Std.string(jeashWindowWidth);
+		loaderInfo.parameters.height = Std.string(jeashWindowHeight);
 		mProjMatrix = DEFAULT_PROJ_MATRIX;
 		jeashPointInPathMode = Graphics.jeashDetectIsPointInPathMode();
 		jeashMouseOverObjects = [];
@@ -378,8 +376,8 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function jeashOnResize(inW:Int, inH:Int)
 	{
-		jeashWindowWidth = jeashWidth = inW;
-		jeashWindowHeight = jeashHeight = inH;
+		jeashWindowWidth = inW;
+		jeashWindowHeight = inH;
 		//RecalcScale();
 		var event = new flash.events.Event( flash.events.Event.RESIZE );
 		event.target = this;
@@ -479,7 +477,7 @@ class Stage extends flash.display.DisplayObjectContainer
 
 		if (!jeashStageActive)
 		{
-			jeashOnResize(jeashWidth, jeashHeight);
+			jeashOnResize(jeashWindowWidth, jeashWindowHeight);
 			var event = new flash.events.Event( flash.events.Event.ACTIVATE );
 			event.target = this;
 			jeashBroadcast(event);

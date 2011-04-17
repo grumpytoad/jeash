@@ -41,13 +41,24 @@ class Bitmap extends jeash.display.DisplayObject {
 		super();
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
+		name = "Bitmap " + DisplayObject.mNameID++;
+
 		if (inBitmapData != null)
 			jeashSetBitmapData(inBitmapData);
+		else
+			jeashGraphics = new Graphics();
+
+		Lib.jeashSetSurfaceId(jeashGraphics.mSurface, name);
 	}
 
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData
 	{
 		jeashInvalidateBounds();
+		if (jeashIsOnStage()) {
+			Lib.jeashAppendSurface(inBitmapData.graphics.mSurface, 0, 0);
+			Lib.jeashSwapSurface(jeashGraphics.mSurface, inBitmapData.graphics.mSurface);
+			Lib.jeashRemoveSurface(jeashGraphics.mSurface);
+		}
 		bitmapData = inBitmapData;
 		jeashGraphics = inBitmapData.graphics;
 		return inBitmapData;

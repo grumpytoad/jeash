@@ -53,6 +53,7 @@ class Sprite extends DisplayObjectContainer
 		super();
 		buttonMode = false;
 		name = "Sprite " + DisplayObject.mNameID++;
+		Lib.jeashSetSurfaceId(jeashGraphics.mSurface, name);
 	}
 
 	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void

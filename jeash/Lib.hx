@@ -485,6 +485,8 @@ class Lib
 			surface.style.setProperty("display", "none", "");
 	}
 
+	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { surface.id = name; }
+
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );
