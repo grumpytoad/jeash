@@ -631,8 +631,6 @@ class TextField extends InteractiveObject
 		mLimitRenderX = (autoSize == flash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
 		var wrap = (wordWrap && !mInput) ? mLimitRenderX : 999999;
 		var char_idx = 0;
-		flash.Lib.trace(mHeight);
-		flash.Lib.trace(mTextHeight);
 		var h:Int = 0;
 
 		var s0 = mSelStart;
@@ -1115,7 +1113,6 @@ class FontInstance
 		// FIXME
 		var font : Font = new Font();
 		font.jeashSetScale(inHeight);
-		flash.Lib.trace(inFace);
 		font.fontName = inFace;
 
 		if (font==null)
