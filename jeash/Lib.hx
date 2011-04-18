@@ -487,6 +487,14 @@ class Lib
 
 	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { surface.id = name; }
 
+	public inline static function jeashCopyStyle(surface:HTMLElement, target:HTMLElement) 
+	{
+		for (i in 0...surface.style.length) {
+			var prop = surface.style.item(i);
+			target.style.setProperty(prop, surface.style.getPropertyValue(prop), "");
+		}
+	}
+
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );

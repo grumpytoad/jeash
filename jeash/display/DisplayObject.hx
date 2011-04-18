@@ -820,7 +820,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	function jeashSetVisible(visible:Bool)
 	{
-		if (visible == this.visible) return visible;
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			if (visible)

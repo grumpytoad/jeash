@@ -257,6 +257,14 @@ class DisplayObjectContainer extends InteractiveObject
 			jeashChildren[i].jeashAddToStage();
 	}
 
+	override private function jeashSetVisible(visible:Bool)
+	{
+		super.jeashSetVisible(visible);
+		for(i in 0...jeashChildren.length)
+			jeashChildren[i].jeashSetVisible(visible);
+		return visible;
+	}
+
 	public function addChildAt( obj : DisplayObject, index : Int )
 	{
 		if(index > jeashChildren.length || index < 0) {
