@@ -116,7 +116,10 @@ class Video extends DisplayObject {
 
 	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
-		jeashUpdateMatrix(parentMatrix);
+		if(mMtxDirty || mMtxChainDirty){
+			jeashValidateMatrix();
+		}
+
 		var gfx = jeashGetGraphics();
 
 		if (gfx!=null)
