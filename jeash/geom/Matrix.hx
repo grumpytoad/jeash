@@ -153,6 +153,7 @@ class Matrix
 	{
 		var cos = Math.cos(inTheta);
 		var sin = Math.sin(inTheta);
+		flash.Lib.trace(cos);
 
 		var a1 = a*cos - b*sin;
 		b = a*sin + b*cos;
@@ -247,12 +248,20 @@ class Matrix
 
 	public inline function toMozString()
 	{
-		return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", " + tx + "px, " + ty + "px)";
+		#if js
+		untyped {
+			return "matrix(" + a.toFixed(4) + ", " + b.toFixed(4) + ", " + c.toFixed(4) + ", " + d.toFixed(4) + ", " + tx.toFixed(4) + "px, " + ty.toFixed(4) + "px)";
+		}
+		#end
 	}
 
 	public inline function toString()
 	{
-		return "matrix(" + a + ", " + b + ", " + c + ", " + d + ", " + tx + ", " + ty + ")";
+		#if js
+		untyped {
+			return "matrix(" + a.toFixed(4) + ", " + b.toFixed(4) + ", " + c.toFixed(4) + ", " + d.toFixed(4) + ", " + tx.toFixed(4) + ", " + ty.toFixed(4) + ")";
+		}
+		#end
 	}
 
 }
