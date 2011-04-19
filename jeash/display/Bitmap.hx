@@ -57,7 +57,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		if (jeashIsOnStage()) {
 			Lib.jeashAppendSurface(inBitmapData.graphics.mSurface, 0, 0);
 			Lib.jeashSwapSurface(jeashGraphics.mSurface, inBitmapData.graphics.mSurface);
-			Lib.jeashCopyStyle(jeashGraphics.mSurface, inBitmapData.graphics.mSurface;
+			Lib.jeashCopyStyle(jeashGraphics.mSurface, inBitmapData.graphics.mSurface);
 			Lib.jeashRemoveSurface(jeashGraphics.mSurface);
 		}
 		bitmapData = inBitmapData;
