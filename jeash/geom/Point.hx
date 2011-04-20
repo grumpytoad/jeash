@@ -83,7 +83,7 @@ class Point
    {
       var dx = pt1.x-pt2.x;
       var dy = pt1.y-pt2.y;
-      return Math.sqrt(dx*dy + dy*dy);
+      return Math.sqrt(dx*dx + dy*dy);
    }
 
    public static function interpolate(pt1 : flash.geom.Point, pt2 : flash.geom.Point, f : Float) : flash.geom.Point
