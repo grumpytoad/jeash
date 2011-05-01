@@ -410,7 +410,7 @@ class Lib
 		return false;
 	}
 
-	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix, alpha:Float)
+	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix = null, alpha:Float = 1.0)
 	{
 		var ctx = surface.getContext("2d");
 		var maskCtx = mask.getContext("2d");
@@ -418,7 +418,10 @@ class Lib
 		maskCtx.globalCompositeOperation = "source-over";
 		maskCtx.globalAlpha = alpha;
 
-		maskCtx.drawImage(surface, matrix.tx, matrix.ty);
+		if (matrix != null)
+			maskCtx.drawImage(surface, matrix.tx, matrix.ty);
+		else
+			maskCtx.drawImage(surface, 0, 0);
 	}
 
 	public static function jeashDisableRightClick()
@@ -486,14 +489,6 @@ class Lib
 	}
 
 	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { surface.id = name; }
-
-	public inline static function jeashCopyStyle(surface:HTMLElement, target:HTMLElement) 
-	{
-		for (i in 0...surface.style.length) {
-			var prop = surface.style.item(i);
-			target.style.setProperty(prop, surface.style.getPropertyValue(prop), "");
-		}
-	}
 
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{

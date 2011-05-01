@@ -27,8 +27,12 @@
 package jeash.display;
 
 import flash.display.DisplayObject;
+import flash.display.BitmapData;
 import flash.display.PixelSnapping;
 import flash.geom.Rectangle;
+import flash.geom.Matrix;
+
+import Html5Dom;
 
 class Bitmap extends jeash.display.DisplayObject {
 	public var bitmapData(default,jeashSetBitmapData) : BitmapData;
@@ -36,6 +40,7 @@ class Bitmap extends jeash.display.DisplayObject {
 	public var smoothing : Bool;
 
 	var jeashGraphics:Graphics;
+	var jeashCurrentTimestamp:Timestamp;
 
 	public function new(?inBitmapData : BitmapData, ?inPixelSnapping : PixelSnapping, ?inSmoothing : Bool) : Void {
 		super();
@@ -43,10 +48,9 @@ class Bitmap extends jeash.display.DisplayObject {
 		smoothing = inSmoothing;
 		name = "Bitmap " + DisplayObject.mNameID++;
 
+		jeashGraphics = new Graphics();
 		if (inBitmapData != null)
 			jeashSetBitmapData(inBitmapData);
-		else
-			jeashGraphics = new Graphics();
 
 		Lib.jeashSetSurfaceId(jeashGraphics.mSurface, name);
 	}
@@ -54,14 +58,7 @@ class Bitmap extends jeash.display.DisplayObject {
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData
 	{
 		jeashInvalidateBounds();
-		if (jeashIsOnStage()) {
-			Lib.jeashAppendSurface(inBitmapData.graphics.mSurface, 0, 0);
-			Lib.jeashSwapSurface(jeashGraphics.mSurface, inBitmapData.graphics.mSurface);
-			Lib.jeashCopyStyle(jeashGraphics.mSurface, inBitmapData.graphics.mSurface);
-			Lib.jeashRemoveSurface(jeashGraphics.mSurface);
-		}
 		bitmapData = inBitmapData;
-		jeashGraphics = inBitmapData.graphics;
 		return inBitmapData;
 	}
 
@@ -86,5 +83,25 @@ class Bitmap extends jeash.display.DisplayObject {
 		}
 	}
 
+	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
+	{
+		if (bitmapData == null) return;
+		if(mMtxDirty || mMtxChainDirty){
+			jeashValidateMatrix();
+		}
+
+		var m = mFullMatrix.clone();
+		var timestamp = bitmapData.jeashGetDirtyTimestamp();
+		if (timestamp != null)
+			if (jeashCurrentTimestamp == null || timestamp.seed != jeashCurrentTimestamp.seed || timestamp.time != jeashCurrentTimestamp.time) {
+				jeashGraphics.clear();
+				Lib.jeashDrawToSurface(bitmapData.handle(), jeashGraphics.mSurface);
+				jeashCurrentTimestamp = timestamp;
+			}
+
+		Lib.jeashSetSurfaceTransform(jeashGraphics.mSurface, m);
+		Lib.jeashSetSurfaceOpacity(jeashGraphics.mSurface, (parent != null ? parent.alpha : 1) * alpha);
+
+	}
 }
 

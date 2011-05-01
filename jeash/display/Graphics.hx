@@ -352,8 +352,6 @@ class Graphics
 			// -- 
 
 
-		} else {
-			//Lib.jeashAppendSurface(mSurface, 0, 0);
 		}
 	}
 
