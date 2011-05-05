@@ -628,8 +628,8 @@ class TextField extends InteractiveObject
 		var insert_x:Null<Int> = null;
 
 		mMaxWidth = 0;
-		mLimitRenderX = (autoSize == flash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
-		var wrap = (wordWrap && !mInput) ? mLimitRenderX : 999999;
+		//mLimitRenderX = (autoSize == flash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
+		var wrap = mLimitRenderX = (wordWrap && !mInput) ? Std.int(width) : 999999;
 		var char_idx = 0;
 		var h:Int = 0;
 
