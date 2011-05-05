@@ -31,6 +31,87 @@ typedef HTMLAudioElement = Dynamic;
 typedef HTMLVideoElement = Dynamic;
 
 /*
+* <----------------- WebWorkers ------------------>
+*/
+
+extern interface WorkerGlobalScope implements WorkerUtils, implements EventTarget {
+	public var self(default,null):WorkerGlobalScope;
+	public var location(default,null):WorkerLocation;
+	public var onerror:Event->Void;
+
+	public function close():Void;
+}
+
+extern interface AbstractWorker implements EventTarget {
+	public var onError:Event->Void;
+}
+
+extern class Worker implements AbstractWorker {
+	public function new(scriptUrl:DOMString):Void;
+	
+	public function terminate():Void;
+	public function postMessage(message:Dynamic, ?ports:MessagePortArray):Void;
+	public var onMessage:Event->Void;
+
+	// -- inherited
+	public var onError:Event->Void;
+	public function addEventListener(type: DOMString, listener: EventListener<Dynamic>, useCapture: Bool): Void;
+
+	public function removeEventListener(type: DOMString, listener: EventListener<Dynamic>, useCapture: Bool): Void;
+
+	public function dispatchEvent(evt: Event): Bool;
+
+	public function addEventListenerNS(namespaceURI: DOMString, type: DOMString, listener: EventListener<Dynamic>, useCapture: Bool): Void;
+
+	public function removeEventListenerNS(namespaceURI: DOMString, type: DOMString, listener: EventListener<Dynamic>, useCapture: Bool): Void;
+}
+
+extern interface WorkerUtils implements WindowTimers {
+	public function importScripts(url: Array<String>):Void;
+	public var navigator(default,null):WorkerNavigator;
+}
+
+extern interface WorkerNavigator implements NavigatorID, implements NavigatorOnLine { } 
+
+extern interface WorkerLocation {
+	public var href(default,null):DOMString;
+	public var protocol(default,null):DOMString;
+	public var host(default,null):DOMString;
+	public var hostname(default,null):DOMString;
+	public var port(default,null):DOMString;
+	public var pathname(default,null):DOMString;
+	public var search(default,null):DOMString;
+	public var hash(default,null):DOMString;
+}
+
+extern interface WindowTimers {
+	public function setTimeout(handler:Dynamic, ?timeout:Dynamic, args:Array<Dynamic>):Int;
+	public function clearTimeout(handle:Int):Void;
+	public function setInterval(handler:Dynamic, ?timeout:Dynamic, args:Array<Dynamic>):Int;
+	public function clearInterval(handle:Int):Void;
+}
+
+extern interface NavigatorID {
+	public var appName(default,null):DOMString;
+	public var appVersion(default,null):DOMString;
+	public var platform(default,null):DOMString;
+	public var userAgent(default,null):DOMString;
+}
+
+extern interface NavigatorContentUtils {
+	public function registerProtocolHandler(scheme:DOMString, url:DOMString, title:DOMString):Void;
+	public function registerContentHandler(mimeType:DOMString, url:DOMString, title:DOMString):Void;
+}
+
+extern interface NavigatorStorageUtils {
+	public function yieldStorageUpdates():Void;
+}
+
+extern interface NavigatorOnLine {
+	public var onLine(default,null):Bool;
+}
+
+/*
 * <----------------- DOM-Level-3-XPath ------------------>
 */
 
