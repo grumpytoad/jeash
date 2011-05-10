@@ -53,7 +53,6 @@ class Lib
 {
 	var mKilled:Bool;
 	static var mMe:Lib;
-	static var mPriority;
 	static inline var DEFAULT_PRIORITY = ["2d", "swf"];
 	public static var context(default,null):String;
 	public static var current(jeashGetCurrent,null):MovieClip;
@@ -63,7 +62,6 @@ class Lib
 	static var mShowCursor = true;
 	static var mShowFPS = false;
 
-	static public var mOpenGL:Bool = false;
 	var mRequestedWidth:Int;
 	var mRequestedHeight:Int;
 	var mResizePending:Bool;
@@ -143,80 +141,15 @@ class Lib
 			{
 				if ( document == null ) throw "Document not loaded yet, cannot create root canvas!";
 				Lib.canvas = document.createElement("canvas");
-				ParsePriority();
-
-				var eReg = ~/^swf.*\(([^)]*)\)$/;
-				for (ctx in mPriority)
-					try
-					{
-
-						if (StringTools.startsWith(ctx, "swf") && eReg.match( ctx ))
-						{
-							Lib.context = ctx;
-							if (jeashLoadSwf(eReg.matched(1))) break;
-
-						} else if (Lib.canvas.getContext(ctx)!=null) {
-							Lib.context = ctx;
-							if ( ctx.indexOf("webgl") >= 0 )
-								mOpenGL = true;
-							break;
-						}
-					} catch (e:Dynamic) { }
-
-				// fallback to 2d context (even if it doesn't work)
-				if ( Lib.context == null ) Lib.context = "2d";
+				Lib.context = "2d";
 
 				jeashBootstrap();
 
-				if ( !StringTools.startsWith(Lib.context, "swf") )
-				{
-					if ( mOpenGL ) jeashInitGL();
-					starttime = haxe.Timer.stamp();
-				} else {
-					//throw "Swf deployed, forcing execution failure.";
-				}
+				starttime = haxe.Timer.stamp();
 
 			}
 			return Lib.canvas;
 		}
-	}
-
-	static function jeashLoadSwf(url:String)
-	{
-		var navigator : Navigator = cast js.Lib.window.navigator;
-		if (navigator.plugins != null && navigator.plugins.length > 0)
-			if ( untyped !navigator.plugins['Shockwave Flash'] ) return false;
-
-		var object : HTMLObjectElement = cast js.Lib.document.createElement("object");
-		object.type = "application/x-shockwave-flash";
-		if (js.Lib.isIE)
-		{
-			var param : HTMLParamElement = cast js.Lib.document.createElement("param");
-			param.name = "movie";
-			param.value = url;
-			object.appendChild(param);
-		} else {
-			object.data = url;
-		}
-
-		Lib.canvas = untyped object;
-
-		return true;
-		
-	}
-
-	static function jeashInitGL()
-	{
-		var gl : WebGLRenderingContext = Lib.canvas.getContext(Lib.context);
-		Lib.glContext = gl;
-
-		gl.viewport(0, 0, Lib.canvas.width, Lib.canvas.height);
-
-		// TODO: implement background color
-		gl.clearColor(1.0, 1.0, 1.0, 1.0);
-		gl.clearDepth(1.0);
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LEQUAL);
 	}
 
 	static public function jeashGetCurrent() : MovieClip
@@ -257,13 +190,13 @@ class Lib
 		return mStage; 
 	}
 
-	public static function jeashAppendSurface(surface:HTMLElement, ?before:HTMLElement, x:Int, y:Int)
+	public static function jeashAppendSurface(surface:HTMLElement, ?before:HTMLElement)
 	{
 		if (mMe.__scr != null)
 		{
-			surface.style.position = "absolute";
-			surface.style.left = x + "px";
-			surface.style.top = y + "px";
+			surface.style.setProperty("position", "absolute", "");
+			surface.style.setProperty("left", "0px", "");
+			surface.style.setProperty("top", "0px", "");
 
 			// disable blue selection rectangle 
 			untyped {
@@ -410,6 +343,14 @@ class Lib
 		return false;
 	}
 
+	public static function jeashCopyStyle(src:HTMLElement, tgt:HTMLElement) 
+	{
+		tgt.id = src.id;
+		for (prop in ["-moz-transform", "-moz-transform-origin", "-webkit-transform", "-webkit-transform-origin", "-o-transform", "-o-transform-origin", "opacity", "display"])
+			tgt.style.setProperty(prop, src.style.getPropertyValue(prop), "");
+		
+	}
+
 	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix = null, alpha:Float = 1.0)
 	{
 		var ctx = surface.getContext("2d");
@@ -418,10 +359,11 @@ class Lib
 		maskCtx.globalCompositeOperation = "source-over";
 		maskCtx.globalAlpha = alpha;
 
-		if (matrix != null)
-			maskCtx.drawImage(surface, matrix.tx, matrix.ty);
-		else
-			maskCtx.drawImage(surface, 0, 0);
+		if (surface.width > 0 && surface.height > 0)
+			if (matrix != null)
+				maskCtx.drawImage(surface, matrix.tx, matrix.ty);
+			else
+				maskCtx.drawImage(surface, 0, 0);
 	}
 
 	public static function jeashDisableRightClick()
@@ -565,15 +507,6 @@ class Lib
 		} else {
 			throw "Cannot parse color '" + str + "'.";
 		}
-	}
-
-	static inline function ParsePriority()
-	{
-		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
-		if (tgt == null) throw "Fatal error: Jeash requires a <div id=\"haxe:jeash\" /> tag in the current document, please see the wiki for details.";
-		var attr : Attr = cast tgt.attributes.getNamedItem(VENDOR_HTML_TAG + 'priority');
-		if (attr != null) mPriority = attr.value.split(':');
-		if (mPriority == null) mPriority = DEFAULT_PRIORITY;
 	}
 
 	static function jeashGetWidth()

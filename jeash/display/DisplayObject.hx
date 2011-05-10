@@ -157,40 +157,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 		visible = true;
 
-		if (jeash.Lib.mOpenGL && !Std.is(this, Stage))
-		{
-
-			// Default to a simple two polygon square face - by
-			// updating these array buffers, it is possible to have
-			// a full GPU accelerated 3D environment.
-
-			var aBuffers = new Hash();
-			var vertices = [
-				1.0,  1.0,  0.0,
-				-1.0, 1.0,  0.0,
-				1.0, -1.0,  0.0,
-				-1.0, -1.0, 0.0
-					];
-
-			aBuffers.set( "aVertPos", {
-					data: vertices,
-					size: 3
-				    });
-
-			var texCoords = [
-				1.0, 0.0,
-				0.0, 0.0,
-				1.0, 1.0,
-				0.0, 1.0,
-				];
-			aBuffers.set( "aTexCoord", {
-					data: texCoords,
-					size: 2
-				    });
-
-			SetBuffers(aBuffers);
-
-		}
 	}
 
 	public function SetBuffers<T>( inputData:Hash<{ size:Int, data:Array<Float>}>, ?indices:Array<Int> )
@@ -276,7 +242,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
-			Lib.jeashRemoveSurface(gfx.mSurface);
+			Lib.jeashRemoveSurface(gfx.jeashSurface);
 	}
 	public function DoMouseEnter() {}
 	public function DoMouseLeave() {}
@@ -520,91 +486,33 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
 	{
 		
-		//TODO :: Reintegrate code for handling changes to bounds/matrices outside of getter/setter
-		//Perhaps, this could be better handle via a plugin, or proxy in tween engine, etc?
-		/*
-		var w = mBoundsRect.width;
-		if (untyped __js__("this.width"))
-			jeashScaleX = untyped __js__("this.width")/w;
-
-
-		var h = mBoundsRect.height;
-		if (untyped __js__("this.height"))
-			jeashScaleY = untyped __js__("this.height")/h;
-		 */
-		 
 		if(mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();
 		}
 			
-		//Do we actually need to know bounds at this point?
-		//if(mBoundsDirty)
-		//	BuildBounds();
-
 		var gfx = jeashGetGraphics();
 
 		if (gfx!=null)
 		{
-			//mFullMatrix = mMatrix.mult(parentMatrix);
 			var m = mFullMatrix.clone();
 			gfx.jeashRender(inMask, m);
 
-			if (!jeash.Lib.mOpenGL)
+			var extent = gfx.getStandardExtent();
+			// detect draw beyond boundary, do not adjust matrix
+			if (gfx.jeashShift)
 			{
-				var extent = gfx.getStandardExtent();//gfx.GetExtent(new Matrix());
-				// detect draw beyond boundary, do not adjust matrix
-				if (gfx.jeashShift)
-				{
-					m.tx = m.tx + extent.x*m.a + extent.y*m.c;
-					m.ty = m.ty + extent.x*m.b + extent.y*m.d;
-				}
-
-				if (inMask != null)
-				{
-					Lib.jeashDrawToSurface(gfx.mSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
-				} else {
-					Lib.jeashSetSurfaceTransform(gfx.mSurface, m);
-					Lib.jeashSetSurfaceOpacity(gfx.mSurface, (parent != null ? parent.alpha : 1) * alpha);
-				}
-
-			} else {
-				if (mBuffers.exists("aVertPos"))
-				{
-					var gl : WebGLRenderingContext = jeash.Lib.glContext;
-
-					gl.useProgram(gfx.mShaderGL);
-
-					for(key in mBuffers.keys())
-					{
-						var data = mBuffers.get(key);
-						if (data.buffer != null && data.location != null && data.size != null)
-						{
-							gl.bindBuffer(gl.ARRAY_BUFFER, data.buffer);
-							gl.vertexAttribPointer(data.location, data.size, gl.FLOAT, false, 0, 0);
-						}
-					}
-
-					if (gfx.mTextureGL != null && gl.getUniformLocation(gfx.mShaderGL, "uSurface") != null)
-					{
-						gl.activeTexture(gl.TEXTURE0);
-						gl.bindTexture(gl.TEXTURE_2D, gfx.mTextureGL);
-
-						gl.uniform1i(gl.getUniformLocation(gfx.mShaderGL, "uSurface"), 0);
-					}
-
-					if (mIndexBuffer != null)
-					{
-						gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-						if (MatrixUniforms())
-							gl.drawElements(gl.TRIANGLES, mIndicesCount, gl.UNSIGNED_SHORT, 0);
-					} else {
-						gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uProjMatrix" ), false, stage.mProjMatrix );
-						gl.uniformMatrix4fv( gl.getUniformLocation( gfx.mShaderGL, "uViewMatrix" ), false, GetFlatGLMatrix( mFullMatrix ) );
-						gl.drawArrays(gl.TRIANGLE_STRIP, 0, mIndicesCount);
-					}
-
-				}
+				m.tx = m.tx + extent.x*m.a + extent.y*m.c;
+				m.ty = m.ty + extent.x*m.b + extent.y*m.d;
 			}
+
+			if (inMask != null)
+			{
+				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
+			} else {
+				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
+				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+			}
+
 		}
 	}
 
@@ -794,7 +702,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
-			Lib.jeashAppendSurface(gfx.mSurface, 0, 0);
+			Lib.jeashAppendSurface(gfx.jeashSurface);
 	}
 
 	function jeashInsertBefore(obj:DisplayObject)
@@ -804,9 +712,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (gfx1 != null)
 		{
 			if (gfx2 != null )
-				Lib.jeashAppendSurface(gfx1.mSurface, gfx2.mSurface, 0, 0);
+				Lib.jeashAppendSurface(gfx1.jeashSurface, gfx2.jeashSurface);
 			 else 
-				Lib.jeashAppendSurface(gfx1.mSurface, 0, 0);
+				Lib.jeashAppendSurface(gfx1.jeashSurface);
 		}
 	}
 
@@ -814,7 +722,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
-			return Lib.jeashIsOnStage(gfx.mSurface);
+			return Lib.jeashIsOnStage(gfx.jeashSurface);
 		return false;
 	}
 
@@ -823,9 +731,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			if (visible)
-				Lib.jeashSetSurfaceVisible(gfx.mSurface, true);
+				Lib.jeashSetSurfaceVisible(gfx.jeashSurface, true);
 			else
-				Lib.jeashSetSurfaceVisible(gfx.mSurface, false);
+				Lib.jeashSetSurfaceVisible(gfx.jeashSurface, false);
 		this.visible = visible;
 		return visible;
 	}

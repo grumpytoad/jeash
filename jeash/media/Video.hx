@@ -109,7 +109,7 @@ class Video extends DisplayObject {
 	public function clear():Void
 	{
 		if (jeashGraphics != null)
-			jeash.Lib.jeashRemoveSurface(jeashGraphics.mSurface);
+			jeash.Lib.jeashRemoveSurface(jeashGraphics.jeashSurface);
 		jeashGraphics = new Graphics();
 		jeashGraphics.drawRect(0, 0, width, height);
 	}
@@ -124,7 +124,7 @@ class Video extends DisplayObject {
 
 		if (gfx!=null)
 		{
-			Lib.jeashSetSurfaceTransform(gfx.mSurface, mFullMatrix);
+			Lib.jeashSetSurfaceTransform(gfx.jeashSurface, mFullMatrix);
 		}
 	}
 	

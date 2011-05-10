@@ -423,7 +423,7 @@ class DisplayObjectContainer extends InteractiveObject
 		var gfx1 = jeashChildren[c1].jeashGetGraphics();
 		var gfx2 = jeashChildren[c2].jeashGetGraphics();
 		if (gfx1 != null && gfx2 != null)
-			Lib.jeashSwapSurface(gfx1.mSurface, gfx2.mSurface);
+			Lib.jeashSwapSurface(gfx1.jeashSurface, gfx2.jeashSurface);
 	}
 
 	public function swapChildren( child1 : DisplayObject, child2 : DisplayObject )

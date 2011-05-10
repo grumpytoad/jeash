@@ -401,20 +401,8 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function GetFocus() { return mFocusObject; }
 
-	public function jeashClear()
-	{
-		if ( Lib.mOpenGL )
-		{
-			var ctx = Lib.glContext;
-			ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
-		}
-
-	}
-
 	public function jeashRenderAll()
 	{
-		jeashClear();
-
 		jeashRender(jeashStageMatrix);
 	}
 
@@ -473,8 +461,6 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	function jeashStageRender (?_) 
 	{
-		this.jeashClear();
-
 		if (!jeashStageActive)
 		{
 			jeashOnResize(jeashWindowWidth, jeashWindowHeight);

@@ -68,7 +68,7 @@ class BitmapData implements IBitmapDrawable
 
 	var jeashImageData:ImageData;
 	var jeashLocked:Bool;
-	var jeashDirtyTimestamp:Timestamp;
+	var jeashLease:Timestamp;
 
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
@@ -118,7 +118,7 @@ class BitmapData implements IBitmapDrawable
 			clipRect:Rectangle = null,
 			smoothing:Bool = false ):Void
 	{
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 		source.drawToSurface(mTextureBuffer, matrix, colorTransform, blendMode, clipRect, smoothing);
 	}
 
@@ -141,7 +141,7 @@ class BitmapData implements IBitmapDrawable
 		if (sourceRect.x + sourceRect.width > sourceBitmapData.handle().width) sourceRect.width = sourceBitmapData.handle().width - sourceRect.x;
 		if (sourceRect.y + sourceRect.height > sourceBitmapData.handle().height) sourceRect.height = sourceBitmapData.handle().height - sourceRect.y;
 
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
@@ -184,7 +184,7 @@ class BitmapData implements IBitmapDrawable
 		if (rect == null) return;
 		if (rect.width <= 0 || rect.height <= 0) return;
 
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 
 		var r: Int = (color & 0xFF0000) >>> 16;
 		var g: Int = (color & 0x00FF00) >>> 8;
@@ -276,7 +276,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return;
 
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imageData = ctx.createImageData( 1, 1 );
@@ -291,7 +291,7 @@ class BitmapData implements IBitmapDrawable
 	{
 		if (x < 0 || y < 0 || x >= getWidth () || y >= getHeight ()) return;
 
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imageData = ctx.createImageData( 1, 1 );
@@ -344,8 +344,8 @@ class BitmapData implements IBitmapDrawable
 	function OnLoad( data:LoadData, e)
 	{
 		var canvas : HTMLCanvasElement = cast data.texture;
-		var width = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.image.width) : data.image.width;
-		var height = (jeash.Lib.mOpenGL)? Graphics.GetSizePow2(data.image.height) : data.image.height;
+		var width = data.image.width;
+		var height = data.image.height;
 		canvas.width = width;
 		canvas.height = height;
 
@@ -356,7 +356,7 @@ class BitmapData implements IBitmapDrawable
 		data.bitmapData.height = height;
 		data.bitmapData.rect = new Rectangle(0,0,width,height);
 
-		data.bitmapData.jeashBuildDirtyTimestamp();
+		data.bitmapData.jeashBuildLease();
 
 		if (data.inLoader != null)
 		{
@@ -416,7 +416,7 @@ class BitmapData implements IBitmapDrawable
 			ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 		}
 
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 
 		ctx.drawImage(handle(), 0, 0);
 		ctx.restore();
@@ -428,7 +428,7 @@ class BitmapData implements IBitmapDrawable
 		if (rect == null) return;
 		if (rect.width <= 0 || rect.height <= 0) return;
 
-		jeashBuildDirtyTimestamp();
+		jeashBuildLease();
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		if (!jeashLocked)
@@ -479,12 +479,12 @@ class BitmapData implements IBitmapDrawable
 		throw "Not implemented yet, patches welcome. BitmapData::scroll.";
 	}
 
-	public inline function jeashGetDirtyTimestamp() {
-		return jeashDirtyTimestamp;
+	public inline function jeashGetLease() {
+		return jeashLease;
 	}
 
-	inline function jeashBuildDirtyTimestamp() {
-		jeashDirtyTimestamp = { seed:Math.random(), time:Date.now().getTime() };
+	inline function jeashBuildLease() {
+		jeashLease = { seed:Math.random(), time:Date.now().getTime() };
 	}
 }
 

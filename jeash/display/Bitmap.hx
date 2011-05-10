@@ -52,7 +52,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		if (inBitmapData != null)
 			jeashSetBitmapData(inBitmapData);
 
-		Lib.jeashSetSurfaceId(jeashGraphics.mSurface, name);
+		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData
@@ -91,16 +91,19 @@ class Bitmap extends jeash.display.DisplayObject {
 		}
 
 		var m = mFullMatrix.clone();
-		var timestamp = bitmapData.jeashGetDirtyTimestamp();
+		var timestamp = bitmapData.jeashGetLease();
 		if (timestamp != null)
 			if (jeashCurrentTimestamp == null || timestamp.seed != jeashCurrentTimestamp.seed || timestamp.time != jeashCurrentTimestamp.time) {
+				var srcCanvas = bitmapData.handle();
+				jeashGraphics.jeashSurface.width = srcCanvas.width;
+				jeashGraphics.jeashSurface.height = srcCanvas.height;
 				jeashGraphics.clear();
-				Lib.jeashDrawToSurface(bitmapData.handle(), jeashGraphics.mSurface);
+				Lib.jeashDrawToSurface(srcCanvas, jeashGraphics.jeashSurface);
 				jeashCurrentTimestamp = timestamp;
 			}
 
-		Lib.jeashSetSurfaceTransform(jeashGraphics.mSurface, m);
-		Lib.jeashSetSurfaceOpacity(jeashGraphics.mSurface, (parent != null ? parent.alpha : 1) * alpha);
+		Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
+		Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 
 	}
 }
