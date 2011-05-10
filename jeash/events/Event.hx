@@ -35,9 +35,36 @@ class Event
 	public var currentTarget : Dynamic;
 	public var type(default,null) : String;
 
-	var mIsCancelled:Bool;
-	var mIsCancelledNow:Bool;
-	var mIsPreventDefault:Bool;
+	var jeashIsCancelled:Bool;
+	var jeashIsCancelledNow:Bool;
+
+	public function jeashSetPhase(phase:Int) { eventPhase = phase; }
+
+	public function jeashGetIsCancelled() { return jeashIsCancelled; }
+	public function jeashGetIsCancelledNow() { return jeashIsCancelledNow; }
+
+	public function new(inType : String, inBubbles : Bool=false, inCancelable : Bool=false)
+	{
+		type = inType;
+		bubbles = inBubbles;
+		cancelable = inCancelable;
+		jeashIsCancelled = false;
+		jeashIsCancelledNow = false;
+		target = null;
+		currentTarget = null;
+		eventPhase = EventPhase.AT_TARGET;
+	}
+
+	public function clone() : Event
+	{
+		return new Event(type,bubbles,cancelable);
+	}
+
+	public function stopImmediatePropagation() { jeashIsCancelledNow = jeashIsCancelled = true; }
+
+	public function stopPropagation() { jeashIsCancelled = true; }
+
+	public function toString():String { return "Event"; }
 
 	public static var ACTIVATE = "activate";
 	public static var ADDED = "added";
@@ -65,56 +92,6 @@ class Event
 	public static var TAB_INDEX_CHANGE = "tabIndexChange";
 	public static var UNLOAD = "unload";
 
-	public function new(inType : String, inBubbles : Bool=false, inCancelable : Bool=false)
-	{
-		type = inType;
-		bubbles = inBubbles;
-		cancelable = inCancelable;
-		mIsCancelled = false;
-		mIsCancelledNow = false;
-		mIsPreventDefault = false;
-		target = null;
-		currentTarget = null;
-		eventPhase = EventPhase.AT_TARGET;
-	}
-
-	public function clone() : Event
-	{
-		return new Event(type,bubbles,cancelable);
-	}
-
-	public function preventDefault()
-	{
-		if (cancelable)
-			mIsPreventDefault = true;
-	}
-
-	public function stopImmediatePropagation()
-	{
-		if (cancelable)
-			mIsCancelledNow = mIsCancelled = true;
-	}
-
-	public function stopPropagation()
-	{
-		if (cancelable)
-			mIsCancelled = true;
-	}
-
-	public function toString():String
-	{
-		return "Event";
-	}
-
-	public function jeashGetIsCancelled() { return mIsCancelled; }
-
-	public function jeashGetIsCancelledNow() { return mIsCancelledNow; }
-
-	// For internal use only...
-	public function jeashSetPhase(phase:Int)
-	{
-		eventPhase = phase;
-	}
 
 }
 
