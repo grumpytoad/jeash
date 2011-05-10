@@ -26,4 +26,9 @@
 
 package jeash.display;
 
-typedef TriangleCulling = nme.display.TriangleCulling;
+enum TriangleCulling
+{
+	NEGATIVE;
+	NONE;
+	POSITIVE;
+}
