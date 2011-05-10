@@ -550,6 +550,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function jeashGetObjectUnderPoint(point:Point):DisplayObject
 	{
+		if (!visible) return null;
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 		{

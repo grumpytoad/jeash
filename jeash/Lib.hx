@@ -205,11 +205,10 @@ class Lib
 				} catch (e:Dynamic) {}
 			}
 
-			for ( i in 0...mMe.__scr.childNodes.length )
-				if (before != null)
-					mMe.__scr.insertBefore(surface, before);
-				else
-					mMe.__scr.appendChild(surface);
+			if (before != null)
+				mMe.__scr.insertBefore(surface, before);
+			else
+				mMe.__scr.appendChild(surface);
 		}
 	}
 

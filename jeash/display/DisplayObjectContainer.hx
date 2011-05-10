@@ -454,6 +454,7 @@ class DisplayObjectContainer extends InteractiveObject
 
 	override public function jeashGetObjectUnderPoint(point:Point)
 	{
+		if (!visible) return null;
 		var l = jeashChildren.length-1;
 		for(i in 0...jeashChildren.length)
 		{
