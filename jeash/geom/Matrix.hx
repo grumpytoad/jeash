@@ -153,7 +153,6 @@ class Matrix
 	{
 		var cos = Math.cos(inTheta);
 		var sin = Math.sin(inTheta);
-		flash.Lib.trace(cos);
 
 		var a1 = a*cos - b*sin;
 		b = a*sin + b*cos;
