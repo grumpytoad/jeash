@@ -2732,7 +2732,7 @@ interface MessagePort {
   
   public function close(): Void;
 
-  public var onMessage: Dynamic -> Dynamic;
+  public var onmessage: Dynamic -> Dynamic;
 }
 
 
