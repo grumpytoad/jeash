@@ -106,5 +106,11 @@ class Bitmap extends jeash.display.DisplayObject {
 		Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 
 	}
+
+	override function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
+	{
+		jeashRender(parentMatrix, canvas);
+		Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, canvas, parentMatrix, (parent != null ? parent.alpha : 1) * alpha);
+	}
 }
 
