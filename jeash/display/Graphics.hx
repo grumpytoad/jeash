@@ -141,40 +141,6 @@ typedef Texture =
 
 typedef LineJobs = Array<LineJob>;
 
-class GLTextureShader 
-{
-
-	public static inline var mFragmentProgram = '
-#ifdef GL_ES
-		precision highp float;
-#endif
-
-		varying vec2 vTexCoord;
-
-		uniform sampler2D uSurface;
-
-		void main(void) {
-			gl_FragColor = texture2D(uSurface, vec2(vTexCoord.s, vTexCoord.t));
-		}
-	';
-
-	public static inline var mVertexProgram = '
-		attribute vec3 aVertPos;
-		attribute vec2 aTexCoord;
-
-		uniform mat4 uViewMatrix;
-		uniform mat4 uProjMatrix;
-
-		varying vec2 vTexCoord;
-
-		void main(void) {
-			gl_Position = uProjMatrix * uViewMatrix  * vec4(aVertPos, 1.0);
-			vTexCoord = aTexCoord;
-		}
-	';
-
-}
-
 enum PointInPathMode
 {
 	USER_SPACE;

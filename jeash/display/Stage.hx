@@ -511,5 +511,6 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	inline function jeashGetFullScreenWidth() { return Lib.jeashFullScreenWidth(); }
 	inline function jeashGetFullScreenHeight() { return Lib.jeashFullScreenHeight(); }
+
 }
 

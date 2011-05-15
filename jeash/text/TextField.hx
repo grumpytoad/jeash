@@ -183,6 +183,7 @@ class TextField extends InteractiveObject
 		mLineInfo = [];
 
 
+		name = "TextField " + flash.display.DisplayObject.mNameID++;
 
 		borderColor = 0x000000;
 		border = false;

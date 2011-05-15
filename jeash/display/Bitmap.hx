@@ -49,6 +49,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		name = "Bitmap " + DisplayObject.mNameID++;
 
 		jeashGraphics = new Graphics();
+
 		if (inBitmapData != null)
 			jeashSetBitmapData(inBitmapData);
 
@@ -110,7 +111,8 @@ class Bitmap extends jeash.display.DisplayObject {
 	override function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
 	{
 		jeashRender(parentMatrix, canvas);
+		// needed, because a BitmapData::draw() can reference a (nested) Bitmap
 		Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, canvas, parentMatrix, (parent != null ? parent.alpha : 1) * alpha);
 	}
-}
 
+}

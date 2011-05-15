@@ -26,8 +26,8 @@
 
 package jeash.text;
 
-enum AntiAliasType {
-	ADVANCED;
-	NORMAL;
+class AntiAliasType {
+	public static var ADVANCED = "advanced";
+	public static var NORMAL = "normal";
 }
 

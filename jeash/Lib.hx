@@ -141,6 +141,7 @@ class Lib
 			{
 				if ( document == null ) throw "Document not loaded yet, cannot create root canvas!";
 				Lib.canvas = document.createElement("canvas");
+				Lib.canvas.id = "Root Surface";
 				Lib.context = "2d";
 
 				jeashBootstrap();
@@ -406,7 +407,6 @@ class Lib
 	public inline static function jeashFullScreenWidth() 
 	{ 
 		var window : Window = cast js.Lib.window;
-		flash.Lib.trace(window.innerWidth);
 		return window.innerWidth; 
 	}
 	public inline static function jeashFullScreenHeight() { 
@@ -434,6 +434,7 @@ class Lib
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );
+
 			Lib.canvas.width = width;
 			Lib.canvas.height = height;
 
@@ -475,6 +476,7 @@ class Lib
 				// This ensures that a canvas hitTest hits the root movieclip
 				Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);
 				Lib.current.graphics.drawRect(0, 0, width, height);
+				Lib.current.graphics.jeashSurface.id = "Root MovieClip";
 
 				jeashGetStage().jeashUpdateNextWake();
 			}

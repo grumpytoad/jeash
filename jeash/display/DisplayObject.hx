@@ -92,23 +92,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public var transform(GetTransform,SetTransform):Transform;
 
-	// Variables for manipulating OpenGL co-ordinate system
-	public var mVertices:Array<Float>;
-	public var mNormals:Array<Float>;
-	public var mTextureCoords:Array<Float>;
-	public var mIndices:Array<Int>;
-	
-	public var mVertexItemSize:Int;
-	public var mNormItemSize:Int;
-	public var mTexCoordItemSize:Int;
-
-	public var mVertexBuffer(default,null):WebGLBuffer;
-	public var mNormBuffer(default,null):WebGLBuffer;
-	public var mTextureCoordBuffer(default,null):WebGLBuffer;
-	public var mIndexBuffer(default,null):WebGLBuffer;
-	public var mIndicesCount(default,null):Int;
-	public var mBuffers : Hash<BufferData>;
-
 	var mBoundsDirty:Bool;
 	var mMtxChainDirty:Bool;
 	var mMtxDirty:Bool;
@@ -153,63 +136,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mGraphicsBounds = null;
 		mMaskHandle = null;
 		name = "DisplayObject " + mNameID++;
-		mBuffers = new Hash();
 
 		visible = true;
-
-	}
-
-	public function SetBuffers<T>( inputData:Hash<{ size:Int, data:Array<Float>}>, ?indices:Array<Int> )
-	{
-		var gl : WebGLRenderingContext = jeash.Lib.glContext;
-		var gfx = jeashGetGraphics();
-		if (gfx == null) return;
-
-		gl.useProgram(gfx.mShaderGL);
-
-		for (key in inputData.keys())
-		{
-			var bufferArray = inputData.get(key);
-			if (bufferArray.data != null && bufferArray.size != null)
-			{
-				var data = mBuffers.get(key);
-				if (data != null) 
-				{ 
-					if (data.buffer != null)
-						gl.deleteBuffer(data.buffer);
-					mBuffers.remove(key);
-				}
-				var buffer = gl.createBuffer();
-
-				gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bufferArray.data), gl.STATIC_DRAW);
-
-				var location = gl.getAttribLocation( gfx.mShaderGL, key );
-				if ( location < 0 ) 
-					trace("Invalid attribute for shader: " + key);
-				var bufferData : BufferData = { buffer:buffer, location:location, size:bufferArray.size };
-				mBuffers.set(key, bufferData );
-
-			}
-		}
-
-
-		if (indices != null)
-		{
-			if (mIndexBuffer != null) gl.deleteBuffer(mIndexBuffer);
-			mIndexBuffer = gl.createBuffer();
-
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mIndexBuffer);
-			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-
-			mIndicesCount = indices.length;
-		} else if (inputData.exists("aVertPos")) {
-			// still a bit ugly...
-			var vertData = inputData.get("aVertPos");
-
-			mIndicesCount = Std.int(vertData.data.length/vertData.size);
-		}
-
 	}
 
 	override public function toString() { return name; }
