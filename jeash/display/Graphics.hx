@@ -357,7 +357,7 @@ class Graphics
 			jeashClearCanvas();*/
 
 		var extent = getStandardExtent();
-		if (standardExtent.width - standardExtent.x != jeashSurface.width && standardExtent.height - standardExtent.y != jeashSurface.height) jeashAdjustSurface();
+		if (standardExtent.width - standardExtent.x > jeashSurface.width && standardExtent.height - standardExtent.y > jeashSurface.height) jeashAdjustSurface();
 
 		var ctx = getContext();
 		if (ctx==null) return false;
@@ -454,8 +454,11 @@ class Graphics
 			}
 			ctx.fill();
 
+			ctx.save();
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
+					if (jeashShift) ctx.translate(-extent.x, -extent.y);
+
 					// Hack to workaround premature width calculations during async image load
 					if (!mNoClip)
 						ctx.clip();
@@ -471,6 +474,7 @@ class Graphics
 					ctx.drawImage( img, 0, 0 );
 
 			}
+			ctx.restore();
 		}
 		
 		ctx.restore();
