@@ -56,6 +56,8 @@ import flash.display.GradientType;
 import flash.display.SpreadMethod;
 import flash.display.InterpolationMethod;
 import flash.display.BitmapData;
+import flash.display.IGraphicsData;
+import flash.display.IGraphicsFill;
 
 typedef DrawList = Array<Drawable>;
 
@@ -247,12 +249,6 @@ class Graphics
 	public var mMatrix(default,null):Matrix;
 	//public var mSurfaceAlpha(null,default):Float;
 
-	// GL shader
-	public var mShaderGL:WebGLProgram;
-	public var mTextureGL:WebGLTexture;
-	public var mTextureUniformGL:WebGLUniformLocation;
-
-	private static var gl:WebGLRenderingContext;
 	public var jeashShift(default,null):Bool;
 	public var owner:DisplayObject;
 	private var mBoundsDirty:Bool;
@@ -261,6 +257,10 @@ class Graphics
 	private var originY:Float;
 	private var nextDrawIndex:Int;
 	
+	// After this ("warm up") period, the canvas sheet will only expand,
+	// and will not contract if the drawing list changes. 
+	private var jeashRenderFrame:Int;
+	private static inline var JEASH_SIZING_WARM_UP = 10;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -357,7 +357,10 @@ class Graphics
 			jeashClearCanvas();*/
 
 		var extent = getStandardExtent();
-		if (standardExtent.width - standardExtent.x > jeashSurface.width && standardExtent.height - standardExtent.y > jeashSurface.height) jeashAdjustSurface();
+		if (jeashRenderFrame++ < JEASH_SIZING_WARM_UP)
+			if (standardExtent.width - standardExtent.x != jeashSurface.width && standardExtent.height - standardExtent.y != jeashSurface.height) jeashAdjustSurface();
+		else
+			if (standardExtent.width - standardExtent.x < jeashSurface.width && standardExtent.height - standardExtent.y < jeashSurface.height) jeashAdjustSurface();
 
 		var ctx = getContext();
 		if (ctx==null) return false;
@@ -1029,6 +1032,58 @@ class Graphics
 		jeashChanged = true;
 		standardExtent=null;
 		markBoundsDirty();
+	}
+
+	public function drawGraphicsData(points:Vector<IGraphicsData>) 
+	{
+		for (data in points) {
+			if (data == null) {
+				mFilling=true;
+			} else {
+				switch (data.jeashGraphicsDataType) {
+					case STROKE:
+						var stroke : GraphicsStroke = cast data;
+						if (stroke.fill == null) {
+							lineStyle(stroke.thickness, 0x000000, 1., stroke.pixelHinting, stroke.scaleMode, stroke.caps, stroke.joints, stroke.miterLimit);
+						} else {
+							switch(stroke.fill.jeashGraphicsFillType) {
+								case SOLID_FILL:
+						
+									var fill : GraphicsSolidFill = cast stroke.fill;
+									lineStyle(stroke.thickness, fill.color, fill.alpha, stroke.pixelHinting, stroke.scaleMode, stroke.caps, stroke.joints, stroke.miterLimit);
+								case GRADIENT_FILL:
+
+									var fill : GraphicsGradientFill = cast stroke.fill;
+									lineGradientStyle(fill.type, fill.colors, fill.alphas, fill.ratios, fill.matrix, fill.spreadMethod, fill.interpolationMethod, fill.focalPointRatio);
+							}
+						}
+					case PATH:
+						var path : GraphicsPath = cast data;
+						var j = 0;
+						for (i in 0...path.commands.length) {
+							var command = path.commands[i];
+							switch (command) {
+								case GraphicsPathCommand.MOVE_TO: 
+									moveTo(path.data[j], path.data[j+1]);
+									j = j + 2;
+								case GraphicsPathCommand.LINE_TO:
+									lineTo(path.data[j], path.data[j+1]);
+									j = j + 2;
+								case GraphicsPathCommand.CURVE_TO:
+									curveTo(path.data[j], path.data[j+1], path.data[j+2], path.data[j+3]);
+									j = j + 4;
+
+							}
+						}
+					case SOLID:
+						var fill : GraphicsSolidFill = cast data;
+						beginFill(fill.color, fill.alpha);
+					case GRADIENT:
+						var fill : GraphicsGradientFill = cast data;
+						beginGradientFill(fill.type, fill.colors, fill.alphas, fill.ratios, fill.matrix, fill.spreadMethod, fill.interpolationMethod, fill.focalPointRatio);
+				}
+			}
+		}
 	}
 
 	public static function jeashDetectIsPointInPathMode()

@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-enum CapsStyle
+@:fakeEnum(String) enum CapsStyle
 {
    NONE;
    ROUND;

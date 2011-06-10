@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-enum LineScaleMode
+@:fakeEnum(String) enum LineScaleMode
 {
    HORIZONTAL;
    NONE;
