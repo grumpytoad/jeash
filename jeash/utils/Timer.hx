@@ -69,8 +69,10 @@ class Timer extends EventDispatcher {
 	}
 
 	public function stop() : Void {
-		proxy.stop();
-		proxy = null;
+		if (proxy != null) {
+			proxy.stop();
+			proxy = null;
+		}
 		running = false;
 	}
 

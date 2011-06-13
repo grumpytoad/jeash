@@ -302,7 +302,7 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 
 	// @r498
-	public function getChildAt( index : Int )
+	public function getChildAt( index : Int ):DisplayObject
 	{
 		if (index>=0 && index<jeashChildren.length)
 			return jeashChildren[index];
@@ -344,9 +344,10 @@ class DisplayObjectContainer extends InteractiveObject
 		throw "removeChild : none found?";
 	}
 
-	public function removeChildAt(inI:Int)
+	public function removeChildAt(inI:Int):DisplayObject
 	{
 		jeashChildren[inI].jeashSetParent(null);
+		return jeashChildren[inI];
 	}
 
 	public function __removeChild( child : DisplayObject )
