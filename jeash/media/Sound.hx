@@ -46,12 +46,20 @@ class Sound extends flash.events.EventDispatcher {
 	public var length(default,null) : Float;
 	public var url(default,null) : String;
 
+	static var s_channels : IntHash<SoundChannel>;
+	static var s_channelsToStart : List<SoundChannel>;
 
-	private static var s_channels : IntHash<SoundChannel>;
-	private static var s_channelsToStart : List<SoundChannel>;
+	var m_sound : HTMLAudioElement;
+	var m_loaded : Bool;
 
-	private var m_sound : HTMLAudioElement;
-	private var m_loaded : Bool;
+	static inline var MEDIA_TYPE_MP3 = "audio/mpeg";
+	static inline var MEDIA_TYPE_OGG = "audio/ogg; codecs=\"vorbis\"";
+	static inline var MEDIA_TYPE_WAV = "audio/wav; codecs=\"1\"";
+	static inline var MEDIA_TYPE_AAC = "audio/mp4; codecs=\"mp4a.40.2\"";
+	static inline var EXTENSION_MP3 = "mp3";
+	static inline var EXTENSION_OGG = "ogg";
+	static inline var EXTENSION_WAV = "wav";
+	static inline var EXTENSION_AAC = "aac";
 
 	public function new(?stream : URLRequest, ?context : SoundLoaderContext) : Void {
 		super( this );
@@ -76,6 +84,26 @@ class Sound extends flash.events.EventDispatcher {
 	{
 		if(v >= 0)
 			CleanupSoundChannel(v);
+	}
+
+	public static function jeashCanPlayType(extension:String) {
+
+			var audio : HTMLAudioElement = js.Lib.document.createElement("audio");
+			var playable = function (ok:String)
+					if (ok != "" && ok != "no") return true; else return false;
+
+			switch (extension) {
+				case EXTENSION_MP3:
+					return playable(audio.canPlayType(MEDIA_TYPE_MP3));
+				case EXTENSION_OGG:
+					return playable(audio.canPlayType(MEDIA_TYPE_OGG));
+				case EXTENSION_WAV:
+					return playable(audio.canPlayType(MEDIA_TYPE_WAV));
+				case EXTENSION_AAC:
+					return playable(audio.canPlayType(MEDIA_TYPE_AAC));
+				default:
+					return false;
+			}
 	}
 
 	/////////////////// Flash API /////////////////////////////
@@ -111,21 +139,13 @@ class Sound extends flash.events.EventDispatcher {
 		m_sound.addEventListener("ended", cast __onSoundChannelFinished, false);
 		m_sound.addEventListener("error", cast __onSoundLoadError, false);
 		m_sound.addEventListener("abort", cast __onSoundLoadError, false);
-		//m_sound.src = stream.url;
+		
+		var url = stream.url.split("?");
+		var extension = url[0].substr(url[0].lastIndexOf(".")+1);
+		if (!jeashCanPlayType(extension.toLowerCase()))
+			flash.Lib.trace("Warning: '" + stream.url + "' may not play on this browser.");
 
-		if (stream.url.lastIndexOf(".mp3")==stream.url.length-4){
-			if(m_sound.canPlayType('audio/mpeg')==false){
-				//since MP3 cannot be played, attempt .ogg
-				m_sound.setAttribute('src',stream.url.substr(stream.url.length-4)+'.ogg');
-			}else{
-				m_sound.setAttribute('src',stream.url);
-			}
-		}else if(stream.url.lastIndexOf(".ogg")==stream.url.length-4 && m_sound.canPlayType('audio/ogg; codecs="vorbis"')==false){
-			//since OGG cannot be played attempt .mp3
-			m_sound.setAttribute('src',stream.url.substr(stream.url.length-4)+'.mp3');
-		}else{
-			m_sound.setAttribute('src',stream.url);
-		}
+		m_sound.src = stream.url;
 
 	}
 
@@ -188,6 +208,7 @@ class Sound extends flash.events.EventDispatcher {
 		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
 		m_sound.removeEventListener("error", cast __onSoundLoadError, false);
 		m_sound.removeEventListener("abort", cast __onSoundLoadError, false);
+		flash.Lib.trace("Error loading sound '" + m_sound.src + "'");
 		DispatchIOErrorEvent();
 	}
 
