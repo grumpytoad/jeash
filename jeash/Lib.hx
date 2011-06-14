@@ -37,6 +37,7 @@ import flash.events.EventPhase;
 import flash.display.DisplayObjectContainer;
 import flash.display.DisplayObject;
 import flash.display.InteractiveObject;
+import flash.text.TextField;
 import flash.geom.Rectangle;
 import flash.geom.Matrix;
 import flash.geom.Point;
@@ -57,7 +58,6 @@ class Lib
 	public static var context(default,null):String;
 	public static var current(jeashGetCurrent,null):MovieClip;
 	public static var glContext(default,null):WebGLRenderingContext;
-	public static var debug = false;
 	public static var canvas(jeashGetCanvas,null):HTMLCanvasElement;
 	static var mShowCursor = true;
 	static var mShowFPS = false;
@@ -89,6 +89,8 @@ class Lib
 	static inline var DEFAULT_WIDTH = 500;
 	static inline var DEFAULT_HEIGHT = 500;
 
+	var jeashTraceTextField:flash.text.TextField;
+
 	function new(title:String, width:Int, height:Int)
 	{
 		mKilled = false;
@@ -109,10 +111,10 @@ class Lib
 	{
 		untyped
 		{
-			if ( window.console != null )
-				window.console.log( arg );
-			else
-				trace( arg );
+			if (window.console != null)
+				window.console.log(arg);
+			else if (mMe.jeashTraceTextField != null)
+				mMe.jeashTraceTextField.text += arg + "\n";
 		}
 	}
 
@@ -161,6 +163,7 @@ class Lib
 			mMainClassRoot = new MovieClip();
 			mCurrent = mMainClassRoot;
 			mCurrent.name = "Root MovieClip";
+
 		}
 		return mMainClassRoot;
 	}
@@ -477,6 +480,11 @@ class Lib
 				Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);
 				Lib.current.graphics.drawRect(0, 0, width, height);
 				Lib.current.graphics.jeashSurface.id = "Root MovieClip";
+
+				mMe.jeashTraceTextField = new TextField();
+				mMe.jeashTraceTextField.width = jeashGetStage().stageWidth;
+				mMe.jeashTraceTextField.wordWrap = true;
+				Lib.current.addChild(mMe.jeashTraceTextField);
 
 				jeashGetStage().jeashUpdateNextWake();
 			}
