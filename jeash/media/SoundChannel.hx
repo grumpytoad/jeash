@@ -42,11 +42,12 @@ class SoundChannel extends flash.events.EventDispatcher {
 	public var rightPeak(default,null) : Float;
 	public var soundTransform(default,__setSoundTransform) : SoundTransform;
 
-	private var m_started : Bool;
-	private var m_sound : HTMLAudioElement;
-	private var m_parentSound : Sound;
-	private var m_startTime : Int;
-	private var m_loops : Int;
+	var jeashAudioCurrentLoop:Int;
+	var jeashAudioTotalLoops:Int;
+	var jeashRemoveRef:Void->Void;
+	var jeashStartTime:Float;
+
+	public var jeashAudio (default, null) : HTMLMediaElement;
 
 	private function new() : Void {
 		super( this );
@@ -55,57 +56,82 @@ class SoundChannel extends flash.events.EventDispatcher {
 		position = 0.;
 		rightPeak = 0.;
 
-		m_started = false;
-		m_startTime = 0;
-		m_loops = 0;
+		jeashAudioCurrentLoop = 1;
+		jeashAudioTotalLoops = 1;
 	}
 
-	/////////////////// Neash API /////////////////////////////
-	/**
-	* Internal call from Sound class to start a clip. This is
-	* used since the call to Sound.play() could potentially
-	* occur before the sound has loaded from a network resource
-	*
-	* @return Channel index that sound started playing on, -1 on error
-	*/
-	public function Start() : Int {
-		if(m_started)
-			throw "Can not restart a SoundChannel";
-		m_started = true;
-		m_sound.play();
-		ChannelId++;
-		//if( m_startTime != 0 )
-		//	Sound.setChannelPosition(ChannelId, m_startTime);
-		return ChannelId;
+	public static function jeashCreate(src:String, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null, removeRef:Void->Void) {
+		var channel = new SoundChannel();
+		channel.jeashAudio = cast js.Lib.document.createElement("audio");
+		channel.jeashRemoveRef = removeRef;
+		channel.jeashAudio.addEventListener("ended", cast channel.__onSoundChannelFinished, false);
+		channel.jeashAudio.addEventListener("seeked", cast channel.__onSoundSeeked, false);
+		if (loops > 0) {
+			channel.jeashAudioTotalLoops = loops;
+			// webkit-specific 
+			channel.jeashAudio.loop = true;
+		}
+
+		channel.jeashStartTime = startTime;
+		if (startTime > 0.) {
+			var onLoad = null;
+			onLoad = function (_) { 
+				channel.jeashAudio.currentTime = channel.jeashStartTime; 
+				channel.jeashAudio.play();
+				channel.jeashAudio.removeEventListener("canplaythrough", cast onLoad, false);
+			}
+			channel.jeashAudio.addEventListener("canplaythrough", cast onLoad, false);
+		} else {
+			channel.jeashAudio.autoplay = true;
+		}
+
+		channel.jeashAudio.src = src;
+
+		// note: the following line seems to crash completely on most browsers,
+		// maybe because the sound isn't loaded ?
+
+		//if (startTime > 0.) channel.jeashAudio.currentTime = startTime;
+
+		return channel;
 	}
 
-	public static function Create(parent:Sound, soundObj:HTMLAudioElement, startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel
-	{
-		var snd = new SoundChannel();
-		snd.m_parentSound = parent;
-		snd.m_sound = soundObj;
-		snd.m_startTime = Std.int(startTime);
-		snd.m_loops = loops;
-		snd.soundTransform = sndTransform;
-		return snd;
-	}
-
-
-	/////////////////// Flash API /////////////////////////////
 	public function stop() : Void {
-		if(m_parentSound != null) {
-			m_parentSound.OnChannelStopped(this.ChannelId);
-			// this effectively destroys this channel
-			// reduce GC load
-			m_parentSound = null;
+		if (jeashAudio != null) {
+			jeashAudio.pause();
+			jeashAudio = null;
+			if (jeashRemoveRef != null) jeashRemoveRef();
 		}
 	}
 
-
-	////////////////////// Privates //////////////////////////
 	private function __setSoundTransform( v : SoundTransform ) : SoundTransform
 	{
 		return this.soundTransform = v;
+	}
+
+	private function __onSoundSeeked(evt : Event) {
+		if (jeashAudioCurrentLoop >= jeashAudioTotalLoops) {
+			jeashAudio.loop = false;
+			stop();
+		} else {
+			jeashAudioCurrentLoop++;
+		}
+	}
+
+	private function __onSoundChannelFinished(evt : Event) {
+		if (jeashAudioCurrentLoop >= jeashAudioTotalLoops) {
+			jeashAudio.removeEventListener("ended", cast __onSoundChannelFinished, false);
+			jeashAudio.removeEventListener("seeked", cast __onSoundSeeked, false);
+			jeashAudio = null;
+			var evt = new Event(Event.COMPLETE);
+			evt.target = this;
+			dispatchEvent(evt);
+			if (jeashRemoveRef != null)
+				jeashRemoveRef();
+		} else {
+			// firefox-specific
+			jeashAudio.currentTime = jeashStartTime;
+			jeashAudio.play();
+		}
 	}
 }
 

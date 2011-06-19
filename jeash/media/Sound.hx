@@ -46,12 +46,6 @@ class Sound extends flash.events.EventDispatcher {
 	public var length(default,null) : Float;
 	public var url(default,null) : String;
 
-	static var s_channels : IntHash<SoundChannel>;
-	static var s_channelsToStart : List<SoundChannel>;
-
-	var m_sound : HTMLAudioElement;
-	var m_loaded : Bool;
-
 	static inline var MEDIA_TYPE_MP3 = "audio/mpeg";
 	static inline var MEDIA_TYPE_OGG = "audio/ogg; codecs=\"vorbis\"";
 	static inline var MEDIA_TYPE_WAV = "audio/wav; codecs=\"1\"";
@@ -61,6 +55,12 @@ class Sound extends flash.events.EventDispatcher {
 	static inline var EXTENSION_WAV = "wav";
 	static inline var EXTENSION_AAC = "aac";
 
+	//var jeashSoundChannels:Array<SoundChannel>;
+	var jeashStreamUrl:String;
+	var jeashSoundChannels : IntHash<SoundChannel>;
+	var jeashSoundIdx : Int;
+	var jeashSoundCache : URLLoader;
+
 	public function new(?stream : URLRequest, ?context : SoundLoaderContext) : Void {
 		super( this );
 		bytesLoaded = 0;
@@ -69,26 +69,18 @@ class Sound extends flash.events.EventDispatcher {
 		isBuffering = false;
 		length = 0;
 		url = null;
-		m_sound = cast js.Lib.document.createElement("audio");
-		m_loaded = false;
+
+		jeashSoundChannels = new IntHash();
+		jeashSoundIdx = 0;
+
 		if(stream != null)
 			load(stream, context);
 	}
 
 	/////////////////// Neash API /////////////////////////////
-	/**
-	* Internal notification from SoundChannel that stop()
-	* has been called
-	**/
-	public function OnChannelStopped(v:Int) : Void
-	{
-		if(v >= 0)
-			CleanupSoundChannel(v);
-	}
-
 	public static function jeashCanPlayType(extension:String) {
 
-			var audio : HTMLAudioElement = js.Lib.document.createElement("audio");
+			var audio : HTMLMediaElement = cast js.Lib.document.createElement("audio");
 			var playable = function (ok:String)
 					if (ok != "" && ok != "no") return true; else return false;
 
@@ -106,13 +98,13 @@ class Sound extends flash.events.EventDispatcher {
 			}
 	}
 
+	private function jeashCreateAudio() {
+	}
+
 	/////////////////// Flash API /////////////////////////////
 
 	public function close() : Void	{	}
 
-	/**
-	* @todo JS target just dispatches COMPLETE.
-	**/
 	public function load(stream : URLRequest, ?context : SoundLoaderContext) : Void
 	{
 
@@ -135,98 +127,76 @@ class Sound extends flash.events.EventDispatcher {
 		//m_sound.addEventListener("seeking", TODO, false);
 		//m_sound.addEventListener("seeked", TODO, false);
 
-		m_sound.addEventListener("canplay", cast __onSoundLoaded, false);
-		m_sound.addEventListener("ended", cast __onSoundChannelFinished, false);
-		m_sound.addEventListener("error", cast __onSoundLoadError, false);
-		m_sound.addEventListener("abort", cast __onSoundLoadError, false);
-		
 		var url = stream.url.split("?");
 		var extension = url[0].substr(url[0].lastIndexOf(".")+1);
 		if (!jeashCanPlayType(extension.toLowerCase()))
 			flash.Lib.trace("Warning: '" + stream.url + "' may not play on this browser.");
 
-		m_sound.src = stream.url;
+		jeashStreamUrl = stream.url;
 
+		// initiate a network request, so the resource is cached by the browser
+		jeashSoundCache = new URLLoader(stream);
 	}
 
 	public function play(startTime : Float=0.0, loops : Int=0, sndTransform : SoundTransform=null) : SoundChannel {
-		var sc = SoundChannel.Create(this, m_sound, startTime, loops, sndTransform);
+		if (jeashStreamUrl == null) return null;
 
-		if(m_loaded)
-		{
-			StartSoundChannel(sc);
-		}
-		else
-		{
-			s_channelsToStart.add(sc);
+		// --
+		// GC the sound when the following closure is executed
+
+		var self = this;
+		var curIdx = jeashSoundIdx;
+		var removeRef = function () {
+			self.jeashSoundChannels.remove(curIdx);
 		}
 
-		return sc;
+		// --
+
+		var channel = SoundChannel.jeashCreate(jeashStreamUrl, startTime, loops, sndTransform, removeRef);
+		jeashSoundChannels.set(curIdx, channel);
+		jeashSoundIdx++;
+		var audio = channel.jeashAudio;
+
+		jeashAddEventListeners(audio);
+
+		return channel;
 	}
 
 
 	////////////////////// Privates //////////////////////////
 
-	private static function StartSoundChannel(sc : SoundChannel) : Void
-	{
-		var idx = sc.Start();
-		if( idx >= 0 )
-		{
-			s_channels.set(idx, sc);
-		}
+	private function jeashAddEventListeners(audio:HTMLMediaElement) {
+		audio.addEventListener("canplay", cast __onSoundLoaded, false);
+		audio.addEventListener("error", cast __onSoundLoadError, false);
+		audio.addEventListener("abort", cast __onSoundLoadError, false);
 	}
 
-	private static function CleanupSoundChannel(v : Int) : SoundChannel
-	{
-		var chan = s_channels.get(v);
-		if(chan != null)
-			s_channelsToStart.remove(chan);
-		s_channels.remove(v);
-		return chan;
+	private function jeashRemoveEventListeners(audio:HTMLMediaElement) {
+		audio.removeEventListener("canplay", cast __onSoundLoaded, false);
+		audio.removeEventListener("error", cast __onSoundLoadError, false);
+		audio.removeEventListener("abort", cast __onSoundLoadError, false);
+
 	}
 
 	private function __onSoundLoaded(evt : Event)
 	{
-		m_sound.removeEventListener("canplay", cast __onSoundLoaded, false);
-		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
-		m_sound.removeEventListener("error", cast __onSoundLoadError, false);
-		m_sound.removeEventListener("abort", cast __onSoundLoadError, false);
-		m_loaded = true;
+		var audio : HTMLMediaElement = evt.target;
 
-		// start up any channels which were queued to play
-		for(sc in s_channelsToStart)
-			StartSoundChannel( sc );
+		// sound is automatically played, because audio.autoplay is true
 
-		s_channelsToStart = new List();
+		jeashRemoveEventListeners(audio);
+		
 		DispatchCompleteEvent();
 	}
 
 	private function __onSoundLoadError(evt : IOErrorEvent)
 	{
-		m_sound.removeEventListener("canplay", cast __onSoundLoaded, false);
-		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
-		m_sound.removeEventListener("ended", cast __onSoundLoaded, false);
-		m_sound.removeEventListener("error", cast __onSoundLoadError, false);
-		m_sound.removeEventListener("abort", cast __onSoundLoadError, false);
-		flash.Lib.trace("Error loading sound '" + m_sound.src + "'");
+		var audio : HTMLMediaElement = cast evt.target;
+
+		jeashRemoveEventListeners(audio);
+
+		flash.Lib.trace("Error loading sound '" + audio.src + "'");
 		DispatchIOErrorEvent();
-	}
-
-	private static function __onSoundChannelFinished( channel : Int ) : Void
-	{
-		var sc = CleanupSoundChannel( channel );
-		if(sc != null) {
-			var evt = new Event(Event.SOUND_COMPLETE);
-			evt.target = sc;
-			sc.dispatchEvent(evt);
-		}
-	}
-
-	private static function __init__()
-	{
-		//nme.Sound.maxChannels = 32;
-		s_channels = new IntHash();
-		s_channelsToStart = new List();
 	}
 
 }

@@ -60,7 +60,7 @@ class NetStream extends EventDispatcher {
 	public var client:Dynamic;
 	private static inline var fps:Int = 30;
 
-	public var jeashVideoElement(default, null):HTMLVideoElement;
+	public var jeashVideoElement(default, null):HTMLMediaElement;
 	
 	private var timer:Timer;
 

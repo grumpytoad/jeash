@@ -47,7 +47,7 @@ class Video extends DisplayObject {
 	private var netStream:NetStream;
 	private var renderHandler:Event->Void;
 
-	private var videoElement(default,null):HTMLVideoElement;
+	private var videoElement(default,null):HTMLMediaElement;
 	
 	public var deblocking:Int;
 	public var smoothing:Bool;
@@ -100,8 +100,8 @@ class Video extends DisplayObject {
 		
 		jeashGraphics.SetSurface(ns.jeashVideoElement);
 
-		ns.jeashVideoElement.width = width;
-		ns.jeashVideoElement.height = height;
+		ns.jeashVideoElement.style.setProperty("width", width + "px", "");
+		ns.jeashVideoElement.style.setProperty("height", height + "px", "");
 
 		ns.jeashVideoElement.play();
 	}

@@ -86,7 +86,6 @@ class Event
 	public static var RESIZE = "resize";
 	public static var SCROLL = "scroll";
 	public static var SELECT = "select";
-	public static var SOUND_COMPLETE = "soundComplete";
 	public static var TAB_CHILDREN_CHANGE = "tabChildrenChange";
 	public static var TAB_ENABLED_CHANGE = "tabEnabledChange";
 	public static var TAB_INDEX_CHANGE = "tabIndexChange";

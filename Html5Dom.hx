@@ -27,9 +27,6 @@
 typedef UInt = Int;
 typedef Vector<T> = Array<T>;
 
-typedef HTMLAudioElement = Dynamic;
-typedef HTMLVideoElement = Dynamic;
-
 /*
 * <----------------- WebWorkers ------------------>
 */
