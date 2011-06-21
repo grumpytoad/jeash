@@ -279,7 +279,11 @@ class Stage extends flash.display.DisplayObjectContainer
 		if (jeashDragObject!=null)
 			jeashDrag(point);
 
-		var obj = jeashGetObjectUnderPoint(point); 
+		var obj = jeashGetObjectUnderPoint(point);
+
+		// only interactiveObject can collect mouse events
+		var mouseEnabled:Bool = Reflect.field(obj, "mouseEnabled");
+		if (mouseEnabled == null || !mouseEnabled) return;
 
 		// used in drag implementation
 		mouseX = point.x;

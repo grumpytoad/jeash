@@ -252,9 +252,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function jeashGetMouseX() { return stage.mouseX; }
+	function jeashGetMouseX() { return globalToLocal(new Point(stage.mouseX, 0)).x; }
 	function jeashSetMouseX(x:Float) { return null; }
-	function jeashGetMouseY() { return stage.mouseY; }
+	function jeashGetMouseY() { return globalToLocal(new Point(0, stage.mouseY)).y; }
 	function jeashSetMouseY(y:Float) { return null; }
 
 	public function GetTransform() { return  new Transform(this); }

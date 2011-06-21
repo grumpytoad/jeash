@@ -386,35 +386,25 @@ class DisplayObjectContainer extends InteractiveObject
 			throw msg;
 		}
 
+
 		// move down ...
-		var i = orig;
 		if (index<orig)
 		{
+			var i = orig;
 			while(i > index) {
-				jeashChildren[i] = jeashChildren[i-1];
+				swapChildren(jeashChildren[i], jeashChildren[i-1]);
 				i--;
 			}
-			jeashChildren[index] = child;
 		}
 		// move up ...
 		else if (orig<index)
 		{
 			var i = orig;
 			while(i < index) {
-				jeashChildren[i] = jeashChildren[i+1];
+				swapChildren(jeashChildren[i], jeashChildren[i+1]);
 				i++;
 			}
-			jeashChildren[index] = child;
 		}
-
-		jeashSwapSurface(index, orig);
-
-		#if debug
-			for(i in 0...jeashChildren.length)
-				if(jeashChildren[i] == null) {
-					throw "Null element at index " + i + " length " + jeashChildren.length;
-				}
-		#end
 	}
 
 	private function jeashSwapSurface(c1:Int, c2:Int)
