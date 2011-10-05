@@ -26,6 +26,8 @@
 
 package jeash.filters;
 
+import Html5Dom;
+
 class BitmapFilter
 {
    var mType:String;
@@ -33,7 +35,9 @@ class BitmapFilter
    public function new(inType) { mType = inType; }
    public function clone() : flash.filters.BitmapFilter
    {
-      // TODO
+      throw "Implement in subclass. BitmapFilter::clone";
       return null;
    }
+
+   public function jeashApplyFilter(surface:HTMLElement) {}
 }

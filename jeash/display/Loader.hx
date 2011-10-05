@@ -88,7 +88,8 @@ class Loader extends flash.display.DisplayObjectContainer
 			addChild(content);
 		} catch(e:Dynamic) {
 			trace("Error " + e);
-			contentLoaderInfo.DispatchIOErrorEvent();
+			var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+			contentLoaderInfo.dispatchEvent(evt);
 			return;
 		}
 

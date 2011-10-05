@@ -29,12 +29,6 @@ package jeash.utils;
 import flash.events.EventDispatcher;
 import flash.events.TimerEvent;
 
-#if js
-private typedef PTimer = haxe.Timer;
-#else
-private typedef PTimer = flash.Timer;
-#end
-
 /**
 * @author Niel Drummond
 * @author Russell Weir
@@ -45,7 +39,7 @@ class Timer extends EventDispatcher {
 	public var repeatCount(default,__setRepeatCount) : Int;
 	public var running(default,null) : Bool;
 
-	var proxy : PTimer;
+	var timerId : Int;
 
 	public function new(delay : Float, repeatCount : Int=0) : Void {
 		super();
@@ -64,14 +58,14 @@ class Timer extends EventDispatcher {
 		if(running)
 			return;
 		running = true;
-		proxy = new PTimer(Std.int(delay));
-		proxy.run = __onInterval;
+		
+		timerId = untyped window.setTimeout(__onInterval, Std.int(delay));
 	}
 
 	public function stop() : Void {
-		if (proxy != null) {
-			proxy.stop();
-			proxy = null;
+		if (timerId != null) {
+			untyped window.clearTimeout(timerId);
+			timerId = null;
 		}
 		running = false;
 	}
@@ -81,7 +75,6 @@ class Timer extends EventDispatcher {
 		var evtCom : TimerEvent = null;
 
 		if( repeatCount != 0 && ++currentCount >= repeatCount ) {
-			proxy.stop();
 			stop();
 			evtCom = new TimerEvent(TimerEvent.TIMER_COMPLETE);
 			evtCom.target = this;

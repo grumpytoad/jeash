@@ -45,7 +45,6 @@ package jeash.display;
 
 import Html5Dom;
 import flash.geom.Matrix;
-import flash.geom.Decompose;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.geom.ColorTransform;
@@ -165,8 +164,8 @@ class Graphics
 
 	public static var RADIAL  = 0x0001;
 
-	public static var REPEAT  = 0x0002;
-	public static var REFLECT = 0x0004;
+	public static var SPREAD_REPEAT  = 0x0002;
+	public static var SPREAD_REFLECT = 0x0004;
 
 
 	private static var  EDGE_MASK        = 0x00f0;
@@ -302,6 +301,7 @@ class Graphics
 		jeashChanged = true;
 		jeashShift = false;
 		nextDrawIndex = 0;
+		//jeashRenderFrame = 0;
 
 	}
 
@@ -371,7 +371,6 @@ class Graphics
 
 		jeashShift = if (Math.abs(extent.x) < jeashSurface.width && Math.abs(extent.y) < jeashSurface.height)
 			true; else false;
-
 
 		ctx.save();
 		
@@ -695,7 +694,7 @@ class Graphics
 	{
 		if (ellipseHeight == null) ellipseHeight = ellipseWidth;
 
-		if (ellipseHeight<1 || ellipseHeight<1)
+		if (ellipseHeight<1)
 		{
 			drawRect(x,y,width,height);
 			return;
@@ -747,9 +746,9 @@ class Graphics
 			flags |= RADIAL;
 
 		if (spreadMethod==SpreadMethod.REPEAT)
-			flags |= REPEAT;
+			flags |= SPREAD_REPEAT;
 		else if (spreadMethod==SpreadMethod.REFLECT)
-			flags |= REFLECT;
+			flags |= SPREAD_REFLECT;
 
 
 		if (matrix==null)
@@ -816,8 +815,10 @@ class Graphics
 
 	inline function jeashClearCanvas()
 	{
-		if (jeashSurface != null)
-			jeashSurface.width = jeashSurface.width;
+		if (jeashSurface != null) {
+			var w = jeashSurface.width;
+			jeashSurface.width = w;
+		}
 	}
 
 	public function clear()

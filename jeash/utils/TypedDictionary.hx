@@ -52,11 +52,12 @@ class TypedDictionary<K,T> extends Dictionary {
 	}
 
 	public function iterator() : Iterator<K> {
+		var self = this;
 		return untyped {
 			ref : h,
 			it : keys(),
-			hasNext : function() { return this.it.hasNext(); },
-			next : function() { var i = this.it.next(); return i; }
+			hasNext : function() { return self.it.hasNext(); },
+			next : function() { var i = self.it.next(); return i; }
 		};
 	}
 

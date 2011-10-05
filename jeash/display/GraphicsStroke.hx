@@ -38,13 +38,13 @@ class GraphicsStroke implements IGraphicsData, implements IGraphicsStroke
 	public var scaleMode : LineScaleMode;
 	public var thickness : Float;
 	public var jeashGraphicsDataType(default,null):GraphicsDataType;
-	public function new(thickness : Float = 0./*NaN*/, pixelHinting : Bool = false, ?scaleMode : String, ?caps : String, ?joints : String, miterLimit : Float = 3, ?fill : IGraphicsFill) {
-		this.caps = caps != null ? Type.createEnum(CapsStyle, caps) : null;
+	public function new(thickness : Float = 0., pixelHinting : Bool = false, ?scaleMode : LineScaleMode, ?caps : CapsStyle, ?joints : JointStyle, miterLimit : Float = 3, ?fill : IGraphicsFill) {
+		this.caps = caps != null ? caps : null;
 		this.fill = fill;
-		this.joints = joints != null ? Type.createEnum(JointStyle, joints) : null;
+		this.joints = joints != null ? joints : null;
 		this.miterLimit = miterLimit;
 		this.pixelHinting = pixelHinting;
-		this.scaleMode = scaleMode != null ? Type.createEnum(LineScaleMode, scaleMode) : null;
+		this.scaleMode = scaleMode != null ? scaleMode : null;
 		this.thickness = thickness;
 		this.jeashGraphicsDataType = STROKE;
 	}

@@ -90,7 +90,7 @@ class Event
 	public static var TAB_ENABLED_CHANGE = "tabEnabledChange";
 	public static var TAB_INDEX_CHANGE = "tabIndexChange";
 	public static var UNLOAD = "unload";
-
+	public static var SOUND_COMPLETE = "soundComplete";
 
 }
 

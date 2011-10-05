@@ -75,33 +75,21 @@ class BitmapData implements IBitmapDrawable
 			?inFillColour:Int)
 	{
 
-		// Load embedded images in the HTML file
-
-		var image : Dynamic = js.Lib.document.getElementById( Type.getClassName( Type.getClass( this ) ) );
 		jeashLocked = false;
 
-		if ( image != null ) {
-			mTextureBuffer = cast js.Lib.document.createElement('canvas');
-			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:null, bitmapData:this};
-			if (!image.complete)
-				image.addEventListener( "load", callback(OnLoad, data), false );
-			else
-				OnLoad(data, null);
-		} else {
-			mTextureBuffer = cast js.Lib.document.createElement('canvas');
-			mTextureBuffer.width = inWidth;
-			mTextureBuffer.height = inHeight;
+		mTextureBuffer = cast js.Lib.document.createElement('canvas');
+		mTextureBuffer.width = inWidth;
+		mTextureBuffer.height = inHeight;
 
-			mTransparent = inTransparent;
-			rect = new Rectangle(0,0,inWidth,inHeight);
+		mTransparent = inTransparent;
+		rect = new Rectangle(0,0,inWidth,inHeight);
 
-			if ( inFillColour != null )
-			{
-				if (!mTransparent)
-					inFillColour |= 0xFF000000;
+		if ( inFillColour != null )
+		{
+			if (!mTransparent)
+				inFillColour |= 0xFF000000;
 
-				fillRect(rect,inFillColour);
-			}
+			fillRect(rect,inFillColour);
 		}
 
 	}
@@ -233,7 +221,7 @@ class BitmapData implements IBitmapDrawable
 		rect = clipRect (rect);
 		if (rect == null) return byteArray;
 
-		var bytes = haxe.io.Bytes.alloc(cast(3 * rect.width * rect.height, Int));
+		var bytes = haxe.io.Bytes.alloc(Math.round(3 * rect.width * rect.height));
 		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		var imagedata = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
 		for (i in 0...imagedata.data.length) {

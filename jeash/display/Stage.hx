@@ -54,18 +54,21 @@ class Stage extends flash.display.DisplayObjectContainer
 	var jeashStageMatrix:Matrix;
 	var jeashMouseDown:Bool;
 	var jeashStageActive:Bool;
+	var jeashFrameRate:Float;
+	var jeashBackgroundColour:Int;
+	var jeashShowDefaultContextMenu:Bool;
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
 	public var stageWidth(jeashGetStageWidth,null):Int;
 	public var stageHeight(jeashGetStageHeight,null):Int;
-	public var frameRate(default,jeashSetFrameRate):Float;
+	public var frameRate(jeashGetFrameRate,jeashSetFrameRate):Float;
 	public var quality(jeashGetQuality,jeashSetQuality):String;
 	public var scaleMode:StageScaleMode;
 	public var align:flash.display.StageAlign;
 	public var stageFocusRect:Bool;
 	public var focus(GetFocus,SetFocus):InteractiveObject;
-	public var backgroundColor(default,SetBackgroundColour):Int;
+	public var backgroundColor(jeashGetBackgroundColour,jeashSetBackgroundColour):Int;
 	public var showDefaultContextMenu(jeashGetShowDefaultContextMenu,jeashSetShowDefaultContextMenu):Bool;
 	public var displayState(jeashGetDisplayState,jeashSetDisplayState):StageDisplayState;
 	public var fullScreenWidth(jeashGetFullScreenWidth,null):UInt;
@@ -86,14 +89,14 @@ class Stage extends flash.display.DisplayObjectContainer
 	{
 		super();
 		mFocusObject = null;
-		jeashWindowWidth = stageWidth = width;
-		jeashWindowHeight = stageHeight = height;
+		jeashWindowWidth = width;
+		jeashWindowHeight = height;
 		stageFocusRect = false;
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
 		tabEnabled = true;
 		frameRate=DEFAULT_FRAMERATE;
-		SetBackgroundColour(0xffffff);
+		jeashSetBackgroundColour(0xffffff);
 		name = "Stage";
 		loaderInfo = LoaderInfo.create(null);
 		loaderInfo.parameters.width = Std.string(jeashWindowWidth);
@@ -389,9 +392,10 @@ class Stage extends flash.display.DisplayObjectContainer
 	}
 
 
-	public function SetBackgroundColour(col:Int) : Int
+	public function jeashGetBackgroundColour() { return jeashBackgroundColour; }
+	public function jeashSetBackgroundColour(col:Int) : Int
 	{
-		backgroundColor = col;
+		jeashBackgroundColour = col;
 		return col;
 	}
 
@@ -431,6 +435,7 @@ class Stage extends flash.display.DisplayObjectContainer
 			StageQuality.BEST;
 	}
 
+	function jeashGetFrameRate() { return jeashFrameRate; }
 	function jeashSetFrameRate(speed:Float):Float
 	{
 		if ( StringTools.startsWith(Lib.context, "swf") ) return speed;
@@ -446,7 +451,7 @@ class Stage extends flash.display.DisplayObjectContainer
 
 		jeashUpdateNextWake();
 
-		this.frameRate = speed;
+		jeashFrameRate = speed;
 		return speed;
 	}
 
@@ -492,12 +497,12 @@ class Stage extends flash.display.DisplayObjectContainer
 	override function jeashGetMouseY() { return this.mouseY; }
 	override function jeashSetMouseY(y:Float) { this.mouseY = y; return y; }
 
-	inline function jeashGetShowDefaultContextMenu() { return this.showDefaultContextMenu; }
+	inline function jeashGetShowDefaultContextMenu() { return jeashShowDefaultContextMenu; }
 	function jeashSetShowDefaultContextMenu(showDefaultContextMenu:Bool)
 	{
 		if (showDefaultContextMenu != this.showDefaultContextMenu && this.showDefaultContextMenu != null)
 			if (!showDefaultContextMenu) Lib.jeashDisableRightClick(); else Lib.jeashEnableRightClick();
-		this.showDefaultContextMenu = showDefaultContextMenu;
+		jeashShowDefaultContextMenu = showDefaultContextMenu;
 		return showDefaultContextMenu;
 	}
 

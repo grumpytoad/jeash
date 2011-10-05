@@ -46,29 +46,19 @@ class Listener
 	}
 
 	public function Is(inListener,inCapture)
-	{
-		return Reflect.compareMethods(mListner,inListener) && mUseCapture == inCapture;
-	}
+		return Reflect.compareMethods(mListner, inListener) && mUseCapture == inCapture
 
 	public function dispatchEvent(event : Event)
-	{
-		mListner(event);
-	}
+		mListner(event)
 }
 
 typedef ListenerList = Array<Listener>;
+typedef EventMap = Array<ListenerList>;
 
-typedef EventMap = Hash<ListenerList>;
-
-/**
-* @author	Hugh Sanderson
-* @author	Russell Weir
-**/
 class EventDispatcher implements IEventDispatcher
 {
-	var mTarget:IEventDispatcher;
-	var mEventMap : EventMap;
-	static var mIDBase = 0;
+	var jeashTarget:IEventDispatcher;
+	var jeashEventMap : EventMap;
 
 	static private function compareListeners(l1:Listener,l2:Listener):Int{
 		return l1.mPriority==l2.mPriority?0:(l1.mPriority>l2.mPriority?-1:1);
@@ -76,59 +66,60 @@ class EventDispatcher implements IEventDispatcher
 
 	public function new(?target : IEventDispatcher) : Void
 	{
-		if(mTarget != null)
-			mTarget = target;
+		if(target != null)
+			jeashTarget = target;
 		else
-			mTarget = this;
-		mEventMap = new EventMap();
+			jeashTarget = this;
+		jeashEventMap = [];
 	}
+
+	private function getList(type:String)
+		untyped return jeashEventMap[type]
+	
+	private function setList(type:String, list:ListenerList) 
+		untyped jeashEventMap[type] = list
+
+	private function existList(type:String) 
+		untyped return jeashEventMap[type] != __js__("undefined")
 
 	public function addEventListener(type:String, inListener:Dynamic->Void,
 			?useCapture:Bool /*= false*/, ?inPriority:Int /*= 0*/,
-			?useWeakReference:Bool /*= false*/):Void
-	{
+			?useWeakReference:Bool /*= false*/):Void {
 		var capture:Bool = useCapture==null ? false : useCapture;
 		var priority:Int = inPriority==null ? 0 : inPriority;
 
-		var list = mEventMap.get(type);
-		if (list==null)
-		{
+		var list = getList(type);
+
+		if (!existList(type)) {
 			list = new ListenerList();
-			mEventMap.set(type,list);
+			setList(type, list);
 		}
 
 		var l =  new Listener(inListener,capture,priority);
 		list.push(l);
-		// trace("Add listener " + type +" now:" + list);
-		//return l.mID;
 	}
 
-	public function dispatchEvent(event : Event) : Bool
-	{
+	public function dispatchEvent(event : Event) : Bool {
 		if(event.target == null)
-			event.target = mTarget;
-		var list = mEventMap.get(event.type);
+			event.target = jeashTarget;
+
+		var list = getList(event.type);
 		var capture = event.eventPhase==EventPhase.CAPTURING_PHASE;
-		if (list!=null)
-		{
+		if (existList(event.type)) {
 			list.sort(compareListeners);
 			
 			var idx = 0;
-			while(idx<list.length)
-			{
+			while(idx<list.length) {
 				var listener = list[idx];
-				if (listener.mUseCapture==capture)
-				{
+				if (listener.mUseCapture==capture) {
 					listener.dispatchEvent(event);
 					if (event.jeashGetIsCancelledNow())
 						return true;
 				}
 				// Detect if the just used event listener was removed...
-				if (idx<list.length && listener!=list[idx])
-				{
+				if (idx<list.length && listener!=list[idx]) {
 					// do not advance to next item because it looks like one was just removed
-				}
-				else
+				} else
 					idx++;
 			}
 			return true;
@@ -138,15 +129,14 @@ class EventDispatcher implements IEventDispatcher
 	}
 
 	public function hasEventListener(type : String)
-	{
-		return mEventMap.exists(type);
-	}
+		return existList(type)
+
 	public function removeEventListener(type : String, listener : Dynamic->Void,
 			?inCapture : Bool) : Void
 	{
-		if (!mEventMap.exists(type)) return;
+		if (!existList(type)) return;
 
-		var list = mEventMap.get(type);
+		var list = getList(type);
 		var capture:Bool = inCapture==null ? false : inCapture;
 		for(i in 0...list.length)
 		{
@@ -159,54 +149,8 @@ class EventDispatcher implements IEventDispatcher
 	}
 
 	public function toString() 
-	{
-		return "[ " + Type.getClassName(Type.getClass(this)) + " ]";
-	}
+		return untyped "[ " +  this.__name__ + " ]"
 
 	public function willTrigger(type : String) : Bool
-	{
-		return hasEventListener(type);
-	}
-
-	public function RemoveByID(inType:String,inID:Int) : Void
-	{
-		if (!mEventMap.exists(inType)) return;
-
-		var list = mEventMap.get(inType);
-		for(i in 0...list.length)
-		{
-			if (list[i].mID == inID)
-			{
-				list.splice(i,1);
-				//trace("remove " + i);
-				return;
-			}
-		}
-		//trace("could not remove?");
-	}
-
-
-	public function DumpListeners()
-	{
-		trace(mEventMap);
-	}
-
-	/**
-	 * Creates and dispatches a typical Event.COMPLETE
-	 */
-	public function DispatchCompleteEvent() {
-		var evt = new Event(Event.COMPLETE);
-		dispatchEvent(evt);
-	}
-
-	/**
-	 * Creates and dispatches a typical IOErrorEvent.IO_ERROR
-	 */
-	public function DispatchIOErrorEvent() {
-		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
-		dispatchEvent(evt);
-	}
+		return hasEventListener(type)
 }
-
-
-

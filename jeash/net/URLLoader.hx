@@ -89,12 +89,14 @@ class URLLoader extends flash.events.EventDispatcher
 			throw "Not complete";
 		}
 
-		DispatchCompleteEvent();
+		var evt = new Event(Event.COMPLETE);
+		dispatchEvent(evt);
 	}
 
 	function onError (msg) {
 		flash.Lib.trace(msg);
-		DispatchIOErrorEvent();
+		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+		dispatchEvent(evt);
 	}
 
 }

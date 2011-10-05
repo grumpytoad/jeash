@@ -34,7 +34,7 @@ class HTTPStatusEvent extends Event
 	public function new(type : String, bubbles : Bool = false, cancelable : Bool = false, status : Int = 0) : Void 
 	{
 		this.status = status;
-		super();
+		super(type, bubbles, cancelable);
 	}
 	public static var HTTP_RESPONSE_STATUS : String;
 	public static var HTTP_STATUS : String;

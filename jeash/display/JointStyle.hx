@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-@:fakeEnum(String) enum JointStyle
+enum JointStyle
 {
    MITER;
    ROUND;

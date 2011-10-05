@@ -73,7 +73,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var width(jeashGetWidth,jeashSetWidth):Float;
 	public var height(jeashGetHeight,jeashSetHeight):Float;
 
-	public var visible(default,jeashSetVisible):Bool;
+	public var visible(jeashGetVisible,jeashSetVisible):Bool;
 	public var opaqueBackground(GetOpaqueBackground,SetOpaqueBackground):Null<Int>;
 	public var mouseX(jeashGetMouseX, jeashSetMouseX):Float;
 	public var mouseY(jeashGetMouseY, jeashSetMouseY):Float;
@@ -107,6 +107,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var jeashScaleX : Float;
 	var jeashScaleY : Float;
 	var jeashRotation : Float;
+	var jeashVisible : Bool;
 
 	static var mNameID = 0;
 
@@ -655,15 +656,17 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return false;
 	}
 
+	function jeashGetVisible() { return jeashVisible; }
 	function jeashSetVisible(visible:Bool)
 	{
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
-			if (visible)
-				Lib.jeashSetSurfaceVisible(gfx.jeashSurface, true);
-			else
-				Lib.jeashSetSurfaceVisible(gfx.jeashSurface, false);
-		this.visible = visible;
+			if (gfx.jeashSurface != null)
+				if (visible)
+					Lib.jeashSetSurfaceVisible(gfx.jeashSurface, true);
+				else
+					Lib.jeashSetSurfaceVisible(gfx.jeashSurface, false);
+		jeashVisible = visible;
 		return visible;
 	}
 

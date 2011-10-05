@@ -356,7 +356,7 @@ class TextField extends InteractiveObject
 	}
 
 	// TODO: unimplemented and untested
-	override public function OnFocusIn(inMouse:Bool)
+	public function OnFocusIn(inMouse:Bool)
 	{
 		if (mInput && selectable && !inMouse)
 		{
@@ -438,7 +438,8 @@ class TextField extends InteractiveObject
 		return null;
 	}
 
-	override public function OnMouseDown(inX:Int, inY:Int)
+	// Not used?
+	public function OnMouseDown(inX:Int, inY:Int)
 	{
 		if (tabEnabled || selectable)
 		{
@@ -459,7 +460,9 @@ class TextField extends InteractiveObject
 			RebuildText();
 		}
 	}
-	override public function OnMouseDrag(inX:Int, inY:Int)
+
+	// Not used?
+	public function OnMouseDrag(inX:Int, inY:Int)
 	{
 		if ( (tabEnabled||selectable) && mSelectDrag>=0)
 		{
@@ -492,7 +495,8 @@ class TextField extends InteractiveObject
 			RebuildText();
 		}
 	}
-	override public function OnMouseUp(inX:Int, inY:Int)
+	// Not used?
+	public function OnMouseUp(inX:Int, inY:Int)
 	{
 		mSelectDrag = -1;
 	}

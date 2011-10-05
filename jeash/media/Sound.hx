@@ -186,7 +186,8 @@ class Sound extends flash.events.EventDispatcher {
 
 		jeashRemoveEventListeners(audio);
 		
-		DispatchCompleteEvent();
+		var evt = new Event(Event.COMPLETE);
+		dispatchEvent(evt);
 	}
 
 	private function __onSoundLoadError(evt : IOErrorEvent)
@@ -196,7 +197,8 @@ class Sound extends flash.events.EventDispatcher {
 		jeashRemoveEventListeners(audio);
 
 		flash.Lib.trace("Error loading sound '" + audio.src + "'");
-		DispatchIOErrorEvent();
+		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+		dispatchEvent(evt);
 	}
 
 }

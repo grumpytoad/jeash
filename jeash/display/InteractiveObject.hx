@@ -36,7 +36,8 @@ class InteractiveObject extends DisplayObject
 	public var focusRect:Dynamic;
 	public var mouseEnabled:Bool;
 	public var tabEnabled:Bool;
-	public var tabIndex(default,SetTabIndex):Int;
+	public var tabIndex(jeashGetTabIndex,jeashSetTabIndex):Int;
+	var jeashTabIndex:Int;
 
 	public function new()
 	{
@@ -56,10 +57,10 @@ class InteractiveObject extends DisplayObject
 		return this;
 	}
 
-
-	public function SetTabIndex(inIndex:Int)
+	public function jeashGetTabIndex() { return jeashTabIndex; }
+	public function jeashSetTabIndex(inIndex:Int)
 	{
-		tabIndex = inIndex;
+		jeashTabIndex = inIndex;
 		return inIndex;
 	}
 
@@ -77,11 +78,6 @@ class InteractiveObject extends DisplayObject
 		return v;
 	}
 
-	public function OnFocusIn(inMouse:Bool) : Void { }
-	public function OnFocusOut() : Void { }
-	public function OnMouseDown(inX:Int, inY:Int) : Void { }
-	public function OnMouseUp(inX:Int, inY:Int) : Void { }
-	public function OnMouseDrag(inX:Int, inY:Int) : Void { }
 
 }
 
