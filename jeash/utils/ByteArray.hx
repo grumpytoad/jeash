@@ -33,6 +33,8 @@ import haxe.io.BytesBuffer;
 import haxe.io.Eof;
 import haxe.io.Error;
 
+import flash.errors.IOError;
+
 import Html5Dom;
 
 class ByteArray {
@@ -110,7 +112,7 @@ class ByteArray {
 	public function readBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt)
 	{
 		if( offset < 0 || length < 0 || offset + length > data.length )
-			throw Error.OutsideBounds;
+			throw new IOError("Read error - Out of bounds");
 
 		if( data.length == 0 && length > 0 )
 			throw new Eof();
@@ -135,7 +137,7 @@ class ByteArray {
 
 	public function writeBytes(bytes : ByteArray, ?offset : UInt, ?length : UInt) 
 	{
-		if( offset < 0 || length < 0 || offset + length > bytes.length ) throw Error.OutsideBounds;
+		if( offset < 0 || length < 0 || offset + length > bytes.length ) throw new IOError("Write error - Out of bounds");
 		var b2 = bytes;
 		b2.position = offset;
 		for( i in 0...length )
@@ -334,13 +336,13 @@ class ByteArray {
 
 	public function writeShort(value : Int)
 	{
-		if( value < -0x8000 || value >= 0x8000 ) throw Error.Overflow;
+		if( value < -0x8000 || value >= 0x8000 ) throw new IOError("Write error - overflow");
 		writeUnsignedShort(value & 0xFFFF);
 	}
 
 	public function writeUnsignedShort( value : Int ) 
 	{
-		if( value < 0 || value >= 0x10000 ) throw Error.Overflow;
+		if( value < 0 || value >= 0x10000 ) throw new IOError("Write error - overflow");
 		if( endian == Endian.BIG_ENDIAN ) {
 			writeByte(value >> 8);
 			writeByte(value & 0xFF);
