@@ -687,40 +687,37 @@ class Graphics
 		ClosePolygon(false);
 	}
 
-
-
-	public function drawRoundRect(x:Float,y:Float,width:Float,height:Float,
-			ellipseWidth:Float, ellipseHeight:Float = null)
-	{
-		if (ellipseHeight == null) ellipseHeight = ellipseWidth;
-
-		if (ellipseHeight<1)
-		{
-			drawRect(x,y,width,height);
-			return;
-		}
+	public function drawRoundRect(x:Float, y:Float, width:Float, height:Float, rx:Float, ry:Float) {
+		rx *= 0.5;
+		ry *= 0.5;
+		var w = width*0.5;
+		x+=w;
+		if (rx>w) rx = w;
+		var lw = w - rx;
+		var w_ = lw + rx*Math.sin(Math.PI/4);
+		var cw_ = lw + rx*Math.tan(Math.PI/8);
+		var h = height*0.5;
+		y+=h;
+		if (ry>h) ry = h;
+		var lh = h - ry;
+		var h_ = lh + ry*Math.sin(Math.PI/4);
+		var ch_ = lh + ry*Math.tan(Math.PI/8);
 
 		ClosePolygon(false);
 
-		moveTo(x,y+ellipseHeight);
-		// top-left
-		curveTo(x,y,x+ellipseWidth,y);
-
-		lineTo(x+width-ellipseWidth,y);
-		// top-right
-		curveTo(x+width,y,x+width,y+ellipseWidth);
-
-		lineTo(x+width,y+height-ellipseHeight);
-
-		// bottom-right
-		curveTo(x+width,y+height,x+width-ellipseWidth,y+height);
-
-		lineTo(x+ellipseWidth,y+height);
-
-		// bottom-left
-		curveTo(x,y+height,x,y+height-ellipseHeight);
-
-		lineTo(x,y+ellipseHeight);
+		moveTo(x+w,y+lh);
+		curveTo(x+w,  y+ch_, x+w_, y+h_);
+		curveTo(x+cw_,y+h,   x+lw,    y+h);
+		lineTo(x-lw,    y+h);
+		curveTo(x-cw_,y+h,   x-w_, y+h_);
+		curveTo(x-w,  y+ch_, x-w,  y+lh);
+		lineTo( x-w, y-lh);
+		curveTo(x-w,  y-ch_, x-w_, y-h_);
+		curveTo(x-cw_,y-h,   x-lw,    y-h);
+		lineTo(x+lw,    y-h);
+		curveTo(x+cw_,y-h,   x+w_, y-h_);
+		curveTo(x+w,  y-ch_, x+w,  y-lh);
+		lineTo(x+w,  y+lh);
 
 		ClosePolygon(false);
 	}
