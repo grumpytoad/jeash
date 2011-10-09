@@ -216,20 +216,23 @@ class Stage extends flash.display.DisplayObjectContainer
 
 		switch(evt.type)
 		{
-			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()):
+			case "mousemove":
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_MOVE);
 
-			case (flash.events.MouseEvent.MOUSE_DOWN.toLowerCase()):
+			case "mousedown":
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_DOWN);
 
-			case (flash.events.MouseEvent.MOUSE_UP.toLowerCase()):
+			case "mouseup":
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_UP);
 
-			case (flash.events.MouseEvent.CLICK.toLowerCase()):
+			case "click":
 				jeashOnMouse(cast evt, flash.events.MouseEvent.CLICK);
 
-			case (flash.events.MouseEvent.MOUSE_WHEEL.toLowerCase()):
+			case "mousewheel":
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_WHEEL);
+
+			case "dblclick":
+				jeashOnMouse(cast evt, flash.events.MouseEvent.DOUBLE_CLICK);
 
 			case "keydown":
 				var evt:KeyboardEvent = cast evt; 
@@ -237,7 +240,9 @@ class Stage extends flash.display.DisplayObjectContainer
 					try {
 						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
 					} catch (e:Dynamic) {
+						#if debug
 						flash.Lib.trace("keydown error: " + e);
+						#end
 						evt.keyCode;
 					}
 				else
@@ -254,7 +259,9 @@ class Stage extends flash.display.DisplayObjectContainer
 					try {
 						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
 					} catch (e:Dynamic) {
+						#if debug
 						flash.Lib.trace("keyup error: " + e);
+						#end
 						evt.keyCode;
 					}
 				else
@@ -309,7 +316,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	// @r551 should be in MouseEvent.hx, haxe issue 300
 	public inline function jeashCreateMouseEvent(type:String, event:Html5Dom.MouseEvent, local:Point, target:InteractiveObject): flash.events.MouseEvent
 	{
-		// cross-browser delta sniff
+		// cross-browser mouse wheel delta sniff
 		var delta = if ( type == flash.events.MouseEvent.MOUSE_WHEEL )
 		{
 			var mouseEvent : Dynamic = event;
@@ -341,7 +348,7 @@ class Stage extends flash.display.DisplayObjectContainer
 			else 
 				jeashMouseDown = false;
 
-		var pseudoEvent =  new flash.events.MouseEvent(type,
+		var pseudoEvent = new flash.events.MouseEvent(type,
 				true, false,
 				local.x,local.y,
 				null,
