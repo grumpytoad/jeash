@@ -26,24 +26,22 @@
 
 package jeash.display;
 
-/**
-* @author	Hugh Sanderson
-* @author	Russell Weir
-**/
-class InteractiveObject extends DisplayObject
-{
-	public var doubleClickEnabled(__getDoubleClickEnabled,__setDoubleClickEnabled) : Bool;
+import flash.geom.Point;
+
+class InteractiveObject extends DisplayObject {
+	public var doubleClickEnabled:Bool;
 	public var focusRect:Dynamic;
 	public var mouseEnabled:Bool;
 	public var tabEnabled:Bool;
 	public var tabIndex(jeashGetTabIndex,jeashSetTabIndex):Int;
+	var jeashDoubleClickEnabled:Bool;
 	var jeashTabIndex:Int;
 
-	public function new()
-	{
+	public function new() {
 		super();
 		tabEnabled = false;
 		mouseEnabled = true;
+		doubleClickEnabled = true;
 		tabIndex = 0;
 		name = "InteractiveObject";
 	}
@@ -52,32 +50,16 @@ class InteractiveObject extends DisplayObject
 
 	public function OnKey(inKey:flash.events.KeyboardEvent):Void { }
 
-	override public function jeashAsInteractiveObject() : flash.display.InteractiveObject
-	{
-		return this;
-	}
+	override public function jeashAsInteractiveObject() return this
 
 	public function jeashGetTabIndex() { return jeashTabIndex; }
-	public function jeashSetTabIndex(inIndex:Int)
-	{
+	public function jeashSetTabIndex(inIndex:Int) {
 		jeashTabIndex = inIndex;
 		return inIndex;
 	}
 
-	/**
-	* @todo Implement
-	* @todo Check default right now, is it true or false?
-	*/
-	private function __getDoubleClickEnabled() : Bool {
-		return true;
-	}
-	/**
-	* @todo Implement
-	*/
-	private function __setDoubleClickEnabled(v:Bool) : Bool {
-		return v;
-	}
-
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
+		 if (!mouseEnabled) return null;
+		 else return super.jeashGetObjectUnderPoint(point)
 
 }
-

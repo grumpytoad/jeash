@@ -477,13 +477,13 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		jeashRenderContentsToCache(matrix, inSurface);
 	}
 
-	public function jeashGetObjectUnderPoint(point:Point):DisplayObject
-	{
+	public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
 		if (!visible) return null;
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 		{
 			var local = globalToLocal(point);
+			if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; 
 			switch (stage.jeashPointInPathMode)
 			{
 				case USER_SPACE:

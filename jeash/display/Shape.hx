@@ -32,14 +32,12 @@ import flash.geom.Matrix;
 import flash.geom.Point;
 import flash.Lib;
 
-class Shape extends DisplayObject
-{
+class Shape extends DisplayObject {
 	var jeashGraphics:Graphics;
 
 	public var graphics(jeashGetGraphics,null):Graphics;
 
-	public function new()
-	{
+	public function new() {
 		Lib.canvas;
 		jeashGraphics = new Graphics();
 		if(jeashGraphics!=null)
@@ -48,10 +46,6 @@ class Shape extends DisplayObject
 		name = "Shape " + DisplayObject.mNameID++;
 	}
 
-
-	override function jeashGetGraphics() { return jeashGraphics; }
-
+	override function jeashGetGraphics() return jeashGraphics
+	override function jeashGetObjectUnderPoint(point:Point):DisplayObject return null
 }
-
-
-

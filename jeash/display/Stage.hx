@@ -211,10 +211,9 @@ class Stage extends flash.display.DisplayObjectContainer
 		}
 	}
 
-	public function jeashProcessStageEvent(evt:Html5Dom.Event)
-	{
-		//evt.preventDefault();
+	public function jeashProcessStageEvent(evt:Html5Dom.Event) {
 		evt.stopPropagation();
+
 		switch(evt.type)
 		{
 			case (flash.events.MouseEvent.MOUSE_MOVE.toLowerCase()):
@@ -272,10 +271,8 @@ class Stage extends flash.display.DisplayObjectContainer
 	}
 
 	// @r551
-	function jeashOnMouse(event:Html5Dom.MouseEvent, type:String)
-	{
-		var point : Point = untyped
-		{
+	function jeashOnMouse(event:Html5Dom.MouseEvent, type:String) {
+		var point : Point = untyped {
 			new Point(event.clientX - Lib.mMe.__scr.offsetLeft, event.clientY - Lib.mMe.__scr.offsetTop);
 		}
 
@@ -284,20 +281,14 @@ class Stage extends flash.display.DisplayObjectContainer
 
 		var obj = jeashGetObjectUnderPoint(point);
 
-		// only interactiveObject can collect mouse events
-		var mouseEnabled:Bool = Reflect.field(obj, "mouseEnabled");
-		if (mouseEnabled == null || !mouseEnabled) return;
-
 		// used in drag implementation
 		mouseX = point.x;
 		mouseY = point.y;
 
 		var stack = new Array<InteractiveObject>();
-		if (obj!=null)
-			obj.jeashGetInteractiveObjectStack(stack);
+		if (obj!=null) obj.jeashGetInteractiveObjectStack(stack);
 
-		if (stack.length > 0)
-		{
+		if (stack.length > 0) {
 			//var global = obj.localToGlobal(point);
 			//var obj = stack[0];
 			stack.reverse();
@@ -436,8 +427,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	}
 
 	function jeashGetFrameRate() { return jeashFrameRate; }
-	function jeashSetFrameRate(speed:Float):Float
-	{
+	function jeashSetFrameRate(speed:Float):Float {
 		if ( StringTools.startsWith(Lib.context, "swf") ) return speed;
 
 		var window : Window = cast js.Lib.window;
@@ -455,12 +445,10 @@ class Stage extends flash.display.DisplayObjectContainer
 		return speed;
 	}
 
-	public function jeashUpdateNextWake () 
-	{
+	public function jeashUpdateNextWake () {
 		var window : Window = cast js.Lib.window;
 		window.clearInterval( jeashTimer );
-		if ( jeashFastMode )
-		{
+		if ( jeashFastMode ) {
 			window.addEventListener( 'message', jeashStageRender, false );
 			window.postMessage('a', cast window.location);
 		} else {
@@ -468,10 +456,8 @@ class Stage extends flash.display.DisplayObjectContainer
 		}
 	}
 
-	function jeashStageRender (?_) 
-	{
-		if (!jeashStageActive)
-		{
+	function jeashStageRender (?_) {
+		if (!jeashStageActive) {
 			jeashOnResize(jeashWindowWidth, jeashWindowHeight);
 			var event = new flash.events.Event( flash.events.Event.ACTIVATE );
 			event.target = this;

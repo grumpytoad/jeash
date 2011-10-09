@@ -31,6 +31,7 @@ import flash.display.BitmapData;
 import flash.display.PixelSnapping;
 import flash.geom.Rectangle;
 import flash.geom.Matrix;
+import flash.geom.Point;
 
 import Html5Dom;
 
@@ -63,11 +64,9 @@ class Bitmap extends jeash.display.DisplayObject {
 		return inBitmapData;
 	}
 
-
-	override function jeashGetGraphics() { return jeashGraphics; }
+	override function jeashGetGraphics() return jeashGraphics
 	
-	override function BuildBounds()
-	{
+	override function BuildBounds() {
 		super.BuildBounds();
 				
 		if(bitmapData!=null)
@@ -114,5 +113,13 @@ class Bitmap extends jeash.display.DisplayObject {
 		// needed, because a BitmapData::draw() can reference a (nested) Bitmap
 		Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, canvas, parentMatrix, (parent != null ? parent.alpha : 1) * alpha);
 	}
+
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
+		if (!visible) return null; 
+		else if (this.bitmapData != null) {
+			var local = globalToLocal(point);
+			if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; else return cast this;
+		}
+		else return super.jeashGetObjectUnderPoint(point)
 
 }
