@@ -47,5 +47,5 @@ class Shape extends DisplayObject {
 	}
 
 	override function jeashGetGraphics() return jeashGraphics
-	override function jeashGetObjectUnderPoint(point:Point):DisplayObject return null
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject return null
 }
