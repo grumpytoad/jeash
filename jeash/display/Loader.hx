@@ -82,7 +82,7 @@ class Loader extends flash.display.DisplayObjectContainer
 
 		try {
 			contentLoaderInfo.addEventListener(Event.COMPLETE, handleLoad, false, 2147483647);
-			mImage.LoadFromFile(request.url, contentLoaderInfo);
+			mImage.jeashLoadFromFile(request.url, contentLoaderInfo);
 			content = new Bitmap(mImage);
 			Reflect.setField(contentLoaderInfo, "content", this.content);
 			addChild(content);

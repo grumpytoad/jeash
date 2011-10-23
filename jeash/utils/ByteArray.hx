@@ -30,8 +30,6 @@ import haxe.io.Input;
 import haxe.io.Bytes;
 import haxe.io.BytesData;
 import haxe.io.BytesBuffer;
-import haxe.io.Eof;
-import haxe.io.Error;
 
 import flash.errors.IOError;
 
@@ -105,7 +103,7 @@ class ByteArray {
 	public function readByte() : Int 
 	{
 		if( this.position >= this.length )
-			throw new Eof();
+			throw new IOError("Read error - Out of bounds");
 		return data[this.position++];
 	}
 
@@ -115,7 +113,7 @@ class ByteArray {
 			throw new IOError("Read error - Out of bounds");
 
 		if( data.length == 0 && length > 0 )
-			throw new Eof();
+			throw new IOError("Read error - Out of bounds");
 
 		if( data.length < length )
 			length = data.length;

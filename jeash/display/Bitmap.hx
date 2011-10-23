@@ -41,7 +41,7 @@ class Bitmap extends jeash.display.DisplayObject {
 	public var smoothing : Bool;
 
 	var jeashGraphics:Graphics;
-	var jeashCurrentTimestamp:Timestamp;
+	var jeashCurrentLease:ImageDataLease;
 
 	public function new(?inBitmapData : BitmapData, ?inPixelSnapping : PixelSnapping, ?inSmoothing : Bool) : Void {
 		super();
@@ -91,15 +91,15 @@ class Bitmap extends jeash.display.DisplayObject {
 		}
 
 		var m = mFullMatrix.clone();
-		var timestamp = bitmapData.jeashGetLease();
-		if (timestamp != null)
-			if (jeashCurrentTimestamp == null || timestamp.seed != jeashCurrentTimestamp.seed || timestamp.time != jeashCurrentTimestamp.time) {
+		var imageDataLease = bitmapData.jeashGetLease();
+		if (imageDataLease != null)
+			if (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time) {
 				var srcCanvas = bitmapData.handle();
 				jeashGraphics.jeashSurface.width = srcCanvas.width;
 				jeashGraphics.jeashSurface.height = srcCanvas.height;
 				jeashGraphics.clear();
 				Lib.jeashDrawToSurface(srcCanvas, jeashGraphics.jeashSurface);
-				jeashCurrentTimestamp = timestamp;
+				jeashCurrentLease = imageDataLease;
 			}
 
 		Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
