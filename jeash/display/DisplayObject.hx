@@ -480,17 +480,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
 		if (!visible) return null;
 		var gfx = jeashGetGraphics();
-		if (gfx != null)
-		{
+		if (gfx != null) {
 			var local = globalToLocal(point);
-			if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; 
-			switch (stage.jeashPointInPathMode)
-			{
+			switch (stage.jeashPointInPathMode) {
 				case USER_SPACE:
+					if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; 
 					if (gfx.jeashHitTest(local.x, local.y))
 						return cast this;
 				case DEVICE_SPACE:
-
+					if (local.x < 0 || local.y < 0 || (local.x)*scaleX > width || (local.y)*scaleY > height) return null; 
 					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
 						return cast this;
 			}
