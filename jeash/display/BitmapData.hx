@@ -406,6 +406,8 @@ class BitmapData implements IBitmapDrawable {
 
 		var rect = new Rectangle(0, 0, width, height);
 		bitmapData.setPixels(rect, getPixels(rect));
+		bitmapData.jeashBuildLease();
+
 		return bitmapData;
 	}
 
