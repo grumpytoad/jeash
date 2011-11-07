@@ -180,17 +180,10 @@ class BitmapData implements IBitmapDrawable {
 		if (sourceRect.x + sourceRect.width > sourceBitmapData.handle().width) sourceRect.width = sourceBitmapData.handle().width - sourceRect.x;
 		if (sourceRect.y + sourceRect.height > sourceBitmapData.handle().height) sourceRect.height = sourceBitmapData.handle().height - sourceRect.y;
 
-		if (!jeashLocked) {
-			jeashBuildLease();
+		jeashBuildLease();
 
-			var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-			ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
-		} else {
-			unlock();
-			var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-			ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
-			lock();
-		}
+		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
 	}
 
 	private function clipRect (r: Rectangle): Rectangle {
@@ -223,28 +216,40 @@ class BitmapData implements IBitmapDrawable {
 		return r;
 	}
 
-	public function fillRect(rect: Rectangle, color: UInt) : Void {
+
+	public function fillRect(rect: Rectangle, color: UInt) : Void
+	{
 		if (rect == null) return;
 		if (rect.width <= 0 || rect.height <= 0) return;
 
-		if (!jeashLocked) {
-			jeashBuildLease();
+		jeashBuildLease();
 
-			var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-			ctx.fillStyle = '#' + StringTools.hex(color);
-			ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+		var r: Int = (color & 0xFF0000) >>> 16;
+		var g: Int = (color & 0x00FF00) >>> 8;
+		var b: Int = (color & 0x0000FF);
+		var a: Int = (jeashTransparent)? (color >>> 24) : 0xFF;
 
+		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+		if (!jeashLocked)
+		{
+			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
+
+			var offsetX : Int;
+			for (i in 0...imagedata.data.length >> 2)
+			{
+				offsetX = i * 4;
+				imagedata.data[offsetX] = r;
+				imagedata.data[offsetX + 1] = g;
+				imagedata.data[offsetX + 2] = b;
+				imagedata.data[offsetX + 3] = a;
+			}
+			ctx.putImageData (imagedata, rect.x, rect.y);
 		} else {
-
-			var r: Int = (color & 0xFF0000) >>> 16;
-			var g: Int = (color & 0x00FF00) >>> 8;
-			var b: Int = (color & 0x0000FF);
-			var a: Int = (jeashTransparent)? (color >>> 24) : 0xFF;
-
 			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
-			var offsetY = 0;
-			var offsetX = 0;
-			for (i in 0...Math.round(rect.height)) {
+			var offsetY : Int;
+			var offsetX : Int;
+			for (i in 0...Math.round(rect.height))
+			{
 				offsetY = (i * jeashImageData.width);
 				for (j in 0...Math.round(rect.width))
 				{
@@ -255,6 +260,7 @@ class BitmapData implements IBitmapDrawable {
 					jeashImageData.data[s + offsetX + 3] = a;
 				}
 			}
+			ctx.putImageData (jeashImageData, 0, 0, rect.x, rect.y, rect.width, rect.height);
 		}
 	}
 
