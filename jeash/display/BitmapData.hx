@@ -113,13 +113,7 @@ class BitmapData implements IBitmapDrawable {
 			clipRect:Rectangle = null,
 			smoothing:Bool = false ):Void {
 		jeashBuildLease();
-		if (!jeashLocked)
-			source.drawToSurface(mTextureBuffer, matrix, colorTransform, blendMode, clipRect, smoothing);
-		else {
-			unlock();
-			source.drawToSurface(mTextureBuffer, matrix, colorTransform, blendMode, clipRect, smoothing);
-			lock();
-		}
+		source.drawToSurface(mTextureBuffer, matrix, colorTransform, blendMode, clipRect, smoothing);
 	}
 
 	public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true) : Rectangle {

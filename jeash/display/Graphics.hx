@@ -246,7 +246,6 @@ class Graphics
 	private var mLastMoveID:Int;
 
 	public var mMatrix(default,null):Matrix;
-	//public var mSurfaceAlpha(null,default):Float;
 
 	public var jeashShift(default,null):Bool;
 	public var owner:DisplayObject;
@@ -260,6 +259,7 @@ class Graphics
 	// and will not contract if the drawing list changes. 
 	private var jeashRenderFrame:Int;
 	private static inline var JEASH_SIZING_WARM_UP = 10;
+	private static inline var JEASH_MAX_DIMENSION = 5000;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -1028,7 +1028,7 @@ class Graphics
 		}
 
 		jeashChanged = true;
-		standardExtent=null;
+		//standardExtent=null;
 		markBoundsDirty();
 	}
 
@@ -1127,13 +1127,18 @@ class Graphics
 
 	function jeashAdjustSurface() 
 	{
+		var width = Math.ceil(standardExtent.width - standardExtent.x);
+		var height = Math.ceil(standardExtent.height - standardExtent.y);
+
+		// prevent allocating too large canvas sizes
+		if (width > JEASH_MAX_DIMENSION || height > JEASH_MAX_DIMENSION) return;
 
 		// re-allocate canvas, copy into larger canvas.
 		var dstCanvas : HTMLCanvasElement = cast js.Lib.document.createElement("canvas");
 		var ctx = dstCanvas.getContext("2d");
 
-		dstCanvas.width = Math.ceil(standardExtent.width - standardExtent.x);
-		dstCanvas.height = Math.ceil(standardExtent.height - standardExtent.y);
+		dstCanvas.width = width;
+		dstCanvas.height = height;
 
 		Lib.jeashDrawToSurface(jeashSurface, dstCanvas);
 		if (Lib.jeashIsOnStage(jeashSurface)) {

@@ -334,7 +334,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		{
 			var gfx = jeashGetGraphics();
 			if (gfx!=null)
-				mGraphicsBounds = gfx.getStandardExtent();//gfx.GetExtent(new Matrix());
+				mGraphicsBounds = gfx.getStandardExtent().clone();
 		}
 		return mGraphicsBounds;
 	}
@@ -484,7 +484,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			var local = globalToLocal(point);
 			switch (stage.jeashPointInPathMode) {
 				case USER_SPACE:
-					if (local.x < 0 || local.y < 0 || local.x > width || local.y > height) return null; 
+					if (local.x < 0 || local.y < 0 || (local.x)*scaleX > width || (local.y)*scaleY > height) return null; 
 					if (gfx.jeashHitTest(local.x, local.y))
 						return cast this;
 				case DEVICE_SPACE:
@@ -543,7 +543,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mBoundsRect = new Rectangle(x,y,0,0);
 		else
 		{
-			mBoundsRect = gfx.getStandardExtent();//gfx.GetExtent(new Matrix());
+			mBoundsRect = gfx.getStandardExtent().clone();
 			gfx.markBoundsClean();
 			if (mScale9Grid!=null)
 			{
