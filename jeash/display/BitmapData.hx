@@ -339,12 +339,17 @@ class BitmapData implements IBitmapDrawable {
 			imageData.data[0] = (color & 0xFF0000) >>> 16;
 			imageData.data[1] = (color & 0x00FF00) >>> 8;
 			imageData.data[2] = (color & 0x0000FF) ;
+			if (jeashTransparent)
+				imageData.data[3] = (0xFF);
+
 			ctx.putImageData(imageData, x, y);
 		} else {
 			var offset = (4 * y * jeashImageData.width + x * 4);
 			jeashImageData.data[offset] = (color & 0xFF0000) >>> 16;
 			jeashImageData.data[offset + 1] = (color & 0x00FF00) >>> 8;
 			jeashImageData.data[offset + 2] = (color & 0x0000FF) ;
+			if (jeashTransparent)
+				jeashImageData.data[offset + 3] = (0xFF);
 		}
 	}
 
