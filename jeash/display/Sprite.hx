@@ -34,18 +34,18 @@ import flash.geom.Point;
 import flash.Lib;
 import flash.events.MouseEvent;
 
-class Sprite extends DisplayObjectContainer
-{
+class Sprite extends DisplayObjectContainer {
 	var jeashGraphics:Graphics;
 	public var graphics(jeashGetGraphics,null):Graphics;
 	public var useHandCursor(default,jeashSetUseHandCursor):Bool;
 	public var buttonMode:Bool;
+	public var dropTarget(jeashGetDropTarget,null):DisplayObject;
 
 	var jeashCursorCallbackOver:Dynamic->Void;
 	var jeashCursorCallbackOut:Dynamic->Void;
+	var jeashDropTarget:DisplayObject;
 
-	public function new()
-	{
+	public function new() {
 		Lib.canvas;
 		jeashGraphics = new Graphics();
 		if(jeashGraphics!=null)
@@ -56,25 +56,33 @@ class Sprite extends DisplayObjectContainer
 		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
-	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void
-	{
+	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void {
 		if (stage != null)
 			stage.jeashStartDrag(this, lockCenter, bounds);
 	}
 
-	public function stopDrag():Void
-	{
-		if (stage != null)
+	public function stopDrag():Void {
+		if (stage != null) {
 			stage.jeashStopDrag(this);
+			var l = parent.jeashChildren.length-1;
+			var obj:DisplayObject = stage;
+			for(i in 0...parent.jeashChildren.length) {
+				var result = parent.jeashChildren[l-i].jeashGetObjectUnderPoint(new Point(stage.mouseX, stage.mouseY));
+				if (result != null) obj = result;
+			}
+
+			if (obj != this)
+				jeashDropTarget = obj;
+			else
+				jeashDropTarget = stage;
+		}
 	}
 
-	override function jeashGetGraphics() 
-	{ 
+	override function jeashGetGraphics() { 
 		return jeashGraphics; 
 	}
 
-	function jeashSetUseHandCursor(cursor:Bool)
-	{
+	function jeashSetUseHandCursor(cursor:Bool) {
 		if (cursor == this.useHandCursor) return cursor;
 
 		if (jeashCursorCallbackOver != null)
@@ -82,8 +90,7 @@ class Sprite extends DisplayObjectContainer
 		if (jeashCursorCallbackOut != null)
 			removeEventListener(MouseEvent.ROLL_OUT, jeashCursorCallbackOut);
 
-		if (!cursor)
-		{
+		if (!cursor) {
 			Lib.jeashSetCursor(false);
 		} else {
 			jeashCursorCallbackOver = function (_) { Lib.jeashSetCursor(true); }
@@ -95,5 +102,7 @@ class Sprite extends DisplayObjectContainer
 
 		return cursor;
 	}
+
+	function jeashGetDropTarget() return jeashDropTarget
 }
 
