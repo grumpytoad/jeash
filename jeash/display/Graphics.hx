@@ -260,6 +260,7 @@ class Graphics
 	private var jeashRenderFrame:Int;
 	private static inline var JEASH_SIZING_WARM_UP = 10;
 	private static inline var JEASH_MAX_DIMENSION = 5000;
+	public var jeashExtentBuffer:Float;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -301,12 +302,12 @@ class Graphics
 		jeashChanged = true;
 		jeashShift = false;
 		nextDrawIndex = 0;
-		//jeashRenderFrame = 0;
+		jeashRenderFrame = 0;
 
+		jeashExtentBuffer = 0;
 	}
 
-	public function SetSurface(inSurface:Dynamic)
-	{
+	public function SetSurface(inSurface:Dynamic) {
 		jeashSurface = inSurface;
 	}
 
@@ -320,7 +321,8 @@ class Graphics
 		return 'rgba' + '(' + r + ',' + g + ',' + b + ',' + alpha + ')';
 
 	}
-	private function createCanvasGradient(ctx : CanvasRenderingContext2D, g : Grad) : CanvasGradient{
+
+	private function createCanvasGradient(ctx : CanvasRenderingContext2D, g : Grad) : CanvasGradient {
 		var gradient : CanvasGradient;
 		//TODO handle spreadMethod flags REPEAT and REFLECT (defaults to PAD behavior)
 
@@ -344,8 +346,7 @@ class Graphics
 		return gradient;
 	}
 
-	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix)
-	{
+	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix) {
 		if (!jeashChanged) {
 			return false;
 		}
@@ -865,6 +866,7 @@ class Graphics
 				maxY=p.y>maxY?p.y:maxY;
 				minY=p.y<minY?p.y:minY;
 			}
+
 			if (dl.bitmap != null)
 			{	
 				var width = dl.bitmap.texture_buffer.width;
@@ -880,10 +882,11 @@ class Graphics
 			nextDrawIndex = 0;
 			jeashClearCanvas();		
 		}
+
 		originX=minX;
 		originY=minY;
 		
-		return standardExtent = new Rectangle(minX, minY, maxX-minX, maxY-minY);
+		return standardExtent = new Rectangle(minX, minY, maxX-minX+jeashExtentBuffer, maxY-minY+jeashExtentBuffer);
 	}
 
 	public function moveTo(inX:Float,inY:Float)
@@ -1125,8 +1128,7 @@ class Graphics
 		}
 	}
 
-	function jeashAdjustSurface() 
-	{
+	function jeashAdjustSurface() {
 		var width = Math.ceil(standardExtent.width - standardExtent.x);
 		var height = Math.ceil(standardExtent.height - standardExtent.y);
 

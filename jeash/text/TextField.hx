@@ -39,37 +39,32 @@ import flash.display.InteractiveObject;
 
 import Html5Dom;
 
-typedef SpanAttribs =
-{
+typedef SpanAttribs = {
 	var face:String;
 	var height:Int;
 	var colour:Int;
 	var align:TextFormatAlign;
 }
 
-typedef Span = 
-{
+typedef Span = {
 	var font:FontInstance;
 	var text:String;
 }
 
-typedef Paragraph =
-{
+typedef Paragraph = {
 	var align:TextFormatAlign;
 	var spans: Array<Span>;
 }
 
 typedef Paragraphs = Array<Paragraph>;
 
-typedef LineInfo =
-{
+typedef LineInfo = {
 	var mY0:Int;
 	var mIndex:Int;
 	var mX:Array<Int>;
 }
 
-typedef RowChar =
-{
+typedef RowChar = {
 	var x:Int;
 	var fh:Int;
 	var adv:Int;
@@ -80,8 +75,7 @@ typedef RowChar =
 
 typedef RowChars = Array<RowChar>;
 
-class TextField extends InteractiveObject
-{
+class TextField extends InteractiveObject {
 	public var htmlText(GetHTMLText,SetHTMLText):String;
 	public var text(GetText,SetText):String;
 	public var textColor(GetTextColour,SetTextColour):Int;
@@ -148,14 +142,14 @@ class TextField extends InteractiveObject
 	var jeashGraphics:Graphics;
 	var mCaretGfx:Graphics;
 
-	public function new()
-	{
+	public function new() {
 		super();
 		mWidth = 40;
 		mHeight = 20;
 		mHTMLMode = false;
 		multiline = false;
 		jeashGraphics = new Graphics();
+		jeashGraphics.jeashExtentBuffer = 12;
 		mCaretGfx = new Graphics();
 		mFace = mDefaultFont;
 		mAlign = flash.text.TextFormatAlign.LEFT;
@@ -192,17 +186,14 @@ class TextField extends InteractiveObject
 	}
 
 	// TODO: untested
-	public function ClearSelection()
-	{
+	public function ClearSelection() {
 		mSelStart = mSelEnd = -1; mSelectionAnchored = false;
 		Rebuild();
 	}
 
 	// TODO: untested
-	public function DeleteSelection()
-	{
-		if (mSelEnd > mSelStart && mSelStart>=0)
-		{
+	public function DeleteSelection() {
+		if (mSelEnd > mSelStart && mSelStart>=0) {
 			mText = mText.substr(0,mSelStart) + mText.substr(mSelEnd);
 			mInsertPos = mSelStart;
 			mSelStart = mSelEnd = -1;
@@ -211,38 +202,27 @@ class TextField extends InteractiveObject
 	}
 
 	// TODO: unimplemented and untested
-	public function OnMoveKeyStart(inShift:Bool)
-	{
-		if (inShift && selectable)
-		{
-			if (!mSelectionAnchored)
-			{
+	public function OnMoveKeyStart(inShift:Bool) {
+		if (inShift && selectable) {
+			if (!mSelectionAnchored) {
 				mSelectionAnchored = true;
 				mSelectionAnchor = mInsertPos;
-				if (sSelectionOwner!=this)
-				{
+				if (sSelectionOwner!=this) {
 					if (sSelectionOwner!=null)
 						sSelectionOwner.ClearSelection();
 					sSelectionOwner = this;
 				}
 			}
-		}
-		else
-			ClearSelection();
+		} else ClearSelection();
 	}
 
 	// TODO: unimplemented and untested
-	public function OnMoveKeyEnd()
-	{
-		if (mSelectionAnchored)
-		{
-			if (mInsertPos<mSelectionAnchor)
-			{
+	public function OnMoveKeyEnd() {
+		if (mSelectionAnchored) {
+			if (mInsertPos<mSelectionAnchor) {
 				mSelStart = mInsertPos;
 				mSelEnd =mSelectionAnchor;
-			}
-			else
-			{
+			} else {
 				mSelStart = mSelectionAnchor;
 				mSelEnd =mInsertPos;
 			}
@@ -250,8 +230,7 @@ class TextField extends InteractiveObject
 	}
 
 	// TODO: unimplemented and untested
-	override public function OnKey(inKey:KeyboardEvent):Void
-	{
+	override public function OnKey(inKey:KeyboardEvent):Void {
 		if (inKey.type!=KeyboardEvent.KEY_DOWN)
 			return;
 
@@ -261,40 +240,32 @@ class TextField extends InteractiveObject
 		var shift = inKey.shiftKey;
 
 		// ctrl-c
-		if ( ascii==3 )
-		{
+		if ( ascii==3 ) {
 			if (mSelEnd > mSelStart && mSelStart>=0)
 				//Manager.setClipboardString( text.substr(mSelStart,mSelEnd-mSelStart) );
 				throw "To implement setClipboardString. TextField.OnKey";
 			return;
 		}
 
-		if (mInput)
-		{
-			if (key==Keyboard.LEFT)
-			{
+		if (mInput) {
+			if (key==Keyboard.LEFT) {
 				OnMoveKeyStart(shift);
 				mInsertPos--;
 				OnMoveKeyEnd();
-			}
-			else if (key==Keyboard.RIGHT)
-			{
+			} else if (key==Keyboard.RIGHT) {
 				OnMoveKeyStart(shift);
 				mInsertPos++;
 				OnMoveKeyEnd();
-			}
-			else if (key==Keyboard.HOME)
-			{
+			} else if (key==Keyboard.HOME) {
 				OnMoveKeyStart(shift);
 				mInsertPos = 0;
 				OnMoveKeyEnd();
-			}
-			else if (key==Keyboard.END)
-			{
+			} else if (key==Keyboard.END) {
 				OnMoveKeyStart(shift);
 				mInsertPos = mText.length;
 				OnMoveKeyEnd();
 			}
+			/* TODO: check if needed
 #if neko
 			else if ( (key==Keyboard.INSERT && shift) || ascii==22)
 			{
@@ -317,28 +288,22 @@ class TextField extends InteractiveObject
 			}
 
 #end
-			else if (key==Keyboard.DELETE || key==Keyboard.BACKSPACE)
-			{
+			 */
+			else if (key==Keyboard.DELETE || key==Keyboard.BACKSPACE) {
 				if (mSelEnd> mSelStart && mSelStart>=0)
 					DeleteSelection();
-				else
-				{
+				else {
 					if (key==Keyboard.BACKSPACE && mInsertPos>0)
 						mInsertPos--;
 					var l = mText.length;
-					if (mInsertPos>l)
-					{
+					if (mInsertPos>l) {
 						if (l>0)
 							mText = mText.substr(0,l-1);
-					}
-					else
-					{
+					} else {
 						mText = mText.substr(0,mInsertPos) + mText.substr(mInsertPos+1);
 					}
 				}
-			}
-			else if (ascii>=32 && ascii<128)
-			{
+			} else if (ascii>=32 && ascii<128) {
 				if (mSelEnd> mSelStart && mSelStart>=0)
 					DeleteSelection();
 				mText = mText.substr(0,mInsertPos) + String.fromCharCode(ascii) + mText.substr(mInsertPos);
@@ -356,10 +321,8 @@ class TextField extends InteractiveObject
 	}
 
 	// TODO: unimplemented and untested
-	public function OnFocusIn(inMouse:Bool)
-	{
-		if (mInput && selectable && !inMouse)
-		{
+	public function OnFocusIn(inMouse:Bool) {
+		if (mInput && selectable && !inMouse) {
 			mSelStart = 0;
 			mSelEnd = mText.length;
 			RebuildText();
@@ -368,18 +331,15 @@ class TextField extends InteractiveObject
 
 	override public function jeashGetWidth() : Float { return mWidth; }
 	override public function jeashGetHeight() : Float { return mHeight; }
-	override public function jeashSetWidth(inWidth:Float) : Float
-	{
-		if (inWidth!=mWidth)
-		{
+	override public function jeashSetWidth(inWidth:Float) : Float {
+		if (inWidth!=mWidth) {
 			mWidth = inWidth;
 			Rebuild();
 		}
 		return mWidth;
 	}
 
-	override public function jeashSetHeight(inHeight:Float) : Float
-	{
+	override public function jeashSetHeight(inHeight:Float) : Float {
 		if (inHeight!=mHeight)
 		{
 			mHeight = inHeight;
@@ -389,8 +349,7 @@ class TextField extends InteractiveObject
 	}
 
 	public function GetType() { return mType; }
-	public function SetType(inType:String) : String
-	{
+	public function SetType(inType:String) : String {
 		mType = inType;
 
 		mInput = mType == TextFieldType.INPUT;
@@ -405,8 +364,7 @@ class TextField extends InteractiveObject
 	public function GetCaret() { return mInsertPos; }
 	override function jeashGetGraphics() : flash.display.Graphics { return jeashGraphics; }
 
-	public function getLineIndexAtPoint(inX:Float,inY:Float) : Int
-	{
+	public function getLineIndexAtPoint(inX:Float,inY:Float) : Int {
 		if (mLineInfo.length<1) return -1;
 		if (inY<=0) return 0;
 
@@ -416,8 +374,7 @@ class TextField extends InteractiveObject
 		return mLineInfo.length-1;
 	}
 
-	public function getCharIndexAtPoint(inX:Float,inY:Float) : Int
-	{
+	public function getCharIndexAtPoint(inX:Float,inY:Float) : Int {
 		var li = getLineIndexAtPoint(inX,inY);
 		if (li<0)
 			return -1;
@@ -439,8 +396,7 @@ class TextField extends InteractiveObject
 	}
 
 	// Not used?
-	public function OnMouseDown(inX:Int, inY:Int)
-	{
+	public function OnMouseDown(inX:Int, inY:Int) {
 		if (tabEnabled || selectable)
 		{
 			if (sSelectionOwner != null)
@@ -462,8 +418,7 @@ class TextField extends InteractiveObject
 	}
 
 	// Not used?
-	public function OnMouseDrag(inX:Int, inY:Int)
-	{
+	public function OnMouseDrag(inX:Int, inY:Int) {
 		if ( (tabEnabled||selectable) && mSelectDrag>=0)
 		{
 			var gx = inX/stage.scaleX;
@@ -495,24 +450,20 @@ class TextField extends InteractiveObject
 			RebuildText();
 		}
 	}
+
 	// Not used?
-	public function OnMouseUp(inX:Int, inY:Int)
-	{
+	public function OnMouseUp(inX:Int, inY:Int) {
 		mSelectDrag = -1;
 	}
-
-
 
 	var mMaxWidth:Int;
 	var mMaxHeight:Int;
 	var mLimitRenderX:Int;
 
-	function RenderRow(inRow:Array<RowChar>, inY:Int, inCharIdx:Int,inAlign:TextFormatAlign, ?inInsert:Int) : Int
-	{
+	function RenderRow(inRow:Array<RowChar>, inY:Int, inCharIdx:Int,inAlign:TextFormatAlign, ?inInsert:Int) : Int {
 		var h = 0;
 		var w = 0;
-		for(chr in inRow)
-		{
+		for(chr in inRow) {
 			if (chr.fh > h)
 				h = chr.fh;
 			w+=chr.adv;
@@ -525,22 +476,15 @@ class TextField extends InteractiveObject
 
 		var align_x = 0;
 		var insert_x = 0;
-		if (inInsert!=null)
-		{
-			if (autoSize != flash.text.TextFieldAutoSize.NONE)
-			{
+		if (inInsert!=null) {
+			if (autoSize != flash.text.TextFieldAutoSize.NONE) {
 				mScrollH = 0;
 				insert_x = inInsert;
-			}
-			else
-			{
+			} else {
 				insert_x = inInsert - mScrollH;
-				if (insert_x<0)
-				{
+				if (insert_x<0) {
 					mScrollH -= ( (mLimitRenderX*3)>>2 ) - insert_x;
-				}
-				else if (insert_x > mLimitRenderX)
-				{
+				} else if (insert_x > mLimitRenderX) {
 					mScrollH +=  insert_x - ((mLimitRenderX*3)>>2);
 				}
 				if (mScrollH<0)
@@ -548,8 +492,7 @@ class TextField extends InteractiveObject
 			}
 		}
 
-		if (autoSize == flash.text.TextFieldAutoSize.NONE && w<=mLimitRenderX)
-		{
+		if (autoSize == flash.text.TextFieldAutoSize.NONE && w<=mLimitRenderX) {
 			if (inAlign == TextFormatAlign.CENTER)
 				align_x = (mLimitRenderX-w)>>1;
 			else if (inAlign == TextFormatAlign.RIGHT)
@@ -564,30 +507,24 @@ class TextField extends InteractiveObject
 
 		var x = align_x-mScrollH;
 		var x0 = x;
-		for(chr in inRow)
-		{
+		for(chr in inRow) {
 			var adv = chr.adv;
 			if (x+adv>mLimitRenderX)
 				break;
 
 			x_list.push(x);
 
-			if (x>=0)
-			{
+			if (x>=0) {
 				var font = chr.font;
-				if (chr.sel)
-				{
+				if (chr.sel) {
 					jeashGraphics.lineStyle();
 					jeashGraphics.beginFill(0x202060);
 					jeashGraphics.drawRect(x,inY,adv,full_height);
 					jeashGraphics.endFill();
 
-					if (cache_normal_font == chr.font)
-					{
+					if (cache_normal_font == chr.font) {
 						font = cache_sel_font;
-					}
-					else
-					{
+					} else {
 						font = FontInstance.CreateSolid( chr.font.GetFace(), chr.fh, 0xffffff,1.0 );
 						cache_sel_font = font;
 						cache_normal_font = chr.font;
@@ -602,8 +539,7 @@ class TextField extends InteractiveObject
 		x+=mScrollH;
 
 
-		if (inInsert!=null)
-		{
+		if (inInsert!=null) {
 			mCaretGfx.lineStyle(1,mTextColour);
 			mCaretGfx.moveTo(inInsert+align_x-mScrollH ,inY);
 			mCaretGfx.lineTo(inInsert+align_x-mScrollH ,inY+full_height);
@@ -612,11 +548,7 @@ class TextField extends InteractiveObject
 		return full_height;
 	}
 
-
-
-
-	function Rebuild()
-	{
+	function Rebuild() {
 		mLineInfo = [];
 
 		jeashGraphics.clear();
@@ -628,6 +560,7 @@ class TextField extends InteractiveObject
 			jeashGraphics.drawRect(-2,-2,width+4,height+4);
 			jeashGraphics.endFill();
 		}
+
 		jeashGraphics.lineStyle(mTextColour);
 
 		var insert_x:Null<Int> = null;
@@ -641,8 +574,7 @@ class TextField extends InteractiveObject
 		var s0 = mSelStart;
 		var s1 = mSelEnd;
 
-		for(paragraph in mParagraphs)
-		{
+		for(paragraph in mParagraphs) {
 			var row:Array<RowChar> = [];
 			var row_width = 0;
 			var last_word_break = 0;
@@ -651,9 +583,7 @@ class TextField extends InteractiveObject
 			var start_idx = char_idx;
 			var tx = 0;
 
-
-			for(span in paragraph.spans)
-			{
+			for(span in paragraph.spans) {
 				var text = span.text;
 				var font = span.font;
 				var fh = font.height;
@@ -661,28 +591,20 @@ class TextField extends InteractiveObject
 				last_word_break_width = row_width;
 				last_word_char_idx = char_idx;
 
-#if (neko||cpp)
-				font.mTryFreeType = mTryFreeType;
-#end
-
-				for(ch in 0...text.length)
-				{
+				for(ch in 0...text.length) {
 					if (char_idx == mInsertPos && mInput)
 						insert_x = tx;
 
 					var g = text.charCodeAt(ch);
 					var adv = font.jeashGetAdvance(g);
-					if (g==32)
-					{
+					if (g==32) {
 						last_word_break = row.length;
 						last_word_break_width = tx;
 						last_word_char_idx = char_idx;
 					}
 
-					if ( (tx+adv)>wrap )
-					{
-						if (last_word_break>0)
-						{
+					if ( (tx+adv)>wrap ) {
+						if (last_word_break>0) {
 							var row_end = row.splice(last_word_break, row.length-last_word_break);
 							h+=RenderRow(row,h,start_idx,paragraph.align);
 							row = row_end;
@@ -692,14 +614,11 @@ class TextField extends InteractiveObject
 							last_word_break = 0;
 							last_word_break_width = 0;
 							last_word_char_idx = 0;
-							if (row_end.length>0 && row_end[0].chr==32)
-							{
+							if (row_end.length>0 && row_end[0].chr==32) {
 								row_end.shift();
 								start_idx ++;
 							}
-						}
-						else
-						{
+						} else {
 							h+=RenderRow(row,h,char_idx,paragraph.align);
 							row = [];
 							tx = 0;
@@ -712,8 +631,7 @@ class TextField extends InteractiveObject
 					char_idx++;
 				}
 			}
-			if (row.length>0)
-			{
+			if (row.length>0) {
 				var pos = (mInput && insert_x==null) ? tx : (insert_x==null ? 0 : insert_x);
 				h+=RenderRow(row,h,start_idx,paragraph.align,pos);
 			}
@@ -725,8 +643,7 @@ class TextField extends InteractiveObject
 			h = mTextHeight;
 		mMaxHeight = h;
 
-		switch(autoSize)
-		{
+		switch(autoSize) {
 			case flash.text.TextFieldAutoSize.LEFT:
 				width = w;
 				height = h;
@@ -745,9 +662,7 @@ class TextField extends InteractiveObject
 					height = h;
 		}
 
-
-		if (char_idx==0 && mInput)
-		{
+		if (char_idx==0 && mInput) {
 			var x = 0;
 			if (mAlign==TextFormatAlign.CENTER)
 				x = Std.int(width/2);
@@ -759,10 +674,7 @@ class TextField extends InteractiveObject
 			mCaretGfx.lineTo(x ,mTextHeight);
 		}
 
-
-
-		if (border)
-		{
+		if (border) {
 			jeashGraphics.endFill();
 			jeashGraphics.lineStyle(1,borderColor);
 			jeashGraphics.drawRect(-2,-2,width+4,height+4);
@@ -781,16 +693,14 @@ class TextField extends InteractiveObject
 		var px = inv.a*inX + inv.c*inY + inv.tx;
 		var py = inv.b*inX + inv.d*inY + inv.ty;
 
-		if (px>0 && px<width && py>0 && py<height)
-		{
+		if (px>0 && px<width && py>0 && py<height) {
 			return this;
 		}
 
 		return null;
 	}
 
-	override public function GetBackgroundRect() : Rectangle
-	{
+	override public function GetBackgroundRect() : Rectangle {
 		if (border)
 			return new Rectangle(-2,-2,width+4,height+4);
 		else
@@ -798,25 +708,12 @@ class TextField extends InteractiveObject
 	}
 
 
-	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement)
-	{
+	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
 		if (!visible) return ;
-
+		
 		/* inMask = */ super.jeashRender(inParentMatrix, inMask);
-		if (mInput && stage.focus==this)
-		{
-			if ( (Std.int(flash.Lib.getTimer()*0.002) & 1) == 1 )
-			{
-				/* Note: probably can remove this
-				if (inScrollRect!=null)
-				{
-					var m = mFullMatrix.clone();
-					m.tx -= inTX;
-					m.ty -= inTY;
-					mCaretGfx.render(m,null,inMask,inScrollRect);
-				}
-				else
-				*/
+		if (mInput && stage.focus==this) {
+			if ( (Std.int(flash.Lib.getTimer()*0.002) & 1) == 1 ) {
 				mCaretGfx.jeashRender(inMask, mFullMatrix);
 			}
 		}
@@ -828,22 +725,19 @@ class TextField extends InteractiveObject
 	public function GetTextHeight() : Int{ return mMaxHeight; }
 
 	public function GetTextColour() { return mTextColour; }
-	public function SetTextColour(inCol)
-	{
+	public function SetTextColour(inCol) {
 		mTextColour = inCol;
 		RebuildText();
 		return inCol;
 	}
 
-	public function GetText()
-	{
+	public function GetText() {
 		if (mHTMLMode)
 			ConvertHTMLToText(false);
 		return mText;
 	}
 
-	public function SetText(inText:String)
-	{
+	public function SetText(inText:String) {
 		mText = inText;
 		mHTMLText = inText;
 		mHTMLMode = false;
@@ -851,8 +745,7 @@ class TextField extends InteractiveObject
 		return mText;
 	}
 
-	public function ConvertHTMLToText(inUnSetHTML:Bool)
-	{
+	public function ConvertHTMLToText(inUnSetHTML:Bool) {
 		mText = "";
 
 		for(paragraph in mParagraphs)
@@ -871,49 +764,42 @@ class TextField extends InteractiveObject
 		}
 	}
 
-	override public function GetFocusObjects(outObjs:Array<InteractiveObject>)
-	{
+	override public function GetFocusObjects(outObjs:Array<InteractiveObject>) {
 		if (mInput)
 			outObjs.push(this);
 	}
 
 
-	public function SetAutoSize(inAutoSize:String) : String
-	{
+	public function SetAutoSize(inAutoSize:String) : String {
 		autoSize = inAutoSize;
 		Rebuild();
 		return inAutoSize;
 	}
 
-	public function SetWordWrap(inWordWrap:Bool) : Bool
-	{
+	public function SetWordWrap(inWordWrap:Bool) : Bool {
 		wordWrap = inWordWrap;
 		Rebuild();
 		return wordWrap;
 	}
-	public function SetBorder(inBorder:Bool) : Bool
-	{
+	public function SetBorder(inBorder:Bool) : Bool {
 		border = inBorder;
 		Rebuild();
 		return inBorder;
 	}
 
-	public function SetBorderColor(inBorderCol:Int) : Int
-	{
+	public function SetBorderColor(inBorderCol:Int) : Int {
 		borderColor = inBorderCol;
 		Rebuild();
 		return inBorderCol;
 	}
 
-	public function SetBackgroundColor(inCol:Int) : Int
-	{
+	public function SetBackgroundColor(inCol:Int) : Int {
 		backgroundColor = inCol;
 		Rebuild();
 		return inCol;
 	}
 
-	public function SetBackground(inBack:Bool) : Bool
-	{
+	public function SetBackground(inBack:Bool) : Bool {
 		background = inBack;
 		Rebuild();
 		return inBack;
@@ -922,21 +808,16 @@ class TextField extends InteractiveObject
 
 	public function GetHTMLText() { return mHTMLText; }
 
-	function DecodeColour(col:String)
-	{
+	function DecodeColour(col:String) {
 		return Std.parseInt("0x"+col.substr(1));
 	}
 
-	function AddXML(x:Xml,a:SpanAttribs)
-	{
+	function AddXML(x:Xml,a:SpanAttribs) {
 		var type = x.nodeType;
-		if (type==Xml.Document || type==Xml.Element)
-		{
-			if (type==Xml.Element)
-			{
+		if (type==Xml.Document || type==Xml.Element) {
+			if (type==Xml.Element) {
 				a = {face:a.face, height:a.height, colour:a.colour, align:a.align};
-				switch(x.nodeName)
-				{
+				switch(x.nodeName) {
 					case "p":
 						var l = mParagraphs.length;
 						var align = x.get("align");
@@ -955,18 +836,14 @@ class TextField extends InteractiveObject
 						if (col!=null) a.colour = DecodeColour(col);
 				}
 			}
-			for(child in x)
-			{
+			for(child in x) {
 				AddXML(child,a);
 			}
-		}
-		else
-		{
+		} else {
 			var text = x.nodeValue;
 			var font = FontInstance.CreateSolid( a.face, a.height, a.colour, 1.0  );
 
-			if (font!=null && text!="")
-			{
+			if (font!=null && text!="") {
 				//trace("Add span " + a.face + "/" + a.height + "/" + a.colour );
 				var span : Span = { text: text, font:font };
 
@@ -979,20 +856,16 @@ class TextField extends InteractiveObject
 		}
 	}
 
-	public function RebuildText()
-	{
+	public function RebuildText() {
 		mParagraphs = [];
 
-		if (mHTMLMode)
-		{
+		if (mHTMLMode) {
 			var xml = Xml.parse(mHTMLText);
 
 			var a  = { face:mFace, height:mTextHeight, colour:mTextColour, align: mAlign };
 
 			AddXML(xml,a);
-		}
-		else
-		{
+		} else {
 			var font = FontInstance.CreateSolid( mFace, mTextHeight, mTextColour, 1.0  );
 			var paras = mText.split("\n");
 			for(paragraph in paras)
@@ -1001,8 +874,7 @@ class TextField extends InteractiveObject
 		Rebuild();
 	}
 
-	public function SetHTMLText(inHTMLText:String)
-	{
+	public function SetHTMLText(inHTMLText:String) {
 		mParagraphs = new Paragraphs();
 		mHTMLText = inHTMLText;
 		mHTMLMode = true;
@@ -1012,24 +884,20 @@ class TextField extends InteractiveObject
 		return mHTMLText;
 	}
 
-	public function setSelection(beginIndex : Int, endIndex : Int)
-	{
+	public function setSelection(beginIndex : Int, endIndex : Int) {
 		// TODO:
 	}
 
-	public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat
-	{
+	public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat {
 		return new TextFormat();
 	}
 
-	public function getDefaultTextFormat() : TextFormat
-	{
+	public function getDefaultTextFormat() : TextFormat {
 		return new TextFormat();
 	}
 
 
-	public function setTextFormat(inFmt:TextFormat)
-	{
+	public function setTextFormat(inFmt:TextFormat) {
 		if (inFmt.font!=null)
 			mFace = inFmt.font;
 		if (inFmt.size!=null)
@@ -1043,34 +911,17 @@ class TextField extends InteractiveObject
 		return getTextFormat();
 	}
 
-	/*override public function jeashUpdateMatrix()
-	{
-		// ignore width and height changes
-		mMatrix = new Matrix(this.scaleX, 0.0, 0.0, this.scaleY);
-
-		var rad = this.rotation * Math.PI / 180.0;
-		if (rad != 0.0)
-			mMatrix.rotate(rad);
-
-		mMatrix.tx = this.x;
-		mMatrix.ty = this.y;
-
-	}*/
-
-
 }
 
 import flash.geom.Matrix;
 import flash.display.Graphics;
 import flash.display.BitmapData;
 
-enum FontInstanceMode
-{
+enum FontInstanceMode {
 	fimSolid;
 }
 
-class FontInstance
-{
+class FontInstance {
 	static var mSolidFonts = new Hash<FontInstance>();
 
 	var mMode : FontInstanceMode;
@@ -1084,9 +935,7 @@ class FontInstance
 
 	public var height(jeashGetHeight,null):Int;
 
-
-	function new(inFont:Font,inHeight:Int)
-	{
+	function new(inFont:Font,inHeight:Int) {
 		mFont = inFont;
 		mHeight = inHeight;
 		mTryFreeType = true;
@@ -1094,21 +943,15 @@ class FontInstance
 		mCacheAsBitmap = false;
 	}
 
-
-	public function toString() : String
-	{
+	public function toString() : String {
 		return "FontInstance:" + mFont + ":" + mColour + "(" + mGlyphs.length + ")";
 	}
 
-
-
-	public function GetFace()
-	{
+	public function GetFace() {
 		return mFont.fontName;
 	}
 
-	static public function CreateSolid(inFace:String,inHeight:Int,inColour:Int, inAlpha:Float)
-	{
+	static public function CreateSolid(inFace:String,inHeight:Int,inColour:Int, inAlpha:Float) {
 		var id = "SOLID:" + inFace+ ":" + inHeight + ":" + inColour + ":" + inAlpha;
 		var f:FontInstance =  mSolidFonts.get(id);
 		if (f!=null)
@@ -1131,23 +974,19 @@ class FontInstance
 
 	function jeashGetHeight():Int { return mHeight; }
 
-	function SetSolid(inCol:Int, inAlpha:Float)
-	{
+	function SetSolid(inCol:Int, inAlpha:Float) {
 		mColour = inCol;
 		mAlpha = inAlpha;
 		mMode = fimSolid;
 	}
 
-	public function RenderChar(inGraphics:Graphics,inGlyph:Int,inX:Int, inY:Int) 
-	{
+	public function RenderChar(inGraphics:Graphics,inGlyph:Int,inX:Int, inY:Int) {
 		   inGraphics.beginFill(mColour,mAlpha);
 		   mFont.jeashRender(inGraphics,inGlyph,inX,inY,mTryFreeType);
 	}
 
-	public function jeashGetAdvance(inChar:Int) : Int
-	{
+	public function jeashGetAdvance(inChar:Int) : Int {
 		if (mFont==null) return 0;
 		return mFont.jeashGetAdvance(inChar, mHeight);
 	}
-
 }

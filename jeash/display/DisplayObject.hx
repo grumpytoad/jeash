@@ -412,8 +412,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 
-	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
-	{
+	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
 		
 		if(mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();
@@ -421,27 +420,24 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 		var gfx = jeashGetGraphics();
 
-		if (gfx!=null)
-		{
+		if (gfx!=null) {
 			var m = mFullMatrix.clone();
 			gfx.jeashRender(inMask, m);
 
 			var extent = gfx.getStandardExtent();
+			
 			// detect draw beyond boundary, do not adjust matrix
-			if (gfx.jeashShift)
-			{
+			if (gfx.jeashShift) {
 				m.tx = m.tx + extent.x*m.a + extent.y*m.c;
 				m.ty = m.ty + extent.x*m.b + extent.y*m.d;
 			}
 
-			if (inMask != null)
-			{
+			if (inMask != null) {
 				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
 			} else {
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 			}
-
 		}
 	}
 
