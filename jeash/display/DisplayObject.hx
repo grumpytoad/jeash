@@ -267,12 +267,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 	public function getFullMatrix(?childMatrix:Matrix=null) {
-		if(childMatrix==null)
-		{
+		if(childMatrix==null) {
 			return mFullMatrix.clone();
-		}
-		else
-		{
+		} else {
 			return childMatrix.mult(mFullMatrix);
 		}
 	}
@@ -363,13 +360,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	 * - an object's parent has its matrices invalidated
 	 * ---> 	Invalidates up through children
 	 */
-	//** protected **//
-	function jeashInvalidateMatrix( ? local : Bool = false):Void{
+	function jeashInvalidateMatrix( ? local : Bool = false):Void {
 		mMtxChainDirty= mMtxChainDirty || !local;	//note that a parent has an invalid matrix 
 		mMtxDirty = mMtxDirty || local; //invalidate the local matrix
 	}
 	
-	public function jeashValidateMatrix(){
+	public function jeashValidateMatrix() {
 		
 		if(mMtxDirty || (mMtxChainDirty && parent!=null))
 		{
@@ -402,7 +398,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			}
 			
 			
-			if(parent!=null)
+			if (parent!=null)
 				mFullMatrix = parent.getFullMatrix(mMatrix);
 			else
 				mFullMatrix = mMatrix;
@@ -422,6 +418,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 		if (gfx!=null) {
 			var m = mFullMatrix.clone();
+
 			gfx.jeashRender(inMask, m);
 
 			var extent = gfx.getStandardExtent();
@@ -441,8 +438,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
-	{
+	function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement) {
 		jeashRender(parentMatrix, canvas);
 	}
 

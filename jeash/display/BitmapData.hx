@@ -210,6 +210,7 @@ class BitmapData implements IBitmapDrawable {
 		return r;
 	}
 
+	inline public function jeashClearCanvas() mTextureBuffer.width = mTextureBuffer.width
 
 	public function fillRect(rect: Rectangle, color: UInt) : Void
 	{

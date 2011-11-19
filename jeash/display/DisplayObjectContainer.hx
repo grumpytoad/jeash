@@ -33,12 +33,6 @@ import flash.geom.Rectangle;
 import flash.geom.Point;
 import flash.Lib;
 
-/**
-* @author	Hugh Sanderson
-* @author	Lee Sylvester
-* @author	Niel Drummond
-* @author	Russell Weir
-*/
 class DisplayObjectContainer extends InteractiveObject
 {
 	var jeashChildren : Array<DisplayObject>;
@@ -198,8 +192,9 @@ class DisplayObjectContainer extends InteractiveObject
 	override function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
 	{
 		super.jeashRenderContentsToCache(parentMatrix, canvas);
-		for(obj in jeashChildren)
-			obj.jeashRenderContentsToCache(mMatrix, canvas);
+		for(obj in jeashChildren) {
+			obj.jeashRenderContentsToCache(mFullMatrix, canvas);
+		}
 	}
 
 	#if js

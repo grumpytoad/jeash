@@ -367,8 +367,6 @@ class Graphics
 		if (ctx==null) return false;
 
 		var len : Int = mDrawList.length;
-		/*if (maskHandle != null)
-			ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, 0, 0);*/
 
 		jeashShift = if (Math.abs(extent.x) < jeashSurface.width && Math.abs(extent.y) < jeashSurface.height)
 			true; else false;

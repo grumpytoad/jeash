@@ -356,23 +356,22 @@ class Lib
 		
 	}
 
-	public static function jeashDrawToSurface(surface:HTMLCanvasElement, mask:HTMLCanvasElement, matrix:Matrix = null, alpha:Float = 1.0)
-	{
-		var ctx = surface.getContext("2d");
-		var maskCtx = mask.getContext("2d");
+	public static function jeashDrawToSurface(surface:HTMLCanvasElement, tgt:HTMLCanvasElement, matrix:Matrix = null, alpha:Float = 1.0) {
+		var srcCtx = surface.getContext("2d");
+		var tgtCtx = tgt.getContext("2d");
 
-		maskCtx.globalCompositeOperation = "source-over";
-		maskCtx.globalAlpha = alpha;
+		tgtCtx.globalCompositeOperation = "source-over";
+		tgtCtx.globalAlpha = alpha;
 
 		if (surface.width > 0 && surface.height > 0)
-			if (matrix != null)
-				maskCtx.drawImage(surface, matrix.tx, matrix.ty);
-			else
-				maskCtx.drawImage(surface, 0, 0);
+			if (matrix != null) {
+				tgtCtx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+				tgtCtx.drawImage(surface, 0, 0);
+			} else
+				tgtCtx.drawImage(surface, 0, 0);
 	}
 
-	public static function jeashDisableRightClick()
-	{
+	public static function jeashDisableRightClick() {
 		if (mMe != null)
 			untyped {
 				try {
