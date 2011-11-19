@@ -270,6 +270,8 @@ class Lib
 		surface.style.setProperty("-webkit-transform-origin", "0 0", "");
 		surface.style.setProperty("-o-transform", matrix.toString(), "");
 		surface.style.setProperty("-o-transform-origin", "0 0", "");
+		surface.style.setProperty("-ms-transform", matrix.toString(), "");
+		surface.style.setProperty("-ms-transform-origin", "0 0", "");
 	}
 
 	public static function jeashSetSurfaceOpacity(surface:HTMLElement, alpha:Float)
@@ -417,7 +419,7 @@ class Lib
 		return window.innerHeight; 
 	}
 
-	public inline static function jeashSetCursor(hand:Bool) {
+	public static function jeashSetCursor(hand:Bool) {
 		if (mMe != null) 
 			if (hand) 
 				mMe.__scr.style.setProperty("cursor", "pointer", "");

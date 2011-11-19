@@ -280,7 +280,7 @@ class Stage extends flash.display.DisplayObjectContainer
 	// @r551
 	function jeashOnMouse(event:Html5Dom.MouseEvent, type:String) {
 		var point : Point = untyped 
-			new Point(event.clientX - Lib.mMe.__scr.offsetLeft + window.scrollX, event.clientY - Lib.mMe.__scr.offsetTop + window.scrollY);
+			new Point(event.clientX - Lib.mMe.__scr.offsetLeft + window.pageXOffset, event.clientY - Lib.mMe.__scr.offsetTop + window.pageYOffset);
 
 		if (jeashDragObject!=null)
 			jeashDrag(point);
