@@ -174,13 +174,11 @@ class Lib
 	}
 
 	static var starttime : Float;
-	public static function getTimer() :Int 
-	{ 
+	public static function getTimer() : Int { 
 		return Std.int((haxe.Timer.stamp() - starttime )*1000); 
 	}
 
-	public static function jeashGetStage() 
-	{ 
+	public static function jeashGetStage() { 
 		Lib.canvas;
 		if ( mStage == null )
 		{
@@ -194,13 +192,16 @@ class Lib
 		return mStage; 
 	}
 
-	public static function jeashAppendSurface(surface:HTMLElement, ?before:HTMLElement)
-	{
-		if (mMe.__scr != null)
-		{
+	public static function jeashAppendSurface(surface:HTMLElement, ?before:HTMLElement) {
+		if (mMe.__scr != null) {
 			surface.style.setProperty("position", "absolute", "");
 			surface.style.setProperty("left", "0px", "");
 			surface.style.setProperty("top", "0px", "");
+
+			surface.style.setProperty("-moz-transform-origin", "0 0", "");
+			surface.style.setProperty("-webkit-transform-origin", "0 0", "");
+			surface.style.setProperty("-o-transform-origin", "0 0", "");
+			surface.style.setProperty("-ms-transform-origin", "0 0", "");
 
 			// disable blue selection rectangle 
 			untyped {
@@ -216,8 +217,7 @@ class Lib
 		}
 	}
 
-	public static function jeashSwapSurface(surface1:HTMLElement, surface2:HTMLElement)
-	{
+	public static function jeashSwapSurface(surface1:HTMLElement, surface2:HTMLElement) {
 		var c1 : Int = -1;
 		var c2 : Int = -1;
 		var swap : Node;
@@ -247,40 +247,43 @@ class Lib
 		}
 	}
 
-	public static function jeashIsOnStage(surface:HTMLElement)
-	{
+	public static function jeashIsOnStage(surface:HTMLElement) {
+
 		for ( i in 0...mMe.__scr.childNodes.length )
-			if ( mMe.__scr.childNodes[i] == surface ) return true;
+			if ( mMe.__scr.childNodes[i] == surface ) {
+				return true;
+			}
+
 		return false;
 	}
 
-	public static function jeashRemoveSurface(surface:HTMLElement)
-	{
+	public static function jeashRemoveSurface(surface:HTMLElement) {
 		if (mMe.__scr != null)
 		{
 			mMe.__scr.removeChild(surface);
 		}
 	}
 
-	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix)
-	{
-		surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
-		surface.style.setProperty("-moz-transform-origin", "0 0", "");
-		surface.style.setProperty("-webkit-transform", matrix.toString(), "");
-		surface.style.setProperty("-webkit-transform-origin", "0 0", "");
-		surface.style.setProperty("-o-transform", matrix.toString(), "");
-		surface.style.setProperty("-o-transform-origin", "0 0", "");
-		surface.style.setProperty("-ms-transform", matrix.toString(), "");
-		surface.style.setProperty("-ms-transform-origin", "0 0", "");
+	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix) {
+		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) {
+			surface.style.setProperty("-moz-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
+			surface.style.setProperty("-webkit-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
+			surface.style.setProperty("-o-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
+			surface.style.setProperty("-ms-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
+			
+		} else {
+			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
+			surface.style.setProperty("-webkit-transform", matrix.toString(), "");
+			surface.style.setProperty("-o-transform", matrix.toString(), "");
+			surface.style.setProperty("-ms-transform", matrix.toString(), "");
+		}
 	}
 
-	public static function jeashSetSurfaceOpacity(surface:HTMLElement, alpha:Float)
-	{
+	public static function jeashSetSurfaceOpacity(surface:HTMLElement, alpha:Float) {
 		surface.style.setProperty("opacity", Std.string(alpha), "" );
 	}
 
-	public static function jeashSetSurfaceFont(surface:HTMLElement, font:String, bold:Int, size:Float, color:Int, align:String, lineHeight:Int)
-	{
+	public static function jeashSetSurfaceFont(surface:HTMLElement, font:String, bold:Int, size:Float, color:Int, align:String, lineHeight:Int) {
 		surface.style.setProperty("font-family", font, "");
 		surface.style.setProperty("font-weight", Std.string(bold) , "");
 		surface.style.setProperty("color", '#' + StringTools.hex(color) , "");
@@ -289,8 +292,7 @@ class Lib
 		surface.style.setProperty("line-height", lineHeight + 'px', "");
 	}
 
-	public static function jeashSetSurfaceBorder(surface:HTMLElement, color:Int, size:Int)
-	{
+	public static function jeashSetSurfaceBorder(surface:HTMLElement, color:Int, size:Int) {
 		surface.style.setProperty("border-color", '#' + StringTools.hex(color) , "");
 		surface.style.setProperty("border-style", 'solid' , "");
 		surface.style.setProperty("border-width", size + 'px', "");
@@ -360,8 +362,8 @@ class Lib
 		var srcCtx = surface.getContext("2d");
 		var tgtCtx = tgt.getContext("2d");
 
-		tgtCtx.globalCompositeOperation = "source-over";
-		tgtCtx.globalAlpha = alpha;
+		if (alpha != 1.0)
+			tgtCtx.globalAlpha = alpha;
 
 		if (surface.width > 0 && surface.height > 0)
 			if (matrix != null) {

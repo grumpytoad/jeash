@@ -422,7 +422,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			gfx.jeashRender(inMask, m);
 
 			var extent = gfx.getStandardExtent();
-			
 			// detect draw beyond boundary, do not adjust matrix
 			if (gfx.jeashShift) {
 				m.tx = m.tx + extent.x*m.a + extent.y*m.c;
