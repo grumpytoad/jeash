@@ -40,7 +40,7 @@ class Bitmap extends jeash.display.DisplayObject {
 	public var pixelSnapping : PixelSnapping;
 	public var smoothing : Bool;
 
-	var jeashGraphics:Graphics;
+	public var jeashGraphics(default,null):Graphics;
 	var jeashCurrentLease:ImageDataLease;
 
 	public function new(?inBitmapData : BitmapData, ?inPixelSnapping : PixelSnapping, ?inSmoothing : Bool) : Void {

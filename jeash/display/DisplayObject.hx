@@ -410,18 +410,22 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
 		
-		if(mMtxDirty || mMtxChainDirty){
-			jeashValidateMatrix();
-		}
-			
 		var gfx = jeashGetGraphics();
 
 		if (gfx!=null) {
+			// Special case: graphics object is using drawTiles, skip rendering phase.
+			if (gfx.jeashIsTile) return;
+
+			if(mMtxDirty || mMtxChainDirty){
+				jeashValidateMatrix();
+			}
+			
 			var m = mFullMatrix.clone();
 
 			gfx.jeashRender(inMask, m);
 
 			var extent = gfx.getStandardExtent();
+
 			// detect draw beyond boundary, do not adjust matrix
 			if (gfx.jeashShift) {
 				m.tx = m.tx + extent.x*m.a + extent.y*m.c;
@@ -434,11 +438,16 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 			}
+		} else {
+			if(mMtxDirty || mMtxChainDirty){
+				jeashValidateMatrix();
+			}
 		}
 	}
 
 	function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement) {
-		jeashRender(parentMatrix, canvas);
+		if (jeashVisible)
+			jeashRender(parentMatrix, canvas);
 	}
 
 	dynamic public function MatrixUniforms()

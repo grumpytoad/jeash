@@ -217,6 +217,13 @@ class Graphics
 	public static var BLEND_SUBTRACT = 13;
 	public static var BLEND_SHADER = 14;
 
+	public static inline var TILE_SCALE    = 0x0001;
+	public static inline var TILE_ROTATION = 0x0002;
+	public static inline var TILE_RGB      = 0x0004;
+	public static inline var TILE_ALPHA    = 0x0008;
+
+	static inline var TILE_SMOOTH         = 0x1000;
+
 	public var jeashSurface(default,null):HTMLCanvasElement;
 	public var jeashChanged:Bool;
 
@@ -261,14 +268,12 @@ class Graphics
 	private static inline var JEASH_SIZING_WARM_UP = 10;
 	private static inline var JEASH_MAX_DIMENSION = 5000;
 	public var jeashExtentBuffer:Float;
+	public var jeashIsTile:Bool;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
 		if ( inSurface == null ) {
 			jeashSurface = cast js.Lib.document.createElement("canvas");
-			//var stage = flash.Lib.jeashGetStage();
-			//jeashSurface.width = stage.stageWidth;
-			//jeashSurface.height = stage.stageHeight;
 			jeashSurface.width = 0;
 			jeashSurface.height = 0;
 
@@ -305,6 +310,7 @@ class Graphics
 		jeashRenderFrame = 0;
 
 		jeashExtentBuffer = 0;
+		jeashIsTile = false;
 	}
 
 	public function SetSurface(inSurface:Dynamic) {
@@ -1102,6 +1108,21 @@ class Graphics
 		}
 		ctx.restore();
 		return rv;
+	}
+
+	public function drawTiles(sheet:Tilesheet, xyid:Array<Float>, smooth:Bool=false /* NOTE: ignored */, flags:Int = 0) {
+
+		jeashIsTile = true;
+		Lib.jeashDrawSurfaceRect(sheet.jeashSurface, jeashSurface, xyid[0], xyid[1], sheet.jeashTileRects[cast xyid[2]]);
+
+		if (flags != 0) {
+			if ((flags & TILE_SCALE) == TILE_SCALE) Lib.jeashSetSurfaceScale(jeashSurface, xyid[3]);
+			if ((flags & TILE_ROTATION) == TILE_ROTATION) Lib.jeashSetSurfaceRotation(jeashSurface, xyid[4]);
+
+			// TODO: TILE_RGB unsupported, is this just a simple overlay or a more complex shader ? ...
+
+			if ((flags & TILE_ALPHA) == TILE_ALPHA) Lib.jeashSetSurfaceOpacity(jeashSurface, xyid[8]);
+		}
 	}
 
 	public inline function markBoundsClean(){

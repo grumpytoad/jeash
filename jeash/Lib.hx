@@ -266,11 +266,8 @@ class Lib
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix) {
 		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) {
-			surface.style.setProperty("-moz-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
-			surface.style.setProperty("-webkit-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
-			surface.style.setProperty("-o-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
-			surface.style.setProperty("-ms-transform", "translate(" + matrix.tx + "px, " + matrix.ty + "px)", "");
-			
+			surface.style.left = matrix.tx + "px";
+			surface.style.top = matrix.ty + "px";
 		} else {
 			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
 			surface.style.setProperty("-webkit-transform", matrix.toString(), "");
@@ -436,6 +433,29 @@ class Lib
 	}
 
 	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { surface.id = name; }
+
+	public inline static function jeashDrawSurfaceRect(surface:HTMLElement, tgt:HTMLCanvasElement, x:Float, y:Float, rect:Rectangle) {
+		var tgtCtx = tgt.getContext('2d');
+		tgt.width = cast rect.width;
+		tgt.height = cast rect.height;
+		tgtCtx.drawImage(surface, rect.x, rect.y, rect.width, rect.height, 0, 0, rect.width, rect.height);
+		tgt.style.left = (x) + "px";
+		tgt.style.top = (y) + "px";
+	}
+
+	public inline static function jeashSetSurfaceScale(surface:HTMLElement, scale:Float) {
+		surface.style.setProperty("-moz-transform", "scale(" + scale + ")", "");
+		surface.style.setProperty("-webkit-transform", "scale(" + scale + ")", "");
+		surface.style.setProperty("-o-transform", "scale(" + scale + ")", "");
+		surface.style.setProperty("-ms-transform", "scale(" + scale + ")", "");
+	}
+
+	public inline static function jeashSetSurfaceRotation(surface:HTMLElement, rotate:Float) {
+		surface.style.setProperty("-moz-transform", "rotate(" + rotate + "deg)", "");
+		surface.style.setProperty("-webkit-transform", "rotate(" + rotate + "deg)", "");
+		surface.style.setProperty("-o-transform", "rotate(" + rotate + "deg)", "");
+		surface.style.setProperty("-ms-transform", "rotate(" + rotate + "deg)", "");
+	}
 
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
