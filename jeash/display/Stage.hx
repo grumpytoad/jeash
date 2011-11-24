@@ -406,20 +406,17 @@ class Stage extends flash.display.DisplayObjectContainer
 
 	public function GetFocus() { return mFocusObject; }
 
-	public function jeashRenderAll()
-	{
+	public function jeashRenderAll() {
 		jeashRender(jeashStageMatrix);
 	}
 
-	public function jeashRenderToCanvas(canvas:HTMLCanvasElement)
-	{
+	public function jeashRenderToCanvas(canvas:HTMLCanvasElement) {
 		canvas.width = canvas.width;
 
-		jeashRenderContentsToCache(jeashStageMatrix, canvas);
+		jeashRender(jeashStageMatrix, canvas);
 	}
 
-	public function jeashSetQuality(inQuality:String):String
-	{
+	public function jeashSetQuality(inQuality:String):String {
 		this.quality = inQuality;
 		return inQuality;
 	}

@@ -815,7 +815,7 @@ class Graphics
 				SCALE_NORMAL, 3.0);
 	}
 
-	inline function jeashClearCanvas()
+	inline public function jeashClearCanvas()
 	{
 		if (jeashSurface != null) {
 			var w = jeashSurface.width;

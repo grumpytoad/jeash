@@ -290,33 +290,26 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var rect : Rectangle = mBoundsRect.transform(mtx);	//transform does cloning
 		return rect;
 	}
+
 	public function getRect(targetCoordinateSpace : DisplayObject) : Rectangle 
 	{
 		// TODO
 		return null;
 	}
 
-	public function globalToLocal(inPos:Point) : Point
-	{
-		return mFullMatrix.clone().invert().transformPoint(inPos);
-	}
+	public function globalToLocal(inPos:Point) 
+		return mFullMatrix.clone().invert().transformPoint(inPos)
 	
-	// This tells us we are an empty container, or not a container at all
-	public function GetNumChildren() { return 0; }
+	public function jeashGetNumChildren() return 0
 
+	public function jeashGetMatrix() return mMatrix.clone()
 
-	public function GetMatrix()
-	{
-		return mMatrix.clone();
-	}
-	public function SetMatrix(inMatrix:Matrix)
-	{
+	public function jeashSetMatrix(inMatrix:Matrix) {
 		mMatrix = inMatrix.clone();
 		return inMatrix;
 	}
 
-	function jeashGetGraphics() : flash.display.Graphics
-	{ return null; }
+	function jeashGetGraphics() : flash.display.Graphics return null
 
 	public function GetOpaqueBackground() { return mOpaqueBackground; }
 	public function SetOpaqueBackground(inBG:Null<Int>)
@@ -413,8 +406,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var gfx = jeashGetGraphics();
 
 		if (gfx!=null) {
-			// Special case: graphics object is using drawTiles, skip rendering phase.
-			if (gfx.jeashIsTile) return;
+			// Cases when the rendering phase should be skipped
+			if (gfx.jeashIsTile || !jeashVisible) return;
 
 			if(mMtxDirty || mMtxChainDirty){
 				jeashValidateMatrix();
@@ -445,36 +438,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement) {
-		if (jeashVisible)
-			jeashRender(parentMatrix, canvas);
-	}
-
-	dynamic public function MatrixUniforms()
-	{
-		return false;
-	}
-
-	static inline function GetFlatGLMatrix( m:Matrix )
-	{
-		return [
-			m.a, m.b, 0, m.tx,
-			m.c, m.d, 0, m.ty,
-			0, 0, 1, 0,
-			0, 0, -1, 1
-		];
-	}
-
-
 	public function drawToSurface(inSurface : Dynamic,
 			matrix:flash.geom.Matrix,
 			colorTransform:flash.geom.ColorTransform,
 			blendMode:BlendMode,
 			clipRect:flash.geom.Rectangle,
-			smoothing:Bool):Void
-	{
+			smoothing:Bool):Void {
 		if (matrix==null) matrix = new Matrix();
-		jeashRenderContentsToCache(matrix, inSurface);
+		jeashRender(matrix, inSurface);
 	}
 
 	public function jeashGetObjectUnderPoint(point:Point):DisplayObject {
@@ -646,8 +617,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		}
 	}
 
-	function jeashIsOnStage()
-	{
+	function jeashIsOnStage() {
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			return Lib.jeashIsOnStage(gfx.jeashSurface);
@@ -655,15 +625,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	function jeashGetVisible() { return jeashVisible; }
-	function jeashSetVisible(visible:Bool)
-	{
+	function jeashSetVisible(visible:Bool) {
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			if (gfx.jeashSurface != null)
-				if (visible)
-					Lib.jeashSetSurfaceVisible(gfx.jeashSurface, true);
-				else
-					Lib.jeashSetSurfaceVisible(gfx.jeashSurface, false);
+				Lib.jeashSetSurfaceVisible(gfx.jeashSurface, visible);
 		jeashVisible = visible;
 		return visible;
 	}
@@ -728,7 +694,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			parent.jeashInvalidateBounds();
 		return n;
 	}
-	
+
 	public function jeashSetY(n:Float):Float{
 		jeashInvalidateMatrix(true);
 		jeashY=n;

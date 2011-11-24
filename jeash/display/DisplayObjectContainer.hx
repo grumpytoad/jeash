@@ -37,7 +37,7 @@ class DisplayObjectContainer extends InteractiveObject
 {
 	var jeashChildren : Array<DisplayObject>;
 	var mLastSetupObjs : Array<DisplayObject>;
-	public var numChildren(GetNumChildren,null):Int;
+	public var numChildren(jeashGetNumChildren,null):Int;
 	public var mouseChildren:Bool;
 	public var tabChildren:Bool;
 
@@ -152,63 +152,22 @@ class DisplayObjectContainer extends InteractiveObject
 			obj.GetFocusObjects(outObjs);
 	}
 
-   /*
-   override public function GetChildCachedObj(inX:Int,inY:Int,inObj:InteractiveObject) : InteractiveObject
-   {
-      // Start at end and work backwards (find topmost)
-      var l = mObjs.length-1;
-      for(i in 0...mObjs.length)
-      {
-         var result = mObjs[l-i].GetObj(inX,inY,this);
-         if (result!=null)
-            return result;
-      }
-
-      return inObj;
-   }
-   */
-
-
-	public override function GetNumChildren() {
+	public override function jeashGetNumChildren() {
 		return jeashChildren.length;
 	}
 
-	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement)
-	{
+	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
 
-		if (!visible || mMaskingObj!=null) return;
+		if (!visible) return;
 
 		super.jeashRender(inParentMatrix, inMask);
-		for(obj in jeashChildren)
-		{
-			if (obj.visible && obj.mMaskingObj==null)
-			{
-				obj.jeashRender(mFullMatrix, inMask);
-			}
-		}
-
-	}
-
-	override function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
-	{
-		super.jeashRenderContentsToCache(parentMatrix, canvas);
 		for(obj in jeashChildren) {
-			obj.jeashRenderContentsToCache(mFullMatrix, canvas);
+			if (obj.visible) {
+				obj.jeashRender(mFullMatrix, inMask);
+			} 
 		}
+
 	}
-
-	#if js
-	public function WalkChildren( func: DisplayObject -> Void )
-	{
-		for ( obj in jeashChildren )
-		{
-			func( obj );
-		}
-	}
-	#end
-
-
-	///////////////////////////// FLASH API ///////////////////////////////
 
 	public function addChild(object:DisplayObject):DisplayObject
 	{
@@ -250,14 +209,6 @@ class DisplayObjectContainer extends InteractiveObject
 		super.jeashInsertBefore(obj);
 		for(i in 0...jeashChildren.length)
 			jeashChildren[i].jeashAddToStage();
-	}
-
-	override private function jeashSetVisible(visible:Bool)
-	{
-		super.jeashSetVisible(visible);
-		for(i in 0...jeashChildren.length)
-			jeashChildren[i].jeashSetVisible(visible);
-		return visible;
 	}
 
 	public function addChildAt( obj : DisplayObject, index : Int )

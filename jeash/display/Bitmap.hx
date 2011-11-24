@@ -107,13 +107,6 @@ class Bitmap extends jeash.display.DisplayObject {
 
 	}
 
-	override function jeashRenderContentsToCache(parentMatrix:Matrix, canvas:HTMLCanvasElement)
-	{
-		jeashRender(parentMatrix, canvas);
-		// needed, because a BitmapData::draw() can reference a (nested) Bitmap
-		Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, canvas, parentMatrix, (parent != null ? parent.alpha : 1) * alpha);
-	}
-
 	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
 		if (!visible) return null; 
 		else if (this.bitmapData != null) {

@@ -350,7 +350,7 @@ class Lib
 	public static function jeashCopyStyle(src:HTMLElement, tgt:HTMLElement) 
 	{
 		tgt.id = src.id;
-		for (prop in ["-moz-transform", "-moz-transform-origin", "-webkit-transform", "-webkit-transform-origin", "-o-transform", "-o-transform-origin", "opacity", "display"])
+		for (prop in ["left", "top", "-moz-transform", "-moz-transform-origin", "-webkit-transform", "-webkit-transform-origin", "-o-transform", "-o-transform-origin", "opacity", "display"])
 			tgt.style.setProperty(prop, src.style.getPropertyValue(prop), "");
 		
 	}

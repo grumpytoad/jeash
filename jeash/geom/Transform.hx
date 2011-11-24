@@ -32,7 +32,7 @@ import flash.geom.Matrix;
 class Transform
 {
    public var colorTransform( GetColorTransform, SetColorTransform ) : ColorTransform;
-   public var matrix(GetMatrix,SetMatrix):Matrix;
+   public var matrix(jeashGetMatrix,jeashSetMatrix):Matrix;
    public var pixelBounds(GetPixelBounds,null):Rectangle;
 
    var mObj:DisplayObject;
@@ -42,9 +42,9 @@ class Transform
       mObj = inParent;
    }
 
-   public function GetMatrix() : Matrix { return mObj.GetMatrix(); }
-   public function SetMatrix(inMatrix:Matrix) : Matrix
-       { return mObj.SetMatrix(inMatrix); }
+   public function jeashGetMatrix() : Matrix { return mObj.jeashGetMatrix(); }
+   public function jeashSetMatrix(inMatrix:Matrix) : Matrix
+       { return mObj.jeashSetMatrix(inMatrix); }
 
    function GetPixelBounds()
    {
