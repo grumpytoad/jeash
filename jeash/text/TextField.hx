@@ -334,6 +334,7 @@ class TextField extends InteractiveObject {
 	override public function jeashSetWidth(inWidth:Float) : Float {
 		if (inWidth!=mWidth) {
 			mWidth = inWidth;
+			jeashGraphics.jeashSurface.width = Math.round(inWidth);
 			Rebuild();
 		}
 		return mWidth;
@@ -343,6 +344,7 @@ class TextField extends InteractiveObject {
 		if (inHeight!=mHeight)
 		{
 			mHeight = inHeight;
+			jeashGraphics.jeashSurface.height = Math.round(inHeight);
 			Rebuild();
 		}
 		return mHeight;
@@ -708,19 +710,6 @@ class TextField extends InteractiveObject {
 	}
 
 
-	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
-		if (!visible) return ;
-		
-		/* inMask = */ super.jeashRender(inParentMatrix, inMask);
-		if (mInput && stage.focus==this) {
-			if ( (Std.int(flash.Lib.getTimer()*0.002) & 1) == 1 ) {
-				mCaretGfx.jeashRender(inMask, mFullMatrix);
-			}
-		}
-
-		//return inMask;
-	}
-
 	public function GetTextWidth() : Int{ return mMaxWidth; }
 	public function GetTextHeight() : Int{ return mMaxHeight; }
 
@@ -957,8 +946,6 @@ class FontInstance {
 		if (f!=null)
 			return f;
 
-		//var font = FontManager.GetFont(inFace,inHeight);
-		// FIXME
 		var font : Font = new Font();
 		font.jeashSetScale(inHeight);
 		font.fontName = inFace;
@@ -981,8 +968,10 @@ class FontInstance {
 	}
 
 	public function RenderChar(inGraphics:Graphics,inGlyph:Int,inX:Int, inY:Int) {
-		   inGraphics.beginFill(mColour,mAlpha);
-		   mFont.jeashRender(inGraphics,inGlyph,inX,inY,mTryFreeType);
+		inGraphics.jeashClearLine();
+		inGraphics.beginFill(mColour,mAlpha);
+		mFont.jeashRender(inGraphics,inGlyph,inX,inY,mTryFreeType);
+		inGraphics.endFill();
 	}
 
 	public function jeashGetAdvance(inChar:Int) : Int {

@@ -57,8 +57,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
-	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData
-	{
+	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData {
 		jeashInvalidateBounds();
 		bitmapData = inBitmapData;
 		return inBitmapData;
@@ -83,8 +82,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		}
 	}
 
-	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement)
-	{
+	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
 		if (bitmapData == null) return;
 		if(mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();
@@ -99,11 +97,16 @@ class Bitmap extends jeash.display.DisplayObject {
 				jeashGraphics.jeashSurface.height = srcCanvas.height;
 				jeashGraphics.clear();
 				Lib.jeashDrawToSurface(srcCanvas, jeashGraphics.jeashSurface);
-				jeashCurrentLease = imageDataLease;
+				jeashCurrentLease = imageDataLease.clone();
 			}
 
-		Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
-		Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+		if (inMask != null) {
+			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
+		} else {
+
+			Lib.jeashSetSurfaceTransform(jeashGraphics.jeashSurface, m);
+			Lib.jeashSetSurfaceOpacity(jeashGraphics.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
+		}
 
 	}
 

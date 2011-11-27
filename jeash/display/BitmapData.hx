@@ -53,18 +53,27 @@ typedef LoadData = {
 class ImageDataLease {
 	public var seed:Float;
 	public var time:Float;
-	public var changeX:Int;
-	public var changeY:Int;
-	public var changeWidth:Int;
-	public var changeHeight:Int;
-	public function new(s,t) { 
+	public function new () {}
+	public function set(s,t) { 
 		this.seed = s; 
 		this.time = t; 
-		this.changeX = 0;
-		this.changeY = 0;
-		this.changeWidth = 0;
-		this.changeHeight = 0;
 	}
+	public function clone() {
+		var leaseClone = new ImageDataLease();
+		leaseClone.seed = seed;
+		leaseClone.time = time;
+		return leaseClone;
+	}
+}
+
+typedef CopyPixelAtom = {
+	var handle:HTMLCanvasElement;
+	var sourceX:Float;
+	var sourceY:Float;
+	var sourceWidth:Float;
+	var sourceHeight:Float;
+	var destX:Float;
+	var destY:Float;
 }
 
 class BitmapData implements IBitmapDrawable {
@@ -76,6 +85,8 @@ class BitmapData implements IBitmapDrawable {
 	public var rect : Rectangle;
 
 	var jeashImageData:ImageData;
+	var jeashImageDataChanged:Bool;
+	var jeashCopyPixelList:Array<CopyPixelAtom>;
 	var jeashLocked:Bool;
 	var jeashLease:ImageDataLease;
 	var jeashLeaseNum:Int;
@@ -87,6 +98,8 @@ class BitmapData implements IBitmapDrawable {
 
 		jeashLocked = false;
 		jeashLeaseNum = 0;
+		jeashLease = new ImageDataLease();
+		jeashBuildLease();
 
 		mTextureBuffer = cast js.Lib.document.createElement('canvas');
 		mTextureBuffer.width = inWidth;
@@ -174,10 +187,14 @@ class BitmapData implements IBitmapDrawable {
 		if (sourceRect.x + sourceRect.width > sourceBitmapData.handle().width) sourceRect.width = sourceBitmapData.handle().width - sourceRect.x;
 		if (sourceRect.y + sourceRect.height > sourceBitmapData.handle().height) sourceRect.height = sourceBitmapData.handle().height - sourceRect.y;
 
-		jeashBuildLease();
+		if (!jeashLocked) {
+			jeashBuildLease();
 
-		var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
+			var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+			ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
+		} else {
+			jeashCopyPixelList.push({handle:sourceBitmapData.handle(), sourceX:sourceRect.x, sourceY:sourceRect.y, sourceWidth:sourceRect.width, sourceHeight:sourceRect.height, destX:destPoint.x, destY:destPoint.y});
+		}
 	}
 
 	private function clipRect (r: Rectangle): Rectangle {
@@ -255,6 +272,7 @@ class BitmapData implements IBitmapDrawable {
 					jeashImageData.data[s + offsetX + 3] = a;
 				}
 			}
+			jeashImageDataChanged = true;
 			ctx.putImageData (jeashImageData, 0, 0, rect.x, rect.y, rect.width, rect.height);
 		}
 	}
@@ -351,6 +369,7 @@ class BitmapData implements IBitmapDrawable {
 			jeashImageData.data[offset + 2] = (color & 0x0000FF) ;
 			if (jeashTransparent)
 				jeashImageData.data[offset + 3] = (0xFF);
+			jeashImageDataChanged = true;
 		}
 	}
 
@@ -379,6 +398,7 @@ class BitmapData implements IBitmapDrawable {
 				jeashImageData.data[offset + 3] = (color & 0xFF000000) >>> 24;
 			else
 				jeashImageData.data[offset + 3] = (0xFF);
+			jeashImageDataChanged = true;
 		}
 	}
 
@@ -404,6 +424,7 @@ class BitmapData implements IBitmapDrawable {
 				jeashImageData.data[pos] = byteArray.readByte();
 				pos++;
 			}
+			jeashImageDataChanged = true;
 		}
 	}
 
@@ -481,6 +502,8 @@ class BitmapData implements IBitmapDrawable {
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 		jeashImageData = ctx.getImageData (0, 0, width, height);
+		jeashImageDataChanged = false;
+		jeashCopyPixelList = [];
 
 	}
 
@@ -488,10 +511,15 @@ class BitmapData implements IBitmapDrawable {
 		jeashLocked = false;
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		if (changeRect != null)
-			ctx.putImageData (jeashImageData, 0, 0, changeRect.x, changeRect.y, changeRect.width, changeRect.height);
-		else
-			ctx.putImageData (jeashImageData, 0, 0);
+		if (jeashImageDataChanged)
+			if (changeRect != null)
+				ctx.putImageData (jeashImageData, 0, 0, changeRect.x, changeRect.y, changeRect.width, changeRect.height);
+			else
+				ctx.putImageData (jeashImageData, 0, 0);
+
+		for (copyCache in jeashCopyPixelList) {
+			ctx.drawImage(copyCache.handle, copyCache.sourceX, copyCache.sourceY, copyCache.sourceWidth, copyCache.sourceHeight, copyCache.destX, copyCache.destY, copyCache.sourceWidth, copyCache.sourceHeight);
+		}
 
 		jeashBuildLease();
 	}
@@ -505,7 +533,10 @@ class BitmapData implements IBitmapDrawable {
 		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
 		ctx.save();
 		if (matrix != null) {
-			ctx.transform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+			if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) 
+				ctx.translate(matrix.tx, matrix.ty);
+			else
+				ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 		}
 
 		jeashBuildLease();
@@ -547,6 +578,7 @@ class BitmapData implements IBitmapDrawable {
 					jeashImageData.data[s + offsetX + 3] = Std.int((jeashImageData.data[s + offsetX + 3] * colorTransform.alphaMultiplier) + colorTransform.alphaOffset);
 				}
 			}
+			jeashImageDataChanged = true;
 		}
 	}
 
@@ -598,6 +630,7 @@ class BitmapData implements IBitmapDrawable {
 			ctx.putImageData (imageData, 0, 0);
 		} else {
 			doChannelCopy(jeashImageData);
+			jeashImageDataChanged = true;
 		}
 	}
 
@@ -669,6 +702,7 @@ class BitmapData implements IBitmapDrawable {
 			ctx.putImageData (imageData, 0, 0);
 		} else {
 			return doHitTest(jeashImageData);
+			jeashImageDataChanged = true;
 		}
 	}
 
@@ -680,6 +714,6 @@ class BitmapData implements IBitmapDrawable {
 	public function jeashGetNumRefBitmaps() return jeashAssignedBitmaps
 	public function jeashIncrNumRefBitmaps() jeashAssignedBitmaps++
 	public function jeashDecrNumRefBitmaps() jeashAssignedBitmaps--
-	inline function jeashBuildLease() jeashLease = new ImageDataLease(jeashLeaseNum++, Date.now().getTime())
+	inline function jeashBuildLease() jeashLease.set(jeashLeaseNum++, Date.now().getTime())
 
 }

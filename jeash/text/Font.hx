@@ -110,7 +110,6 @@ class Font
 
 	public function jeashRender(graphics:Graphics,inChar:Int,inX:Int,inY:Int,inOutline:Bool)
 	{
-		graphics.jeashClearLine();
 		var index=0;
 		var glyph = jeashGlyphData.get(inChar);
 		var commands = glyph.commands;

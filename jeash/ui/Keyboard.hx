@@ -115,8 +115,8 @@ class Keyboard
 	public static var END		= 35;
 	public static var HOME		= 36;
 	public static var LEFT		= 37;
-	public static var RIGHT		= 38;
-	public static var UP		= 39;
+	public static var RIGHT		= 39;
+	public static var UP		= 38;
 	public static var DOWN		= 40;
 	public static var INSERT		= 45;
 	public static var DELETE		= 46;
@@ -256,10 +256,8 @@ class Keyboard
 	public static var DOM_VK_EXECUTE	= 43;
 	public static var DOM_VK_SLEEP	= 95;
 
-	static public function jeashConvertWebkitCode(code:String) : Int
-	{
-		switch(code.toLowerCase())
-		{
+	static public function jeashConvertWebkitCode(code:String) : Int {
+		switch(code.toLowerCase()) {
 			case "backspace": return BACKSPACE;
 			case "tab": return TAB;
 			case "enter": return ENTER;
@@ -282,7 +280,7 @@ class Keyboard
 			case "break": return BREAK;
 		}
 		if (code.indexOf("U+") == 0)
-			return Std.parseInt(code.substr(3));
+			return Std.parseInt('0x' + code.substr(3));
 
 		throw "Unrecognised key code: " + code;
 		return 0;

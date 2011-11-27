@@ -417,6 +417,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 			gfx.jeashRender(inMask, m);
 
+			if (jeashFilters != null)
+				for (filter in jeashFilters) filter.jeashApplyFilter(gfx.jeashSurface);
+
 			var extent = gfx.getStandardExtent();
 
 			// detect draw beyond boundary, do not adjust matrix
@@ -431,6 +434,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				Lib.jeashSetSurfaceTransform(gfx.jeashSurface, m);
 				Lib.jeashSetSurfaceOpacity(gfx.jeashSurface, (parent != null ? parent.alpha : 1) * alpha);
 			}
+
 		} else {
 			if(mMtxDirty || mMtxChainDirty){
 				jeashValidateMatrix();

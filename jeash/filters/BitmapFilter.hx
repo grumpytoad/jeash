@@ -39,5 +39,5 @@ class BitmapFilter
       return null;
    }
 
-   public function jeashApplyFilter(surface:HTMLElement) {}
+   public function jeashApplyFilter(surface:HTMLCanvasElement) {}
 }
