@@ -71,7 +71,7 @@ class DropShadowFilter extends BitmapFilter
 
 	static inline var DEGREES_FULL_RADIUS = 360.0;
 	var jeashCached : Bool;
-	override public function jeashApplyFilter(surface:HTMLElement)
+	override public function jeashApplyFilter(surface:HTMLCanvasElement)
 	{
 		if (jeashCached) return;
 		var distanceX = distance*Math.sin(2*Math.PI*angle/DEGREES_FULL_RADIUS);
