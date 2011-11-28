@@ -130,15 +130,16 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function getColorBoundsRect(mask:Int, color:Int, findColor:Bool = true) : Rectangle {
-
+		var me = this;
+		
 		var doGetColorBoundsRect = function(data:CanvasPixelArray) {
-			var minX = width, maxX = 0, minY = height, maxY = 0, i = 0;
+			var minX = me.width, maxX = 0, minY = me.height, maxY = 0, i = 0;
 			while (i < data.length) {
-				var value = getInt32(i, data);
+				var value = me.getInt32(i, data);
 				if (findColor) {
 					if ((value & mask) == color) {
-						var x = Math.round((i % (width*4))/4);
-						var y = Math.round(i / (width*4));
+						var x = Math.round((i % (me.width*4))/4);
+						var y = Math.round(i / (me.width*4));
 						if (x < minX) minX = x;
 						if (x > maxX) maxX = x;
 						if (y < minY) minY = y;
@@ -146,8 +147,8 @@ class BitmapData implements IBitmapDrawable {
 					}
 				} else {
 					if ((value & mask) != color) {
-						var x = Math.round((i % (width*4))/4);
-						var y = Math.round(i / (width*4));
+						var x = Math.round((i % (me.width*4))/4);
+						var y = Math.round(i / (me.width*4));
 						if (x < minX) minX = x;
 						if (x > maxX) maxX = x;
 						if (y < minY) minY = y;
@@ -160,7 +161,7 @@ class BitmapData implements IBitmapDrawable {
 			if (minX < maxX && minY < maxY)
 				return new Rectangle(minX, minY, maxX-minX+1 /* +1 - bug? */, maxY-minY);
 			else
-				return new Rectangle(0, 0, width, height);
+				return new Rectangle(0, 0, me.width, me.height);
 		}
 
 		if (!jeashLocked) {
@@ -638,6 +639,7 @@ class BitmapData implements IBitmapDrawable {
 		var type = Type.getClassName(Type.getClass(secondObject));
 		firstAlphaThreshold = firstAlphaThreshold & 0xFFFFFFFF;
 
+		var me = this;
 		var doHitTest = function (imageData:ImageData) {
 			if (secondObject.__proto__ == null 
 					|| secondObject.__proto__.__class__ == null 
@@ -650,10 +652,10 @@ class BitmapData implements IBitmapDrawable {
 					rect.x -= firstPoint.x;
 					rect.y -= firstPoint.y;
 
-					rect = clipRect (rect);
-					if (rect == null) return false;
+					rect = me.clipRect (me.rect);
+					if (me.rect == null) return false;
 
-					var boundingBox = new Rectangle(0, 0, width, height);
+					var boundingBox = new Rectangle(0, 0, me.width, me.height);
 					if (!rect.intersects(boundingBox)) return false;
 
 					var diff = rect.intersection(boundingBox);
@@ -674,8 +676,8 @@ class BitmapData implements IBitmapDrawable {
 
 					var x = point.x - firstPoint.x, y = point.y - firstPoint.y;
 
-					if (x < 0 || y < 0 || x >= width || y >= height) return false;
-					if (imageData.data[Math.round(4 * (y * width + x)) + 3] - firstAlphaThreshold > 0) return true;
+					if (x < 0 || y < 0 || x >= me.width || y >= me.height) return false;
+					if (imageData.data[Math.round(4 * (y * me.width + x)) + 3] - firstAlphaThreshold > 0) return true;
 
 					return false;
 				case "Bitmap":
