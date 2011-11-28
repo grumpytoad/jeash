@@ -365,9 +365,9 @@ class Graphics
 
 		var extent = getStandardExtent();
 		if (jeashRenderFrame++ < JEASH_SIZING_WARM_UP)
-			if (standardExtent.width - standardExtent.x != jeashSurface.width && standardExtent.height - standardExtent.y != jeashSurface.height) jeashAdjustSurface();
+			if (standardExtent.width - standardExtent.x != jeashSurface.width || standardExtent.height - standardExtent.y != jeashSurface.height) jeashAdjustSurface();
 		else
-			if (standardExtent.width - standardExtent.x < jeashSurface.width && standardExtent.height - standardExtent.y < jeashSurface.height) jeashAdjustSurface();
+			if (standardExtent.width - standardExtent.x < jeashSurface.width || standardExtent.height - standardExtent.y < jeashSurface.height) jeashAdjustSurface();
 
 		var ctx = getContext();
 		if (ctx==null) return false;
