@@ -237,26 +237,16 @@ class BitmapData implements IBitmapDrawable {
 
 		jeashBuildLease();
 
+		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+
 		var r: Int = (color & 0xFF0000) >>> 16;
 		var g: Int = (color & 0x00FF00) >>> 8;
 		var b: Int = (color & 0x0000FF);
 		var a: Int = (jeashTransparent)? (color >>> 24) : 0xFF;
 
-		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
-		if (!jeashLocked)
-		{
-			var imagedata = ctx.getImageData (rect.x, rect.y, rect.width, rect.height);
-
-			var offsetX : Int;
-			for (i in 0...imagedata.data.length >> 2)
-			{
-				offsetX = i * 4;
-				imagedata.data[offsetX] = r;
-				imagedata.data[offsetX + 1] = g;
-				imagedata.data[offsetX + 2] = b;
-				imagedata.data[offsetX + 3] = a;
-			}
-			ctx.putImageData (imagedata, rect.x, rect.y);
+		if (!jeashLocked) {
+			ctx.fillStyle = 'rgba(' + r + ', ' + g + ', ' + b + ', ' + (a/256) + ')';
+			ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 		} else {
 			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
 			var offsetY : Int;
