@@ -237,7 +237,7 @@ class BitmapData implements IBitmapDrawable {
 		if (rect.width <= 0 || rect.height <= 0) return;
 		if (rect.x == 0 && rect.y == 0 && rect.width == mTextureBuffer.width && rect.height == mTextureBuffer.height)
 			if (jeashTransparent) {
-				if (color == jeashInitColor) { return jeashClearCanvas(); }
+				if ((color >>> 24 == 0) || color == jeashInitColor) { return jeashClearCanvas(); } 
 			} else {
 				if ((color | 0xFF000000) == (jeashInitColor | 0xFF000000)) { return jeashClearCanvas(); }
 			}
