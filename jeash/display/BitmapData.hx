@@ -91,6 +91,7 @@ class BitmapData implements IBitmapDrawable {
 	var jeashLease:ImageDataLease;
 	var jeashLeaseNum:Int;
 	var jeashAssignedBitmaps:Int;
+	var jeashInitColor:Int;
 
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
@@ -110,6 +111,7 @@ class BitmapData implements IBitmapDrawable {
 
 		if ( inFillColor != null ) {
 			if (!jeashTransparent) inFillColor |= 0xFF000000;
+			jeashInitColor = inFillColor;
 			fillRect(rect, inFillColor);
 		}
 
@@ -194,7 +196,7 @@ class BitmapData implements IBitmapDrawable {
 			var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 			ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
 		} else {
-			jeashCopyPixelList.push({handle:sourceBitmapData.handle(), sourceX:sourceRect.x, sourceY:sourceRect.y, sourceWidth:sourceRect.width, sourceHeight:sourceRect.height, destX:destPoint.x, destY:destPoint.y});
+			jeashCopyPixelList[jeashCopyPixelList.length] = {handle:sourceBitmapData.handle(), sourceX:sourceRect.x, sourceY:sourceRect.y, sourceWidth:sourceRect.width, sourceHeight:sourceRect.height, destX:destPoint.x, destY:destPoint.y};
 		}
 	}
 
@@ -230,10 +232,15 @@ class BitmapData implements IBitmapDrawable {
 
 	inline public function jeashClearCanvas() mTextureBuffer.width = mTextureBuffer.width
 
-	public function fillRect(rect: Rectangle, color: UInt) : Void
-	{
+	public function fillRect(rect: Rectangle, color: UInt) : Void {
 		if (rect == null) return;
 		if (rect.width <= 0 || rect.height <= 0) return;
+		if (rect.x == 0 && rect.y == 0 && rect.width == mTextureBuffer.width && rect.height == mTextureBuffer.height)
+			if (jeashTransparent) {
+				if (color == jeashInitColor) { return jeashClearCanvas(); }
+			} else {
+				if ((color | 0xFF000000) == (jeashInitColor | 0xFF000000)) { return jeashClearCanvas(); }
+			}
 
 		jeashBuildLease();
 
@@ -245,7 +252,8 @@ class BitmapData implements IBitmapDrawable {
 		var a: Int = (jeashTransparent)? (color >>> 24) : 0xFF;
 
 		if (!jeashLocked) {
-			ctx.fillStyle = 'rgba(' + r + ', ' + g + ', ' + b + ', ' + (a/256) + ')';
+			var style = 'rgba('; style += r; style += ', '; style += g; style += ', '; style += b; style += ', '; style += (a/256); style += ')';
+			ctx.fillStyle = style;
 			ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
 		} else {
 			var s = 4 * (Math.round(rect.x) + (Math.round(rect.y) * jeashImageData.width));
@@ -266,6 +274,7 @@ class BitmapData implements IBitmapDrawable {
 			jeashImageDataChanged = true;
 			ctx.putImageData (jeashImageData, 0, 0, rect.x, rect.y, rect.width, rect.height);
 		}
+		return;
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray {
