@@ -360,17 +360,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	
 	public function jeashValidateMatrix() {
 		
-		if(mMtxDirty || (mMtxChainDirty && parent!=null))
-		{
+		if(mMtxDirty || (mMtxChainDirty && parent!=null)) {
 			//validate parent matrix
-			if(mMtxChainDirty && parent!=null)
-			{
+			if(mMtxChainDirty && parent!=null) {
 				parent.jeashValidateMatrix();
 			}
 			
 			//validate local matrix
-			if(mMtxDirty)
-			{
+			if(mMtxDirty) {
 				//update matrix if necessary
 				//set non scale elements to identity
 				mMatrix.b = mMatrix.c = mMatrix.tx = mMatrix.ty = 0;
@@ -415,10 +412,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 			var m = mFullMatrix.clone();
 
-			gfx.jeashRender(inMask, m);
-
-			if (jeashFilters != null)
-				for (filter in jeashFilters) filter.jeashApplyFilter(gfx.jeashSurface);
+			if (jeashFilters != null) {
+				if (gfx.jeashChanged || inMask != null) {
+					gfx.jeashRender(inMask, m);
+					for (filter in jeashFilters) {
+						filter.jeashApplyFilter(gfx.jeashSurface);
+					}
+				} else gfx.jeashRender(inMask, m);
+			} else gfx.jeashRender(inMask, m);
 
 			var extent = gfx.getStandardExtent();
 
@@ -487,8 +488,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// @r533
-	public function jeashSetFilters(filters:Array<Dynamic>)
-	{
+	public function jeashSetFilters(filters:Array<Dynamic>) {
 		if (filters==null)
 			jeashFilters = null;
 		else
@@ -502,8 +502,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// @r533
-	public function jeashGetFilters()
-	{
+	public function jeashGetFilters() {
 		if (jeashFilters==null) return [];
 		var result = new Array<BitmapFilter>();
 		for(filter in jeashFilters)
@@ -643,8 +642,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		BuildBounds();
 		return jeashScaleY * mBoundsRect.height;
 	}
-	public function jeashSetHeight(inHeight:Float) : Float
-	{
+	public function jeashSetHeight(inHeight:Float) : Float {
 		if(parent!=null)
 			parent.jeashInvalidateBounds();
 		if(mBoundsDirty)
@@ -659,16 +657,14 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inHeight;
 	}
 
-	public function jeashGetWidth() : Float
-	{
+	public function jeashGetWidth() : Float {
 		if(mBoundsDirty){
 			BuildBounds();
 		}
 		return jeashScaleX * mBoundsRect.width;
 	}
 
-	public function jeashSetWidth(inWidth:Float) : Float
-	{
+	public function jeashSetWidth(inWidth:Float) : Float {
 		if(parent!=null)
 			parent.jeashInvalidateBounds();
 		if(mBoundsDirty)
@@ -710,8 +706,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	public function jeashGetScaleX() { return jeashScaleX; }
 	public function jeashGetScaleY() { return jeashScaleY; }
-	public function jeashSetScaleX(inS:Float)
-	{ 
+	public function jeashSetScaleX(inS:Float) { 
 		if(jeashScaleX==inS)
 			return inS;		
 		if(parent!=null)
@@ -724,8 +719,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inS;
 	}
 
-	public function jeashSetScaleY(inS:Float)
-	{ 
+	public function jeashSetScaleY(inS:Float) { 
 		if(jeashScaleY==inS)
 			return inS;		
 		if(parent!=null)

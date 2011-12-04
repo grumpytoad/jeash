@@ -30,21 +30,92 @@ import flash.display.BitmapData;
 import flash.geom.Rectangle;
 import flash.geom.Point;
 
-class BlurFilter extends flash.filters.BitmapFilter
-{
-	public function new(?inBlurX : Float, ?inBlurY : Float, ?inQuality : Int)
-	{
+#if js
+import Html5Dom;
+#end
+
+class BlurFilter extends flash.filters.BitmapFilter {
+	var jeashKernel:Vector<Int>;
+	var jeashBG:Array<Int>;
+
+	public function new(?inBlurX : Float, ?inBlurY : Float, ?inQuality : Int) {
 		super("BlurFilter");
 		blurX = inBlurX==null ? 4.0 : inBlurX;
 		blurY = inBlurY==null ? 4.0 : inBlurY;
 		quality = inQuality==null ? 1 : inQuality;
+		var bgColor = Lib.current.stage.backgroundColor;
+		jeashBG = [(bgColor & 0xFF0000) >>> 16, (bgColor & 0x00FF00) >>> 8, (bgColor & 0x0000FF)];
+
 	}
-	override public function clone() : flash.filters.BitmapFilter
-	{
+
+	override public function clone() : flash.filters.BitmapFilter {
 		return new BlurFilter(blurX,blurY,quality);
 	}
 
-	public function applyFilter(inBitmapData : BitmapData, inRect:Rectangle, inPoint:Point, inBitmapFilter:BitmapFilter):Void { }
+	public function applyFilter(inBitmapData : BitmapData, inRect:Rectangle, inPoint:Point, inBitmapFilter:BitmapFilter):Void {
+	}
+
+	override public function jeashPreFilter(surface:HTMLCanvasElement) {
+		var ctx: CanvasRenderingContext2D = surface.getContext('2d');
+		jeashKernel = new Vector();
+
+		jeashBuildKernel(ctx.getImageData (0, 0, surface.width, surface.height).data, surface.width, surface.height, jeashKernel);
+	}
+
+	// Implementation reference: http://www.gamasutra.com/features/20010209/Listing2.cpp
+	function jeashBuildKernel(src:CanvasPixelArray, srcW:Int, srcH:Int, dst:Vector<Int>) {
+		var i=0, j=0, tot=[], maxW=srcW*4;
+		for (y in 0...srcH) {
+			for (x in 0...srcW) {
+				tot[0]=src[j]; tot[1]=src[j+1]; tot[2]=src[j+2]; tot[3]=src[j+3];
+
+				if (x>0) { tot[0]+=dst[i-4]; tot[1]+=dst[i-3]; tot[2]+=dst[i-2]; tot[3]+=dst[i-1]; }
+				if (y>0) { tot[0]+=dst[i-maxW]; tot[1]+=dst[i+1-maxW]; tot[2]+=dst[i+2-maxW]; tot[3]+=dst[i+3-maxW]; }
+				if (x>0 && y>0) { tot[0]-=dst[i-maxW-4]; tot[1]-=dst[i-maxW-3]; tot[2]-=dst[i-maxW-2]; tot[3]-=dst[i-maxW-1]; }
+
+				dst[i]=tot[0]; dst[i+1]=tot[1]; dst[i+2]=tot[2]; dst[i+3]=tot[3];
+
+				i+=4; j+=4;
+			}
+		}
+	}
+
+	function jeashBoxBlur(dst:CanvasPixelArray, srcW:Int, srcH:Int, p:Vector<Int>, boxW:Int, boxH:Int) {
+		var mul1=1.0/((boxW*2+1)*(boxH*2+1)), i=0, tot=[], h1=0, l1=0, h2=0, l2=0;
+		var mul2=1.7/((boxW*2+1)*(boxH*2+1));
+		for (y in 0...srcH) {
+			for (x in 0...srcW) {
+				h1 = if (x+boxW >= srcW) srcW-1; else (x+boxW);
+				l1 = if (y+boxH >= srcH) srcH-1; else (y+boxH);
+				h2 = if (x-boxW < 0) 0; else (x-boxW);
+				l2 = if (y-boxH < 0) 0; else (y-boxH);
+
+				tot[0]=p[(h1+l1*srcW)*4]+p[(h2+l2*srcW)*4]-p[(h2+l1*srcW)*4]-p[(h1+l2*srcW)*4];
+				tot[1]=p[(h1+l1*srcW)*4+1]+p[(h2+l2*srcW)*4+1]-p[(h2+l1*srcW)*4+1]-p[(h1+l2*srcW)*4+1];
+				tot[2]=p[(h1+l1*srcW)*4+2]+p[(h2+l2*srcW)*4+2]-p[(h2+l1*srcW)*4+2]-p[(h1+l2*srcW)*4+2];
+				tot[3]=p[(h1+l1*srcW)*4+3]+p[(h2+l2*srcW)*4+3]-p[(h2+l1*srcW)*4+3]-p[(h1+l2*srcW)*4+3];
+
+				dst[i]=Math.floor(Math.abs((255-jeashBG[0])-tot[0]*mul1));
+				dst[i+1]=Math.floor(Math.abs((255-jeashBG[1])-tot[1]*mul1));
+				dst[i+2]=Math.floor(Math.abs((255-jeashBG[2])-tot[2]*mul1));
+				dst[i+3]=Math.floor(tot[3]*mul2);
+
+				i+=4;
+			}
+		}
+	}
+	
+	override public function jeashApplyFilter(surface:HTMLCanvasElement) {
+		if (surface.width > 0 && surface.height > 0) {
+			jeashPreFilter(surface);
+			var ctx: CanvasRenderingContext2D = surface.getContext('2d');
+			var jeashImageData = ctx.getImageData (0, 0, surface.width, surface.height);
+
+			jeashBoxBlur(jeashImageData.data, Math.floor(jeashImageData.width), Math.floor(jeashImageData.height), jeashKernel, Math.floor(blurX), Math.floor(blurY));
+
+			ctx.putImageData (jeashImageData, 0, 0);
+		}
+	}
 
 	public var blurX : Float;
 	public var blurY : Float;

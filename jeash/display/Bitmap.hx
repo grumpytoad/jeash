@@ -51,8 +51,9 @@ class Bitmap extends jeash.display.DisplayObject {
 
 		jeashGraphics = new Graphics();
 
-		if (inBitmapData != null)
+		if (inBitmapData != null) {
 			jeashSetBitmapData(inBitmapData);
+		}
 
 		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
@@ -82,6 +83,14 @@ class Bitmap extends jeash.display.DisplayObject {
 		}
 	}
 
+	function jeashApplyFilters(surface:HTMLCanvasElement) {
+		if (jeashFilters != null) {
+				for (filter in jeashFilters) {
+					filter.jeashApplyFilter(jeashGraphics.jeashSurface);
+				}
+		} 
+	}
+
 	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
 		if (bitmapData == null) return;
 		if(mMtxDirty || mMtxChainDirty){
@@ -90,15 +99,18 @@ class Bitmap extends jeash.display.DisplayObject {
 
 		var m = mFullMatrix.clone();
 		var imageDataLease = bitmapData.jeashGetLease();
-		if (imageDataLease != null)
-			if (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time) {
-				var srcCanvas = bitmapData.handle();
-				jeashGraphics.jeashSurface.width = srcCanvas.width;
-				jeashGraphics.jeashSurface.height = srcCanvas.height;
-				jeashGraphics.clear();
-				Lib.jeashDrawToSurface(srcCanvas, jeashGraphics.jeashSurface);
-				jeashCurrentLease = imageDataLease.clone();
-			}
+		if (imageDataLease != null && (jeashCurrentLease == null || imageDataLease.seed != jeashCurrentLease.seed || imageDataLease.time != jeashCurrentLease.time)) {
+			var srcCanvas = bitmapData.handle();
+			jeashGraphics.jeashSurface.width = srcCanvas.width;
+			jeashGraphics.jeashSurface.height = srcCanvas.height;
+			jeashGraphics.clear();
+			Lib.jeashDrawToSurface(srcCanvas, jeashGraphics.jeashSurface);
+			jeashCurrentLease = imageDataLease.clone();
+
+			jeashApplyFilters(jeashGraphics.jeashSurface);
+		} else if (inMask != null) {
+			jeashApplyFilters(jeashGraphics.jeashSurface);
+		}
 
 		if (inMask != null) {
 			Lib.jeashDrawToSurface(jeashGraphics.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);

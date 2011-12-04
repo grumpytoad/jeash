@@ -97,11 +97,9 @@ class DisplayObjectContainer extends InteractiveObject
 	}
 
 	//** FINAL **//	
-	override function jeashInvalidateMatrix( ? local : Bool = false) : Void
-	{
+	override function jeashInvalidateMatrix( ? local : Bool = false) : Void {
 		//invalidate children only if they are not already invalidated
-		if(mMtxChainDirty==false && mMtxDirty==false)		
-		{				
+		if(mMtxChainDirty==false && mMtxDirty==false)		{				
 			for(child in jeashChildren)
 				child.jeashInvalidateMatrix();
 		}			
@@ -423,5 +421,14 @@ class DisplayObjectContainer extends InteractiveObject
 
 		//return super.jeashGetObjectsUnderPoint(point);
 	}
+
+	// TODO: check if we need to merge filters with children.
+	override public function jeashSetFilters(filters:Array<Dynamic>) {
+		super.jeashSetFilters(filters);
+		for(obj in jeashChildren)
+			obj.jeashSetFilters(filters);
+		return filters;
+	}
+
 }
 
