@@ -149,7 +149,7 @@ class TextField extends InteractiveObject {
 		mHTMLMode = false;
 		multiline = false;
 		jeashGraphics = new Graphics();
-		jeashGraphics.jeashExtentBuffer = 12;
+		jeashGraphics.jeashExtentBuffer = 0;
 		mCaretGfx = new Graphics();
 		mFace = mDefaultFont;
 		mAlign = flash.text.TextFormatAlign.LEFT;
