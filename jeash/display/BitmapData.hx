@@ -533,10 +533,12 @@ class BitmapData implements IBitmapDrawable {
 		var ctx : CanvasRenderingContext2D = inSurface.getContext('2d');
 		ctx.save();
 		if (matrix != null) {
+			ctx.save();
 			if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) 
 				ctx.translate(matrix.tx, matrix.ty);
 			else
 				ctx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
+			ctx.restore();
 		}
 
 		jeashBuildLease();

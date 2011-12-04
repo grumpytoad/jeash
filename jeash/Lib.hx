@@ -364,11 +364,13 @@ class Lib
 
 		if (surface.width > 0 && surface.height > 0)
 			if (matrix != null) {
+				tgtCtx.save();
 				if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) 
 					tgtCtx.translate(matrix.tx, matrix.ty);
-				else
+				else 
 					tgtCtx.setTransform(matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 				tgtCtx.drawImage(surface, 0, 0);
+				tgtCtx.restore();
 			} else
 				tgtCtx.drawImage(surface, 0, 0);
 	}
