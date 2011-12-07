@@ -851,8 +851,7 @@ class Graphics
 		markBoundsDirty();
 	}
 
-	public function getStandardExtent() : Rectangle
-	{
+	public function getStandardExtent() : Rectangle {
 		if(standardExtent!=null)
 			return standardExtent;
 
@@ -1035,7 +1034,7 @@ class Graphics
 		}
 
 		jeashChanged = true;
-		//standardExtent=null;
+		standardExtent=null;
 		markBoundsDirty();
 	}
 
