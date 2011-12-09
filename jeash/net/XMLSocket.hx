@@ -24,15 +24,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.events;
+package jeash.net;
 
-class DataEvent extends TextEvent {
-	var data : String;
-	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?data : String) {
-		super(type, bubbles, cancelable);
-		this.data = data;
+import jeash.events.EventDispatcher;
+import jeash.events.Event;
+import jeash.events.DataEvent;
+
+class XMLSocket extends EventDispatcher {
+
+	private var _socket: Dynamic;
+
+	public var connected(default, null): Bool;
+	public var timeout: Int;
+
+	public function new(?host: String, port: Int = 80): Void {
+		super();
+		if (host != null)
+			connect(host, port);
 	}
-	public static var DATA : String;
-	public static var UPLOAD_COMPLETE_DATA : String;
-}
 
+	public function close(): Void {
+		_socket.close();
+	}
+
+	public function connect(host: String, port: Int): Void {
+		_socket = untyped __js__("new WebSocket(\"ws://\" + host + \":\" + port)");
+		_socket.onopen = onOpenHandler;
+		_socket.onmessage = onMessageHandler;
+	}
+
+	private function onOpenHandler(_): Void {
+		dispatchEvent(new Event(Event.CONNECT));
+	}
+
+	private function onMessageHandler(msg: Dynamic): Void {
+		dispatchEvent(new DataEvent(DataEvent.DATA, false, false, msg.data));
+	}
+
+	public function send(object: Dynamic): Void {
+		_socket.send(object);
+	}
+
+}
