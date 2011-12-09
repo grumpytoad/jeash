@@ -178,6 +178,7 @@ class TextField extends InteractiveObject {
 
 
 		name = "TextField " + flash.display.DisplayObject.mNameID++;
+		jeashGraphics.jeashSurface.id = name;
 
 		borderColor = 0x000000;
 		border = false;
@@ -638,7 +639,6 @@ class TextField extends InteractiveObject {
 				h+=RenderRow(row,h,start_idx,paragraph.align,pos);
 			}
 		}
-
 
 		var w = mMaxWidth;
 		if (h<mTextHeight)

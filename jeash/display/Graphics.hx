@@ -276,7 +276,6 @@ class Graphics
 			jeashSurface = cast js.Lib.document.createElement("canvas");
 			jeashSurface.width = 0;
 			jeashSurface.height = 0;
-
 		} else {
 			jeashSurface = inSurface;
 		}

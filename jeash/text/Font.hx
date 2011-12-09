@@ -108,15 +108,12 @@ class Font
 		return m;
 	}
 
-	public function jeashRender(graphics:Graphics,inChar:Int,inX:Int,inY:Int,inOutline:Bool)
-	{
+	public function jeashRender(graphics:Graphics,inChar:Int,inX:Int,inY:Int,inOutline:Bool) {
 		var index=0;
 		var glyph = jeashGlyphData.get(inChar);
 		var commands = glyph.commands;
 		var data = glyph.data;
-		for(c in commands)
-		{
-			switch(c)
+		for(c in commands) { switch(c)
 			{
 				case 1: graphics.moveTo(inX + data[index++] * jeashFontScale, inY + data[index++] * jeashFontScale);
 				case 2: graphics.lineTo(inX + data[index++] * jeashFontScale, inY + data[index++] * jeashFontScale);
