@@ -30,20 +30,17 @@ import flash.display.DisplayObject;
 import flash.geom.Matrix;
 
 
-class Transform
-{
-   public var matrix(GetMatrix,SetMatrix):Matrix;
+class Transform {
+   public var matrix(jeashGetMatrix,jeashSetMatrix):Matrix;
 
    var mObj:DisplayObject;
 
-   public function new(inParent:DisplayObject)
-   {
+   public function new(inParent:DisplayObject) {
       mObj = inParent;
    }
 
-   public function GetMatrix() : Matrix { return mObj.GetMatrix(); }
-   public function SetMatrix(inMatrix:Matrix) : Matrix
-       { return mObj.SetMatrix(inMatrix); }
+   public function jeashGetMatrix() : Matrix { return mObj.jeashGetMatrix(); }
+   public function jeashSetMatrix(inMatrix:Matrix) : Matrix { return mObj.jeashSetMatrix(inMatrix); }
 
 }
 
