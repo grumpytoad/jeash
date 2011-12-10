@@ -254,10 +254,9 @@ class Graphics
 
 	public var mMatrix(default,null):Matrix;
 
-	public var jeashShift(default,null):Bool;
 	public var owner:DisplayObject;
 	private var mBoundsDirty:Bool;
-	private var standardExtent:Rectangle;
+	public var jeashExtent(default,null):Rectangle;
 	private var originX:Float;
 	private var originY:Float;
 	private var nextDrawIndex:Int;
@@ -304,12 +303,12 @@ class Graphics
 		jeashClearLine();
 		mLineJobs = [];
 		jeashChanged = true;
-		jeashShift = false;
 		nextDrawIndex = 0;
 		jeashRenderFrame = 0;
 
 		jeashExtentBuffer = 0;
 		jeashIsTile = false;
+		jeashExtent = new Rectangle();
 	}
 
 	public function SetSurface(inSurface:Dynamic) {
@@ -352,39 +351,31 @@ class Graphics
 	}
 
 	public function jeashRender(?maskHandle:HTMLCanvasElement, ?matrix:Matrix) {
+
 		if (!jeashChanged) {
 			return false;
 		}
 
 		ClosePolygon(true);
 
-		// clear the canvas
-		/*if (mDrawList.length > 0)
-			jeashClearCanvas();*/
-
-		var extent = getStandardExtent();
-		if (jeashRenderFrame++ < JEASH_SIZING_WARM_UP)
-			if (standardExtent.width - standardExtent.x != jeashSurface.width || standardExtent.height - standardExtent.y != jeashSurface.height) jeashAdjustSurface();
-		else
-			if (standardExtent.width - standardExtent.x < jeashSurface.width || standardExtent.height - standardExtent.y < jeashSurface.height) jeashAdjustSurface();
+		if (jeashExtent.width - jeashExtent.x != jeashSurface.width || jeashExtent.height - jeashExtent.y != jeashSurface.height) {
+			jeashAdjustSurface();
+		}
 
 		var ctx = getContext();
 		if (ctx==null) return false;
 
 		var len : Int = mDrawList.length;
 
-		jeashShift = if (Math.abs(extent.x) < jeashSurface.width && Math.abs(extent.y) < jeashSurface.height)
-			true; else false;
-
 		ctx.save();
 		
-		if (jeashShift) ctx.translate(-extent.x, -extent.y);
+		if (jeashExtent.x != 0 && jeashExtent.y != 0)
+			ctx.translate(-jeashExtent.x, -jeashExtent.y);
 
 		for ( i in nextDrawIndex...len ) {
 			var d = mDrawList[(len-1)-i];
 	
 			if (d.lineJobs.length > 0) {
-				//TODO lj.pixel_hinting and lj.scale_mode
 				for (lj in d.lineJobs) {
 					ctx.lineWidth = lj.thickness;
 
@@ -463,21 +454,17 @@ class Graphics
 			ctx.save();
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
-					if (jeashShift) ctx.translate(-extent.x, -extent.y);
+				if (jeashExtent.x != 0 && jeashExtent.y != 0)
+					ctx.translate(-jeashExtent.x, -jeashExtent.y);
 
-					// Hack to workaround premature width calculations during async image load
-					if (!mNoClip)
-						ctx.clip();
+				var img = bitmap.texture_buffer;
+				var matrix = bitmap.matrix;
 
+				if(matrix != null) {
+					ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
+				}
 
-					var img = bitmap.texture_buffer;
-					var matrix = bitmap.matrix;
-
-					if(matrix != null) {
-						ctx.transform( matrix.a,  matrix.b,  matrix.c,  matrix.d,  matrix.tx,  matrix.ty );
-					}
-
-					ctx.drawImage( img, 0, 0 );
+				ctx.drawImage( img, 0, 0 );
 
 			}
 			ctx.restore();
@@ -672,14 +659,7 @@ class Graphics
 		ClosePolygon(false);
 	}
 
-	public function drawRect(x:Float,y:Float,width:Float,height:Float)
-	{
-		// Hack to workaround premature width calculations during async image load
-		if (width == 0 && height == 0) 
-			mNoClip = true;
-		else
-			mNoClip = false;
-
+	public function drawRect(x:Float,y:Float,width:Float,height:Float) {
 		ClosePolygon(false);
 
 		moveTo(x,y);
@@ -799,6 +779,8 @@ class Graphics
 
 		mSolidGradient = null;
 
+		jeashExpandStandardExtent(bitmap.width, bitmap.height);
+
 		mBitmap  = { texture_buffer: bitmap.handle(),
 			matrix: matrix==null ? matrix : matrix.clone(),
 			flags : (repeat ? BMP_REPEAT : 0) |
@@ -850,75 +832,47 @@ class Graphics
 		markBoundsDirty();
 	}
 
-	public function getStandardExtent() : Rectangle {
-		if(standardExtent!=null)
-			return standardExtent;
-
-		if (mDrawList.length == 0)
-			return standardExtent = new Rectangle();
-
+	function jeashExpandStandardExtent(x:Float, y:Float) {
 		var maxX, minX, maxY, minY;
-		maxX = minX = 0.;//mDrawList[0].points[0].x;
-		maxY = minY = 0.;//mDrawList[0].points[0].y;
-		
-		for (dl in mDrawList) {
-			for (p in dl.points) {
-				maxX=p.x>maxX?p.x:maxX;
-				minX=p.x<minX?p.x:minX;
-				maxY=p.y>maxY?p.y:maxY;
-				minY=p.y<minY?p.y:minY;
-			}
-
-			if (dl.bitmap != null)
-			{	
-				var width = dl.bitmap.texture_buffer.width;
-				var height = dl.bitmap.texture_buffer.height;
-				maxX=width>maxX?width:maxX;
-				minX=0<minX?0:minX;
-				maxY=height>maxY?height:maxY;
-				minY=0<minY?0:minY;
-			} 
-		}
-		
-		if((minX<0 && minX<originX) || (minY<0 && minY<originY)){
-			nextDrawIndex = 0;
-			jeashClearCanvas();		
-		}
-
-		originX=minX;
-		originY=minY;
-		
-		return standardExtent = new Rectangle(minX, minY, maxX-minX+jeashExtentBuffer, maxY-minY+jeashExtentBuffer);
+		minX = jeashExtent.x;
+		minY = jeashExtent.y;
+		maxX = jeashExtent.width+minX;
+		maxY = jeashExtent.height+minY;
+		maxX=x>maxX?x:maxX;
+		minX=x<minX?x:minX;
+		maxY=y>maxY?y:maxY;
+		minY=y<minY?y:minY;
+		jeashExtent.x = minX;
+		jeashExtent.y = minY;
+		jeashExtent.width = maxX-minX;
+		jeashExtent.height = maxY-minY;
 	}
 
-	public function moveTo(inX:Float,inY:Float)
-	{
+	public function moveTo(inX:Float,inY:Float) {
 		mPenX = inX;
 		mPenY = inY;
 
-		if (!mFilling)
-		{
+		jeashExpandStandardExtent(inX, inY);
+
+		if (!mFilling) {
 			ClosePolygon(false);
-		}
-		else
-		{
+		} else {
 			AddLineSegment();
 			mLastMoveID = mPoints.length;
 			mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
 		}
 	}
 
-	public function lineTo(inX:Float,inY:Float)
-	{
+	public function lineTo(inX:Float,inY:Float) {
 		var pid = mPoints.length;
-		if (pid==0)
-		{
+		if (pid==0) {
 			mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, MOVE ) );
 			pid++;
 		}
 
 		mPenX = inX;
 		mPenY = inY;
+		jeashExpandStandardExtent(inX, inY);
 		mPoints.push( new GfxPoint( mPenX, mPenY, 0.0, 0.0, LINE ) );
 
 		if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
@@ -943,6 +897,7 @@ class Graphics
 
 		mPenX = inX;
 		mPenY = inY;
+		jeashExpandStandardExtent(inX, inY);
 		mPoints.push( new GfxPoint( inX, inY, inCX, inCY, CURVE ) );
 
 		if (mCurrentLine.grad!=null || mCurrentLine.alpha>0)
@@ -1033,7 +988,7 @@ class Graphics
 		}
 
 		jeashChanged = true;
-		standardExtent=null;
+		//standardExtent=null;
 		markBoundsDirty();
 	}
 
@@ -1146,8 +1101,8 @@ class Graphics
 	}
 
 	function jeashAdjustSurface() {
-		var width = Math.ceil(standardExtent.width - standardExtent.x);
-		var height = Math.ceil(standardExtent.height - standardExtent.y);
+		var width = Math.ceil(jeashExtent.width - jeashExtent.x);
+		var height = Math.ceil(jeashExtent.height - jeashExtent.y);
 
 		// prevent allocating too large canvas sizes
 		if (width > JEASH_MAX_DIMENSION || height > JEASH_MAX_DIMENSION) return;

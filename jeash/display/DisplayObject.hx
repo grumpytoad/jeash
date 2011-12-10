@@ -324,7 +324,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		{
 			var gfx = jeashGetGraphics();
 			if (gfx!=null)
-				mGraphicsBounds = gfx.getStandardExtent().clone();
+				mGraphicsBounds = gfx.jeashExtent.clone();
 		}
 		return mGraphicsBounds;
 	}
@@ -421,13 +421,8 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 				} else gfx.jeashRender(inMask, m);
 			} else gfx.jeashRender(inMask, m);
 
-			var extent = gfx.getStandardExtent();
-
-			// detect draw beyond boundary, do not adjust matrix
-			if (gfx.jeashShift) {
-				m.tx = m.tx + extent.x*m.a + extent.y*m.c;
-				m.ty = m.ty + extent.x*m.b + extent.y*m.d;
-			}
+			m.tx = m.tx + gfx.jeashExtent.x*m.a + gfx.jeashExtent.y*m.c;
+			m.ty = m.ty + gfx.jeashExtent.x*m.b + gfx.jeashExtent.y*m.d;
 
 			if (inMask != null) {
 				Lib.jeashDrawToSurface(gfx.jeashSurface, inMask, m, (parent != null ? parent.alpha : 1) * alpha);
@@ -517,7 +512,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			mBoundsRect = new Rectangle(x,y,0,0);
 		else
 		{
-			mBoundsRect = gfx.getStandardExtent().clone();
+			mBoundsRect = gfx.jeashExtent.clone();
 			gfx.markBoundsClean();
 			if (mScale9Grid!=null)
 			{
