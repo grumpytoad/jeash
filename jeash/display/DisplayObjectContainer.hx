@@ -430,5 +430,11 @@ class DisplayObjectContainer extends InteractiveObject
 		return filters;
 	}
 
+	override private function jeashSetVisible(visible:Bool) {
+		super.jeashSetVisible(visible);
+		for(i in 0...jeashChildren.length)
+			if (jeashChildren[i].jeashIsOnStage())
+				jeashChildren[i].jeashSetVisible(visible);
+		return visible;
+	}
 }
-
