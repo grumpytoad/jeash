@@ -369,7 +369,7 @@ class Graphics
 
 		ctx.save();
 		
-		if (jeashExtent.x != 0 && jeashExtent.y != 0)
+		if (jeashExtent.x != 0 || jeashExtent.y != 0)
 			ctx.translate(-jeashExtent.x, -jeashExtent.y);
 
 		for ( i in nextDrawIndex...len ) {
@@ -454,7 +454,7 @@ class Graphics
 			ctx.save();
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
-				if (jeashExtent.x != 0 && jeashExtent.y != 0)
+				if (jeashExtent.x != 0 || jeashExtent.y != 0)
 					ctx.translate(-jeashExtent.x, -jeashExtent.y);
 
 				var img = bitmap.texture_buffer;
