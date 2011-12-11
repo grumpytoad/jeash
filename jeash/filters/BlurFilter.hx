@@ -37,11 +37,17 @@ import Html5Dom;
 class BlurFilter extends flash.filters.BitmapFilter {
 	var jeashKernel:Vector<Int>;
 	var jeashBG:Array<Int>;
+	var MAX_BLUR_WIDTH:Int;
+	var MAX_BLUR_HEIGHT:Int;
 
 	public function new(?inBlurX : Float, ?inBlurY : Float, ?inQuality : Int) {
 		super("BlurFilter");
 		blurX = inBlurX==null ? 4.0 : inBlurX;
 		blurY = inBlurY==null ? 4.0 : inBlurY;
+
+		MAX_BLUR_WIDTH = Lib.current.stage.stageWidth;
+		MAX_BLUR_HEIGHT = Lib.current.stage.stageHeight;
+
 		quality = inQuality==null ? 1 : inQuality;
 		var bgColor = Lib.current.stage.backgroundColor;
 		jeashBG = [(bgColor & 0xFF0000) >>> 16, (bgColor & 0x00FF00) >>> 8, (bgColor & 0x0000FF)];
@@ -58,8 +64,13 @@ class BlurFilter extends flash.filters.BitmapFilter {
 	override public function jeashPreFilter(surface:HTMLCanvasElement) {
 		var ctx: CanvasRenderingContext2D = surface.getContext('2d');
 		jeashKernel = new Vector();
+		if (surface.width == 0 || surface.height == 0) return;
 
-		jeashBuildKernel(ctx.getImageData (0, 0, surface.width, surface.height).data, surface.width, surface.height, jeashKernel);
+		// safety catch.
+		var width = (surface.width > MAX_BLUR_WIDTH) ? MAX_BLUR_WIDTH : surface.width;
+		var height = (surface.height > MAX_BLUR_HEIGHT) ? MAX_BLUR_HEIGHT : surface.height;
+
+		jeashBuildKernel(ctx.getImageData (0, 0, width, height).data, width, height, jeashKernel);
 	}
 
 	// Implementation reference: http://www.gamasutra.com/features/20010209/Listing2.cpp
@@ -107,9 +118,13 @@ class BlurFilter extends flash.filters.BitmapFilter {
 	
 	override public function jeashApplyFilter(surface:HTMLCanvasElement) {
 		if (surface.width > 0 && surface.height > 0) {
-			jeashPreFilter(surface);
+			if (jeashKernel == null) jeashPreFilter(surface);
 			var ctx: CanvasRenderingContext2D = surface.getContext('2d');
-			var jeashImageData = ctx.getImageData (0, 0, surface.width, surface.height);
+
+			// safety catch.
+			var width = (surface.width > MAX_BLUR_WIDTH) ? MAX_BLUR_WIDTH : surface.width;
+			var height = (surface.height > MAX_BLUR_HEIGHT) ? MAX_BLUR_HEIGHT : surface.height;
+			var jeashImageData = ctx.getImageData (0, 0, width, height);
 
 			jeashBoxBlur(jeashImageData.data, Math.floor(jeashImageData.width), Math.floor(jeashImageData.height), jeashKernel, Math.floor(blurX), Math.floor(blurY));
 

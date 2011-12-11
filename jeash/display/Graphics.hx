@@ -992,8 +992,7 @@ class Graphics
 		markBoundsDirty();
 	}
 
-	public function drawGraphicsData(points:Vector<IGraphicsData>) 
-	{
+	public function drawGraphicsData(points:Vector<IGraphicsData>) {
 		for (data in points) {
 			if (data == null) {
 				mFilling=true;

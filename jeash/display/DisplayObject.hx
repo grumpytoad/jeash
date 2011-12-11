@@ -412,13 +412,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			
 			var m = mFullMatrix.clone();
 
-			if (jeashFilters != null) {
-				if (gfx.jeashChanged || inMask != null) {
-					gfx.jeashRender(inMask, m);
-					for (filter in jeashFilters) {
-						filter.jeashApplyFilter(gfx.jeashSurface);
-					}
-				} else gfx.jeashRender(inMask, m);
+			if (jeashFilters != null && (gfx.jeashChanged || inMask != null)) {
+				gfx.jeashRender(inMask, m);
+				for (filter in jeashFilters) {
+					filter.jeashApplyFilter(gfx.jeashSurface);
+				}
 			} else gfx.jeashRender(inMask, m);
 
 			m.tx = m.tx + gfx.jeashExtent.x*m.a + gfx.jeashExtent.y*m.c;
@@ -486,11 +484,9 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public function jeashSetFilters(filters:Array<Dynamic>) {
 		if (filters==null)
 			jeashFilters = null;
-		else
-		{
+		else {
 			jeashFilters = new Array<BitmapFilter>();
-			for(filter in filters)
-				jeashFilters.push(filter.clone());
+			for(filter in filters) jeashFilters.push(filter.clone());
 		}
 
 		return filters;
