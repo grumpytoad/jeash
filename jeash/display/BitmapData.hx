@@ -186,7 +186,7 @@ class BitmapData implements IBitmapDrawable {
 
 	public function copyPixels(sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point,
 			?alphaBitmapData:BitmapData, ?alphaPoint:Point, mergeAlpha:Bool = false):Void {
-		if (sourceBitmapData.handle() == null || mTextureBuffer == null || sourceRect.width <= 0 || sourceRect.height <= 0 ) return;
+		if (sourceBitmapData.handle() == null || mTextureBuffer == null || sourceBitmapData.handle().width == 0 || sourceBitmapData.handle().height == 0 || sourceRect.width <= 0 || sourceRect.height <= 0 ) return;
 		if (sourceRect.x + sourceRect.width > sourceBitmapData.handle().width) sourceRect.width = sourceBitmapData.handle().width - sourceRect.x;
 		if (sourceRect.y + sourceRect.height > sourceBitmapData.handle().height) sourceRect.height = sourceBitmapData.handle().height - sourceRect.y;
 
@@ -490,6 +490,8 @@ class BitmapData implements IBitmapDrawable {
 		if ( inLoader != null ) {
 			var data : LoadData = {image:image, texture: mTextureBuffer, inLoader:inLoader, bitmapData:this};
 			image.addEventListener( "load", callback(jeashOnLoad, data), false );
+			// IE9 bug, force a load, if error called and complete is false.
+			image.addEventListener( "error", function (e) { if (!image.complete) jeashOnLoad(data, e); }, false);
 		}
 		image.src = inFilename;
 	}
