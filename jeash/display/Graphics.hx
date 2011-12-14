@@ -454,6 +454,8 @@ class Graphics
 			ctx.save();
 			var bitmap = d.bitmap;
 			if ( bitmap != null) {
+				ctx.clip();
+
 				if (jeashExtent.x != 0 || jeashExtent.y != 0)
 					ctx.translate(-jeashExtent.x, -jeashExtent.y);
 
