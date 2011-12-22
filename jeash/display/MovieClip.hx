@@ -27,8 +27,7 @@
 package jeash.display;
 
 
-class MovieClip extends Sprite
-{
+class MovieClip extends Sprite, implements Dynamic<Dynamic> {
    public var enabled:Bool;
    public var currentFrame(GetCurrentFrame,null):Int;
    public var framesLoaded(GetTotalFrames,null):Int;
