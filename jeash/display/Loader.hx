@@ -123,6 +123,6 @@ class Loader extends flash.display.DisplayObjectContainer
 			}
 		}
 	}
-	
-}
 
+	override function jeashIsOnStage () return true
+}

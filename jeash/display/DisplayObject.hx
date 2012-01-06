@@ -615,6 +615,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		var gfx = jeashGetGraphics();
 		if (gfx != null)
 			return Lib.jeashIsOnStage(gfx.jeashSurface);
+
 		return false;
 	}
 
