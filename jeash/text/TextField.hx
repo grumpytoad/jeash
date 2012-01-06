@@ -823,6 +823,11 @@ class TextField extends InteractiveObject {
 						if (height!=null) a.height = Std.int(Std.parseFloat(height));
 						var col = x.get("color");
 						if (col!=null) a.colour = DecodeColour(col);
+
+					case "br":
+						var l = mParagraphs.length;
+						if (l>0 && mParagraphs[l-1].spans.length>0 && multiline)
+							mParagraphs.push( { align:a.align, spans:[] } );
 				}
 			}
 			for(child in x) {

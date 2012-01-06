@@ -105,8 +105,11 @@ class Font
 	public function jeashGetAdvance(inGlyph:Int, height:Int) : Int
 	{
 		var m = jeashMetrics[inGlyph];
-		if (m==null)
-			jeashMetrics[inGlyph] = m = Std.int(jeashGlyphData.get(inGlyph)._width * jeashFontScale);
+		if (m==null) {
+			var glyph = jeashGlyphData.get(inGlyph);
+			if (glyph == null) return 0;
+			jeashMetrics[inGlyph] = m = Std.int(glyph._width * jeashFontScale);
+		}
 		if (m==null)
 			return 0;
 		return m;
@@ -115,6 +118,7 @@ class Font
 	public function jeashRender(graphics:Graphics,inChar:Int,inX:Int,inY:Int,inOutline:Bool) {
 		var index=0;
 		var glyph = jeashGlyphData.get(inChar);
+		if (glyph == null) return;
 		var commands = glyph.commands;
 		var data = glyph.data;
 		for(c in commands) { switch(c)
