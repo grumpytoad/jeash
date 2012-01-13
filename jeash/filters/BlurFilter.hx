@@ -34,7 +34,7 @@ import flash.geom.Point;
 import Html5Dom;
 #end
 
-class BlurFilter extends flash.filters.BitmapFilter {
+class BlurFilter extends BitmapFilter {
 	var jeashKernel:Vector<Int>;
 	var jeashBG:Array<Int>;
 	var MAX_BLUR_WIDTH:Int;

@@ -35,7 +35,6 @@ import flash.events.Event;
 import flash.events.KeyboardEvent;
 import flash.events.FocusEvent;
 import flash.ui.Keyboard;
-import flash.display.InteractiveObject;
 
 import Html5Dom;
 

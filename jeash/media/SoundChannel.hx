@@ -27,6 +27,7 @@
 package jeash.media;
 
 import flash.events.Event;
+import flash.events.EventDispatcher;
 
 import Html5Dom;
 
@@ -35,7 +36,7 @@ import Html5Dom;
 * @author	Niel Drummond
 * @todo Implement soundTransform
 **/
-class SoundChannel extends flash.events.EventDispatcher {
+class SoundChannel extends EventDispatcher {
 	public var ChannelId(default,null) : Int;
 	public var leftPeak(default,null) : Float;
 	public var position(default,null) : Float;

@@ -27,6 +27,7 @@
 package jeash.media;
 
 import flash.events.Event;
+import flash.events.EventDispatcher;
 import flash.events.IOErrorEvent;
 import flash.net.URLRequest;
 import flash.net.URLLoader;
@@ -38,7 +39,7 @@ import Html5Dom;
 * @todo Possibly implement streaming
 * @todo Review events match flash
 **/
-class Sound extends flash.events.EventDispatcher {
+class Sound extends EventDispatcher {
 	public var bytesLoaded(default,null) : Int;
 	public var bytesTotal(default,null) : Int;
 	public var id3(default,null) : ID3Info;

@@ -26,7 +26,7 @@
 
 package jeash.events;
 
-class FocusEvent extends flash.events.Event
+class FocusEvent extends Event
 {
    public var keyCode : Int;
    public var shiftKey : Bool;

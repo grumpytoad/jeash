@@ -43,7 +43,7 @@ import js.XMLHttpRequest;
 * @todo open and progress events
 * @todo Complete Variables type
 **/
-class URLLoader extends flash.events.EventDispatcher
+class URLLoader extends EventDispatcher
 {
 	var http:Http;
 	public var bytesLoaded:Int;

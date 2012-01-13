@@ -26,7 +26,7 @@
 
 package jeash.events;
 
-class KeyboardEvent extends flash.events.Event
+class KeyboardEvent extends Event
 {
    public var keyCode : Int;
    public var charCode : Int;

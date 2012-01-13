@@ -44,7 +44,7 @@ import flash.geom.Rectangle;
 * @todo init, open, progress, unload (?) events
 * @todo Complete LoaderInfo initialization
 **/
-class Loader extends flash.display.DisplayObjectContainer
+class Loader extends DisplayObjectContainer
 {
 	public var content(default,null) : DisplayObject;
 	public var contentLoaderInfo(default,null) : LoaderInfo;

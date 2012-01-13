@@ -26,7 +26,7 @@
 
 package jeash.events;
 
-class IOErrorEvent extends flash.events.Event
+class IOErrorEvent extends Event
 {
    public var text : String;
 

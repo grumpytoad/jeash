@@ -39,7 +39,7 @@ import flash.display.Graphics;
 import flash.geom.Point;
 import flash.geom.Rectangle;
 
-class Stage extends flash.display.DisplayObjectContainer
+class Stage extends DisplayObjectContainer
 {
 	var jeashWindowWidth : Int;
 	var jeashWindowHeight : Int;
