@@ -26,6 +26,8 @@
 
 package jeash.events;
 
+import flash.display.InteractiveObject;
+
 class Event
 {
 	public var bubbles(default,null) : Bool;
@@ -37,34 +39,6 @@ class Event
 
 	var jeashIsCancelled:Bool;
 	var jeashIsCancelledNow:Bool;
-
-	public function jeashSetPhase(phase:Int) { eventPhase = phase; }
-
-	public function jeashGetIsCancelled() { return jeashIsCancelled; }
-	public function jeashGetIsCancelledNow() { return jeashIsCancelledNow; }
-
-	public function new(inType : String, inBubbles : Bool=false, inCancelable : Bool=false)
-	{
-		type = inType;
-		bubbles = inBubbles;
-		cancelable = inCancelable;
-		jeashIsCancelled = false;
-		jeashIsCancelledNow = false;
-		target = null;
-		currentTarget = null;
-		eventPhase = EventPhase.AT_TARGET;
-	}
-
-	public function clone() : Event
-	{
-		return new Event(type,bubbles,cancelable);
-	}
-
-	public function stopImmediatePropagation() { jeashIsCancelledNow = jeashIsCancelled = true; }
-
-	public function stopPropagation() { jeashIsCancelled = true; }
-
-	public function toString():String { return "Event"; }
 
 	public static var ACTIVATE = "activate";
 	public static var ADDED = "added";
@@ -92,5 +66,36 @@ class Event
 	public static var UNLOAD = "unload";
 	public static var SOUND_COMPLETE = "soundComplete";
 
-}
+	public function jeashSetPhase(phase:Int) { eventPhase = phase; }
 
+	public function jeashGetIsCancelled() { return jeashIsCancelled; }
+	public function jeashGetIsCancelledNow() { return jeashIsCancelledNow; }
+
+	public function new(inType : String, inBubbles : Bool=false, inCancelable : Bool=false) {
+		type = inType;
+		bubbles = inBubbles;
+		cancelable = inCancelable;
+		jeashIsCancelled = false;
+		jeashIsCancelledNow = false;
+		target = null;
+		currentTarget = null;
+		eventPhase = EventPhase.AT_TARGET;
+	}
+
+	public function clone() : Event {
+		return new Event(type,bubbles,cancelable);
+	}
+
+	public function stopImmediatePropagation() { jeashIsCancelledNow = jeashIsCancelled = true; }
+	public function stopPropagation() { jeashIsCancelled = true; }
+
+	public function toString():String { return "Event"; }
+
+	public function jeashCreateSimilar(type:String, ?related:InteractiveObject, ?targ:InteractiveObject):Event { 
+		var result = new Event(type, bubbles, cancelable);
+
+		if (targ!=null)
+			result.target = targ;
+		return result;
+	}
+}

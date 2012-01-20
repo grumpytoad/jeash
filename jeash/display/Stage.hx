@@ -52,11 +52,11 @@ class Stage extends DisplayObjectContainer
 	var jeashDragOffsetY:Float;
 	var jeashMouseOverObjects:Array<InteractiveObject>;
 	var jeashStageMatrix:Matrix;
-	var jeashMouseDown:Bool;
 	var jeashStageActive:Bool;
 	var jeashFrameRate:Float;
 	var jeashBackgroundColour:Int;
 	var jeashShowDefaultContextMenu:Bool;
+	var jeashTouchInfo:Array<TouchInfo>;
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
@@ -79,6 +79,7 @@ class Stage extends DisplayObjectContainer
 
 	private var mFocusObject : InteractiveObject;
 	static var jeashMouseChanges : Array<String> = [ jeash.events.MouseEvent.MOUSE_OUT, jeash.events.MouseEvent.MOUSE_OVER, jeash.events.MouseEvent.ROLL_OUT, jeash.events.MouseEvent.ROLL_OVER ];
+	static var jeashTouchChanges : Array<String> = [ jeash.events.TouchEvent.TOUCH_OUT, jeash.events.TouchEvent.TOUCH_OVER,	jeash.events.TouchEvent.TOUCH_ROLL_OUT, jeash.events.TouchEvent.TOUCH_ROLL_OVER ];
 	static inline var DEFAULT_FRAMERATE = 60.0;
 
 	// for openGL renderers
@@ -104,8 +105,8 @@ class Stage extends DisplayObjectContainer
 		mProjMatrix = DEFAULT_PROJ_MATRIX;
 		jeashPointInPathMode = Graphics.jeashDetectIsPointInPathMode();
 		jeashMouseOverObjects = [];
-		jeashMouseDown = false;
 		showDefaultContextMenu = true;
+		jeashTouchInfo = [];
 		// bug in 2.07 release
 		// displayState = StageDisplayState.NORMAL;
 	}
@@ -168,17 +169,15 @@ class Stage extends DisplayObjectContainer
 	}
 
 	// @r551 without touch events
-	inline function jeashCheckInOuts(event:jeash.events.MouseEvent, stack:Array<InteractiveObject>)
-	{
-		var prev = jeashMouseOverObjects;
-		var events = jeashMouseChanges;
+	private function jeashCheckInOuts(event:jeash.events.Event, stack:Array<InteractiveObject>, ?touchInfo:TouchInfo) {
+		var prev = touchInfo == null ? jeashMouseOverObjects : touchInfo.touchOverObjects;
+		var events = touchInfo == null ? jeashMouseChanges : jeashTouchChanges;
 
 		var new_n = stack.length;
 		var new_obj:InteractiveObject = new_n>0 ? stack[new_n-1] : null;
 		var old_n = prev.length;
 		var old_obj:InteractiveObject = old_n>0 ? prev[old_n-1] : null;
-		if (new_obj!=old_obj)
-		{
+		if (new_obj!=old_obj) {
 			// mouseOut/MouseOver goes up the object tree...
 			if (old_obj!=null)
 				old_obj.jeashFireEvent( event.jeashCreateSimilar(events[0], new_obj, old_obj) );
@@ -193,29 +192,29 @@ class Stage extends DisplayObjectContainer
 
 			var rollOut = event.jeashCreateSimilar(events[2], new_obj, old_obj);
 			var i = old_n-1;
-			while(i>=common)
-			{
+			while(i>=common) {
 				prev[i].dispatchEvent(rollOut);
 				i--;
 			}
 
 			var rollOver = event.jeashCreateSimilar(events[3],old_obj);
 			var i = new_n-1;
-			while(i>=common)
-			{
+			while(i>=common) {
 				stack[i].dispatchEvent(rollOver);
 				i--;
 			}
 
-			jeashMouseOverObjects = stack;
+			if (touchInfo == null)
+				jeashMouseOverObjects = stack;
+			else
+				touchInfo.touchOverObjects = stack;
 		}
 	}
 
 	public function jeashProcessStageEvent(evt:Html5Dom.Event) {
 		evt.stopPropagation();
 
-		switch(evt.type)
-		{
+		switch(evt.type) {
 			case "mousemove":
 				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_MOVE);
 
@@ -272,6 +271,23 @@ class Stage extends DisplayObjectContainer
 						evt.ctrlKey, evt.altKey,
 						evt.shiftKey );
 
+			case "touchstart":
+				var evt:TouchEvent = cast evt;
+				var touchInfo = new TouchInfo();
+				jeashTouchInfo[evt.changedTouches[0].identifier] = touchInfo;
+				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_BEGIN, touchInfo, false);
+
+			case "touchmove":
+				var evt:TouchEvent = cast evt;
+				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
+				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_MOVE, touchInfo, true);
+
+			case "touchend":
+				var evt:TouchEvent = cast evt;
+				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
+				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_END, touchInfo, true);
+				jeashTouchInfo[evt.changedTouches[0].identifier] = null;
+
 			default:
 				
 		}
@@ -300,68 +316,60 @@ class Stage extends DisplayObjectContainer
 			stack.reverse();
 			var local = obj.globalToLocal(point);
 
-			var evt = jeashCreateMouseEvent(type, event, local, cast obj);
+			var evt = flash.events.MouseEvent.jeashCreate(type, event, local, cast obj);
 
 			jeashCheckInOuts(evt, stack);
 
 			obj.jeashFireEvent(evt);
 		} else {
-			var evt = jeashCreateMouseEvent(type, event, point, null);
+			var evt = flash.events.MouseEvent.jeashCreate(type, event, point, null);
 
 			jeashCheckInOuts(evt, stack);
 		}
 	}
 
-	// @r551 should be in MouseEvent.hx, haxe issue 300
-	public inline function jeashCreateMouseEvent(type:String, event:Html5Dom.MouseEvent, local:Point, target:InteractiveObject): flash.events.MouseEvent
-	{
-		// cross-browser mouse wheel delta sniff
-		var delta = if ( type == flash.events.MouseEvent.MOUSE_WHEEL )
-		{
-			var mouseEvent : Dynamic = event;
-			if (mouseEvent.wheelDelta) { /* IE/Opera. */
-				if ( js.Lib.isOpera )
-					Std.int(mouseEvent.wheelDelta/40);
-				else
-					Std.int(mouseEvent.wheelDelta/120);
-			} else if (mouseEvent.detail) { /** Mozilla case. */
-				Std.int(-mouseEvent.detail);
+	// @r1095
+	private function jeashOnTouch(event:TouchEvent, touch:Touch, type:String, touchInfo:TouchInfo, isPrimaryTouchPoint:Bool) {
+		var point : Point = untyped 
+			new Point(event.pageX - Lib.mMe.__scr.offsetLeft + window.pageXOffset, event.pageY - Lib.mMe.__scr.offsetTop + window.pageYOffset);
+
+		var obj = jeashGetObjectUnderPoint(point);
+
+		// used in drag implementation
+		mouseX = point.x;
+		mouseY = point.y;
+
+		var stack = new Array<InteractiveObject>();
+		if (obj!=null) obj.jeashGetInteractiveObjectStack(stack);
+		
+		if (stack.length > 0) {
+			//var obj = stack[0];
+			stack.reverse();
+			var local = obj.globalToLocal(point);
+
+			var evt = flash.events.TouchEvent.jeashCreate(type, event, touch, local, cast obj);
+
+			evt.touchPointID = touch.identifier;
+			evt.isPrimaryTouchPoint = isPrimaryTouchPoint;
+
+			//if (evt.isPrimaryTouchPoint)
+			jeashCheckInOuts(evt, stack, touchInfo);
+			obj.jeashFireEvent(evt);
+			if (evt.isPrimaryTouchPoint && type == flash.events.TouchEvent.TOUCH_MOVE) {
+				if (jeashDragObject != null) jeashDrag(point);
+				
+				var evt = flash.events.MouseEvent.jeashCreate(flash.events.MouseEvent.MOUSE_MOVE, cast event, local, cast obj);
+				obj.jeashFireEvent(evt);
 			}
-
-		} else { 2; }
-
-		// source: http://unixpapa.com/js/mouse.html
-		if (type == flash.events.MouseEvent.MOUSE_DOWN)
-			jeashMouseDown = if ( event.which != null ) 
-				event.which == 1
-			else if (event.button != null) 
-				(js.Lib.isIE && event.button == 1 || event.button == 0) 
-			else false;
-		else if (type == flash.events.MouseEvent.MOUSE_UP)
-			if ( event.which != null ) 
-				if (event.which == 1)
-					jeashMouseDown = false;
-			else if (event.button != null) 
-				if (js.Lib.isIE && event.button == 1 || event.button == 0)
-					jeashMouseDown = false;
-			else 
-				jeashMouseDown = false;
-
-		var pseudoEvent = new flash.events.MouseEvent(type,
-				true, false,
-				local.x,local.y,
-				null,
-				event.ctrlKey,
-				event.altKey,
-				event.shiftKey,
-				jeashMouseDown,
-				delta);
-
-		pseudoEvent.stageX = mouseX;
-		pseudoEvent.stageY = mouseY;
-		pseudoEvent.target = target;
-		return pseudoEvent;
+		} else {
+			var evt = flash.events.TouchEvent.jeashCreate(type, event, touch, point, null);
+			evt.touchPointID = touch.identifier;
+			evt.isPrimaryTouchPoint = isPrimaryTouchPoint;
+			//if (evt.isPrimaryTouchPoint)
+			jeashCheckInOuts(evt, stack, touchInfo);
+		}
 	}
+
 
 	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
 			ctrl:Bool, alt:Bool, shift:Bool )
@@ -512,3 +520,8 @@ class Stage extends DisplayObjectContainer
 
 }
 
+class TouchInfo 
+{
+	public var touchOverObjects:Array<InteractiveObject>;
+	public function new() touchOverObjects = []
+}

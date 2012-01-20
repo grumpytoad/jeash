@@ -2858,6 +2858,33 @@ extern interface MouseEvent implements UIEvent {
     ): Void;
 }
 
+extern interface Touch {
+	public var identifier		(default, null): Int;
+	public var target		(default, null): EventTarget;
+	public var screenX		(default, null): Int;
+	public var screenY		(default, null): Int;
+	public var clientX		(default, null): Int;
+	public var clientY		(default, null): Int;
+	public var pageX		(default, null): Int;
+	public var pageY		(default, null): Int;
+}
+
+extern interface TouchList implements ArrayAccess<Touch> {
+	public var length 		(default, null): Int;
+	public var item 		(default, null): Touch;
+	public var identifiedTouch:		Touch;
+}
+
+extern interface TouchEvent implements UIEvent {
+	public var touches		(default, null):TouchList;
+	public var targetTouches	(default, null):TouchList;
+	public var changedTouches	(default, null):TouchList;
+	public var altKey		(default, null):Bool;
+	public var metaKey		(default, null):Bool;
+	public var ctrlKey		(default, null):Bool;
+	public var shiftKey		(default, null):Bool;
+}
+
 extern interface PopStateEvent implements Event {
     public var state        (default, null): Dynamic;
     

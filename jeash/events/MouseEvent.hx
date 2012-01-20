@@ -67,9 +67,7 @@ class MouseEvent extends Event
 			buttonDown : Bool = false,
 			delta : Int = 0,
 			commandKey : Bool = false,
-			clickCount : Int = 0
-			)
-	{
+			clickCount : Int = 0) {
 		super(type, bubbles, cancelable);
 
 		this.shiftKey = shiftKey;
@@ -85,21 +83,67 @@ class MouseEvent extends Event
 		this.clickCount = clickCount;
 	}
 
-	public function jeashCreateSimilar(type:String, ?related:InteractiveObject, ?targ:InteractiveObject)
-	{
+	public static function jeashCreate(type:String, event:Html5Dom.MouseEvent, local:Point, target:InteractiveObject) {
+		var jeashMouseDown:Bool = false;
+
+		// cross-browser mouse wheel delta sniff
+		var delta = if ( type == flash.events.MouseEvent.MOUSE_WHEEL )
+		{
+			var mouseEvent : Dynamic = event;
+			if (mouseEvent.wheelDelta) { /* IE/Opera. */
+				if ( js.Lib.isOpera )
+					Std.int(mouseEvent.wheelDelta/40);
+				else
+					Std.int(mouseEvent.wheelDelta/120);
+			} else if (mouseEvent.detail) { /** Mozilla case. */
+				Std.int(-mouseEvent.detail);
+			}
+
+		} else { 2; }
+
+		// source: http://unixpapa.com/js/mouse.html
+		if (type == flash.events.MouseEvent.MOUSE_DOWN)
+			jeashMouseDown = if ( event.which != null ) 
+				event.which == 1
+			else if (event.button != null) 
+				(js.Lib.isIE && event.button == 1 || event.button == 0) 
+			else false;
+		else if (type == flash.events.MouseEvent.MOUSE_UP)
+			if ( event.which != null ) 
+				if (event.which == 1)
+					jeashMouseDown = false;
+			else if (event.button != null) 
+				if (js.Lib.isIE && event.button == 1 || event.button == 0)
+					jeashMouseDown = false;
+			else 
+				jeashMouseDown = false;
+
+		var pseudoEvent = new flash.events.MouseEvent(type,
+				true, false,
+				local.x,local.y,
+				null,
+				event.ctrlKey,
+				event.altKey,
+				event.shiftKey,
+				jeashMouseDown,
+				delta);
+
+		pseudoEvent.stageX = Lib.current.stage.mouseX;
+		pseudoEvent.stageY = Lib.current.stage.mouseY;
+		pseudoEvent.target = target;
+		return pseudoEvent;
+	}
+
+	override public function jeashCreateSimilar(type:String, ?related:InteractiveObject, ?targ:InteractiveObject) {
 		var result = new MouseEvent(type, bubbles, cancelable, localX, localY,
 				related==null ? relatedObject : related,
 				ctrlKey, altKey, shiftKey, buttonDown, delta, commandKey, clickCount );
 
 		if (targ!=null)
 			result.target = targ;
-		return result;
+		return cast result;
 	}
 
-	public function updateAfterEvent()
-	{
-	}
-
-
+	public function updateAfterEvent() { }
 }
 

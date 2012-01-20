@@ -85,6 +85,8 @@ class Lib
 	static inline var VENDOR_HTML_TAG = "data-";
 	static inline var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'focus', 'dblclick', 'click', 'blur' ];
 	static inline var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown' ];
+	static inline var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ]; //touchmove listener created in Stage.hx
+
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
 	static inline var DEFAULT_WIDTH = 500;
 	static inline var DEFAULT_HEIGHT = 500;
@@ -107,10 +109,8 @@ class Lib
 
 	}
 
-	static public function trace( arg:Dynamic ) 
-	{
-		untyped
-		{
+	static public function trace( arg:Dynamic ) {
+		untyped {
 			if (window.console != null)
 				window.console.log(arg);
 			else if (mMe.jeashTraceTextField != null)
@@ -485,8 +485,12 @@ class Lib
 					}
 				}
 
+				for (type in HTML_TOUCH_EVENT_TYPES) 
+					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+
 				for (type in HTML_DIV_EVENT_TYPES) 
 					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+
 
 				for (type in HTML_WINDOW_EVENT_TYPES) 
 

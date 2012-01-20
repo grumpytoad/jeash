@@ -74,7 +74,7 @@ typedef RowChar = {
 
 typedef RowChars = Array<RowChar>;
 
-class TextField extends InteractiveObject {
+class TextField extends jeash.display.InteractiveObject {
 	public var htmlText(GetHTMLText,SetHTMLText):String;
 	public var text(GetText,SetText):String;
 	public var textColor(GetTextColour,SetTextColour):Int;
