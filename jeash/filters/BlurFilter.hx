@@ -26,9 +26,9 @@
 
 package jeash.filters;
 
-import flash.display.BitmapData;
-import flash.geom.Rectangle;
-import flash.geom.Point;
+import jeash.display.BitmapData;
+import jeash.geom.Rectangle;
+import jeash.geom.Point;
 
 #if js
 import Html5Dom;

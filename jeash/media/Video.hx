@@ -25,7 +25,7 @@
  */
 
 package jeash.media;
-import flash.events.Event;
+import jeash.events.Event;
 import haxe.Timer;
 import Html5Dom;
 import jeash.display.BitmapData;

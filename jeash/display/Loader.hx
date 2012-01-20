@@ -26,16 +26,16 @@
 
 package jeash.display;
 
-import flash.net.URLRequest;
-import flash.display.DisplayObject;
-import flash.display.Bitmap;
-import flash.display.BitmapData;
-import flash.display.LoaderInfo;
-import flash.display.Shape;
-import flash.events.Event;
-import flash.events.IOErrorEvent;
-import flash.system.LoaderContext;
-import flash.geom.Rectangle;
+import jeash.net.URLRequest;
+import jeash.display.DisplayObject;
+import jeash.display.Bitmap;
+import jeash.display.BitmapData;
+import jeash.display.LoaderInfo;
+import jeash.display.Shape;
+import jeash.events.Event;
+import jeash.events.IOErrorEvent;
+import jeash.system.LoaderContext;
+import jeash.geom.Rectangle;
 
 /**
 * @author	Hugh Sanderson

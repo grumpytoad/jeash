@@ -25,7 +25,7 @@
  */
 
 package jeash.geom;
-import flash.geom.Point;
+import jeash.geom.Point;
 
 
 /*

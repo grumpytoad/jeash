@@ -28,16 +28,16 @@ package jeash.display;
 
 import Html5Dom;
 
-import flash.Lib;
-import flash.ui.Keyboard;
-import flash.geom.Matrix;
-import flash.events.FocusEvent;
-import flash.events.Event;
-import flash.display.StageScaleMode;
-import flash.display.StageDisplayState;
-import flash.display.Graphics;
-import flash.geom.Point;
-import flash.geom.Rectangle;
+import jeash.Lib;
+import jeash.ui.Keyboard;
+import jeash.geom.Matrix;
+import jeash.events.FocusEvent;
+import jeash.events.Event;
+import jeash.display.StageScaleMode;
+import jeash.display.StageDisplayState;
+import jeash.display.Graphics;
+import jeash.geom.Point;
+import jeash.geom.Rectangle;
 
 class Stage extends DisplayObjectContainer
 {

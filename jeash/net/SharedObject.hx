@@ -26,8 +26,8 @@
 
 package jeash.net;
 
-import flash.events.EventDispatcher;
-import flash.net.SharedObjectFlushedStatus;
+import jeash.events.EventDispatcher;
+import jeash.net.SharedObjectFlushedStatus;
 
 import haxe.Serializer;
 import haxe.Unserializer;

@@ -26,7 +26,7 @@
 
 package jeash.events;
 
-import flash.display.InteractiveObject;
+import jeash.display.InteractiveObject;
 
 class Event
 {

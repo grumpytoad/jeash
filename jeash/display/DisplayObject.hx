@@ -28,22 +28,22 @@ package jeash.display;
 
 import Html5Dom;
 
-import flash.accessibility.AccessibilityProperties;
-import flash.display.Stage;
-import flash.display.Graphics;
-import flash.events.EventDispatcher;
-import flash.events.Event;
-import flash.events.EventPhase;
-import flash.display.DisplayObjectContainer;
-import flash.display.IBitmapDrawable;
-import flash.display.InteractiveObject;
-import flash.geom.Rectangle;
-import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.geom.Transform;
-import flash.filters.BitmapFilter;
-import flash.display.BitmapData;
-import flash.Lib;
+import jeash.accessibility.AccessibilityProperties;
+import jeash.display.Stage;
+import jeash.display.Graphics;
+import jeash.events.EventDispatcher;
+import jeash.events.Event;
+import jeash.events.EventPhase;
+import jeash.display.DisplayObjectContainer;
+import jeash.display.IBitmapDrawable;
+import jeash.display.InteractiveObject;
+import jeash.geom.Rectangle;
+import jeash.geom.Matrix;
+import jeash.geom.Point;
+import jeash.geom.Transform;
+import jeash.filters.BitmapFilter;
+import jeash.display.BitmapData;
+import jeash.Lib;
 
 typedef BufferData =
 {

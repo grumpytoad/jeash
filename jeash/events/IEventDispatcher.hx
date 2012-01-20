@@ -26,7 +26,7 @@
 
 package jeash.events;
 
-import flash.events.Event;
+import jeash.events.Event;
 
 interface IEventDispatcher
 {

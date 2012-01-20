@@ -26,7 +26,7 @@
 
 package jeash.events;
 
-import flash.events.Event;
+import jeash.events.Event;
 
 class TimerEvent extends Event {
 	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool) : Void {

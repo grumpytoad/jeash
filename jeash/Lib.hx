@@ -27,21 +27,21 @@
 package jeash;
 
 import Html5Dom;
-import flash.display.Stage;
-import flash.display.MovieClip;
-import flash.display.Graphics;
-import flash.events.Event;
-import flash.events.MouseEvent;
-import flash.events.KeyboardEvent;
-import flash.events.EventPhase;
-import flash.display.DisplayObjectContainer;
-import flash.display.DisplayObject;
-import flash.display.InteractiveObject;
-import flash.text.TextField;
-import flash.geom.Rectangle;
-import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.net.URLRequest;
+import jeash.display.Stage;
+import jeash.display.MovieClip;
+import jeash.display.Graphics;
+import jeash.events.Event;
+import jeash.events.MouseEvent;
+import jeash.events.KeyboardEvent;
+import jeash.events.EventPhase;
+import jeash.display.DisplayObjectContainer;
+import jeash.display.DisplayObject;
+import jeash.display.InteractiveObject;
+import jeash.text.TextField;
+import jeash.geom.Rectangle;
+import jeash.geom.Matrix;
+import jeash.geom.Point;
+import jeash.net.URLRequest;
 
 /**
  * @author	Hugh Sanderson

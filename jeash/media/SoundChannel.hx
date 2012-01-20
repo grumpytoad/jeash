@@ -26,8 +26,8 @@
 
 package jeash.media;
 
-import flash.events.Event;
-import flash.events.EventDispatcher;
+import jeash.events.Event;
+import jeash.events.EventDispatcher;
 
 import Html5Dom;
 

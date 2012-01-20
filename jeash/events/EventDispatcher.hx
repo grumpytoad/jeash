@@ -26,8 +26,8 @@
 
 package jeash.events;
 
-import flash.events.IEventDispatcher;
-import flash.events.EventPhase;
+import jeash.events.IEventDispatcher;
+import jeash.events.EventPhase;
 
 class Listener
 {

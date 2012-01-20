@@ -44,19 +44,19 @@
 package jeash.display;
 
 import Html5Dom;
-import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.geom.Rectangle;
-import flash.geom.ColorTransform;
-import flash.display.LineScaleMode;
-import flash.display.CapsStyle;
-import flash.display.JointStyle;
-import flash.display.GradientType;
-import flash.display.SpreadMethod;
-import flash.display.InterpolationMethod;
-import flash.display.BitmapData;
-import flash.display.IGraphicsData;
-import flash.display.IGraphicsFill;
+import jeash.geom.Matrix;
+import jeash.geom.Point;
+import jeash.geom.Rectangle;
+import jeash.geom.ColorTransform;
+import jeash.display.LineScaleMode;
+import jeash.display.CapsStyle;
+import jeash.display.JointStyle;
+import jeash.display.GradientType;
+import jeash.display.SpreadMethod;
+import jeash.display.InterpolationMethod;
+import jeash.display.BitmapData;
+import jeash.display.IGraphicsData;
+import jeash.display.IGraphicsFill;
 
 typedef DrawList = Array<Drawable>;
 

@@ -28,8 +28,8 @@ package jeash.display;
 
 import Html5Dom;
 
-import flash.geom.Rectangle;
-import flash.geom.Point;
+import jeash.geom.Rectangle;
+import jeash.geom.Point;
 
 class Tilesheet {
 	

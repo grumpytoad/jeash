@@ -31,7 +31,7 @@ import haxe.io.Bytes;
 import haxe.io.BytesData;
 import haxe.io.BytesBuffer;
 
-import flash.errors.IOError;
+import jeash.errors.IOError;
 
 import Html5Dom;
 

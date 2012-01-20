@@ -26,9 +26,9 @@
 
 package jeash.filters;
 
-import flash.geom.Point;
-import flash.display.BitmapData;
-import flash.filters.BitmapFilter;
+import jeash.geom.Point;
+import jeash.display.BitmapData;
+import jeash.filters.BitmapFilter;
 
 class BitmapFilterSet
 {

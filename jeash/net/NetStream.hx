@@ -26,7 +26,7 @@
 
 package jeash.net;
 //import haxe.remoting.Connection;
-import flash.events.NetStatusEvent;
+import jeash.events.NetStatusEvent;
 import haxe.Timer;
 import jeash.display.Graphics;
 import jeash.events.Event;

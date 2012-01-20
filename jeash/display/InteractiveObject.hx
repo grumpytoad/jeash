@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-import flash.geom.Point;
+import jeash.geom.Point;
 
 class InteractiveObject extends DisplayObject {
 	public var doubleClickEnabled:Bool;

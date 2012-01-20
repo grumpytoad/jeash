@@ -26,7 +26,7 @@
 
 package jeash.display;
 
-import flash.events.EventDispatcher;
+import jeash.events.EventDispatcher;
 
 /**
 * @author	Niel Drummond

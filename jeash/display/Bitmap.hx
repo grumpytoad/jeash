@@ -26,12 +26,12 @@
 
 package jeash.display;
 
-import flash.display.DisplayObject;
-import flash.display.BitmapData;
-import flash.display.PixelSnapping;
-import flash.geom.Rectangle;
-import flash.geom.Matrix;
-import flash.geom.Point;
+import jeash.display.DisplayObject;
+import jeash.display.BitmapData;
+import jeash.display.PixelSnapping;
+import jeash.geom.Rectangle;
+import jeash.geom.Matrix;
+import jeash.geom.Point;
 
 import Html5Dom;
 

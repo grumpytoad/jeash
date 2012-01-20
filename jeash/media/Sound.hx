@@ -26,11 +26,11 @@
 
 package jeash.media;
 
-import flash.events.Event;
-import flash.events.EventDispatcher;
-import flash.events.IOErrorEvent;
-import flash.net.URLRequest;
-import flash.net.URLLoader;
+import jeash.events.Event;
+import jeash.events.EventDispatcher;
+import jeash.events.IOErrorEvent;
+import jeash.net.URLRequest;
+import jeash.net.URLLoader;
 
 import Html5Dom;
 

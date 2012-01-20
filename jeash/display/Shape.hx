@@ -26,11 +26,11 @@
 
 package jeash.display;
 
-import flash.display.Graphics;
-import flash.display.InteractiveObject;
-import flash.geom.Matrix;
-import flash.geom.Point;
-import flash.Lib;
+import jeash.display.Graphics;
+import jeash.display.InteractiveObject;
+import jeash.geom.Matrix;
+import jeash.geom.Point;
+import jeash.Lib;
 
 class Shape extends DisplayObject {
 	var jeashGraphics:Graphics;

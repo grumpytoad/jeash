@@ -25,16 +25,16 @@
 
 package jeash.text;
 
-import flash.display.Graphics;
-import flash.geom.Matrix;
-import flash.geom.Rectangle;
-import flash.display.InteractiveObject;
-import flash.display.DisplayObject;
-import flash.text.TextFormatAlign;
-import flash.events.Event;
-import flash.events.KeyboardEvent;
-import flash.events.FocusEvent;
-import flash.ui.Keyboard;
+import jeash.display.Graphics;
+import jeash.geom.Matrix;
+import jeash.geom.Rectangle;
+import jeash.display.InteractiveObject;
+import jeash.display.DisplayObject;
+import jeash.text.TextFormatAlign;
+import jeash.events.Event;
+import jeash.events.KeyboardEvent;
+import jeash.events.FocusEvent;
+import jeash.ui.Keyboard;
 
 import Html5Dom;
 
@@ -906,9 +906,9 @@ class TextField extends jeash.display.InteractiveObject {
 
 }
 
-import flash.geom.Matrix;
-import flash.display.Graphics;
-import flash.display.BitmapData;
+import jeash.geom.Matrix;
+import jeash.display.Graphics;
+import jeash.display.BitmapData;
 
 enum FontInstanceMode {
 	fimSolid;

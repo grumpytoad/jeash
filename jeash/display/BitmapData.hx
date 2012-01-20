@@ -28,18 +28,18 @@ package jeash.display;
 
 import Html5Dom;
 
-import flash.Lib;
-import flash.geom.Point;
-import flash.geom.Rectangle;
-import flash.utils.ByteArray;
-import flash.display.BlendMode;
-import flash.display.IBitmapDrawable;
-import flash.display.Loader;
-import flash.display.LoaderInfo;
-import flash.events.Event;
-import flash.geom.Matrix;
-import flash.geom.ColorTransform;
-import flash.filters.BitmapFilter;
+import jeash.Lib;
+import jeash.geom.Point;
+import jeash.geom.Rectangle;
+import jeash.utils.ByteArray;
+import jeash.display.BlendMode;
+import jeash.display.IBitmapDrawable;
+import jeash.display.Loader;
+import jeash.display.LoaderInfo;
+import jeash.events.Event;
+import jeash.geom.Matrix;
+import jeash.geom.ColorTransform;
+import jeash.filters.BitmapFilter;
 
 import haxe.xml.Check;
 

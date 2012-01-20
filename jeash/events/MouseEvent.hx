@@ -26,8 +26,8 @@
 
 package jeash.events;
 
-import flash.geom.Point;
-import flash.display.InteractiveObject;
+import jeash.geom.Point;
+import jeash.display.InteractiveObject;
 
 class MouseEvent extends Event
 {

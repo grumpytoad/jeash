@@ -27,11 +27,11 @@
 package jeash.display;
 
 import Html5Dom;
-import flash.events.Event;
-import flash.geom.Matrix;
-import flash.geom.Rectangle;
-import flash.geom.Point;
-import flash.Lib;
+import jeash.events.Event;
+import jeash.geom.Matrix;
+import jeash.geom.Rectangle;
+import jeash.geom.Point;
+import jeash.Lib;
 
 class DisplayObjectContainer extends InteractiveObject
 {

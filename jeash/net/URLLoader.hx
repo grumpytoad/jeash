@@ -26,10 +26,10 @@
 
 package jeash.net;
 
-import flash.events.Event;
-import flash.events.EventDispatcher;
-import flash.events.IOErrorEvent;
-import flash.utils.ByteArray;
+import jeash.events.Event;
+import jeash.events.EventDispatcher;
+import jeash.events.IOErrorEvent;
+import jeash.utils.ByteArray;
 
 import Html5Dom;
 import js.Dom;

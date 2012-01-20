@@ -26,8 +26,8 @@
 
 package jeash.display;
 
-import flash.display.DisplayObject;
-import flash.geom.Matrix;
+import jeash.display.DisplayObject;
+import jeash.geom.Matrix;
 
 
 class Transform {

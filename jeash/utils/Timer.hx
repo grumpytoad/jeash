@@ -26,8 +26,8 @@
 
 package jeash.utils;
 
-import flash.events.EventDispatcher;
-import flash.events.TimerEvent;
+import jeash.events.EventDispatcher;
+import jeash.events.TimerEvent;
 
 /**
 * @author Niel Drummond

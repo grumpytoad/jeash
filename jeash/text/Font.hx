@@ -26,10 +26,10 @@
 
 package jeash.text;
 
-import flash.text.FontStyle;
-import flash.text.FontType;
-import flash.text.TextFormat;
-import flash.display.Graphics;
+import jeash.text.FontStyle;
+import jeash.text.FontType;
+import jeash.text.TextFormat;
+import jeash.display.Graphics;
 
 import haxe.Unserializer;
 import haxe.Resource;

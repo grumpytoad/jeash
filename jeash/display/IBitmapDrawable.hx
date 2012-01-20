@@ -26,10 +26,10 @@
 
 package jeash.display;
 
-import flash.display.BlendMode;
-import flash.geom.ColorTransform;
-import flash.geom.Matrix;
-import flash.geom.Rectangle;
+import jeash.display.BlendMode;
+import jeash.geom.ColorTransform;
+import jeash.geom.Matrix;
+import jeash.geom.Rectangle;
 
 interface IBitmapDrawable {
 	function drawToSurface(inSurface : Dynamic,
