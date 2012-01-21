@@ -425,9 +425,9 @@ class Lib
 	public static function jeashSetCursor(hand:Bool) {
 		if (mMe != null) 
 			if (hand) 
-				mMe.__scr.style.setProperty("cursor", "pointer", "");
+				mMe.__scr.style.cursor = "pointer";
 			else
-				mMe.__scr.style.setProperty("cursor", "default", "");
+				mMe.__scr.style.cursor = "default";
 	}
 
 	public inline static function jeashSetSurfaceVisible(surface:HTMLElement, visible:Bool) {
