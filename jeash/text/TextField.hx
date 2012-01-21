@@ -78,8 +78,8 @@ class TextField extends jeash.display.InteractiveObject {
 	public var htmlText(GetHTMLText,SetHTMLText):String;
 	public var text(GetText,SetText):String;
 	public var textColor(GetTextColour,SetTextColour):Int;
-	public var textWidth(GetTextWidth,null):Int;
-	public var textHeight(GetTextHeight,null):Int;
+	public var textWidth(GetTextWidth,null):Float;
+	public var textHeight(GetTextHeight,null):Float;
 	public var defaultTextFormat(getDefaultTextFormat,setTextFormat) : TextFormat;
 	public static var mDefaultFont = Font.DEFAULT_FONT_NAME;
 
@@ -458,8 +458,8 @@ class TextField extends jeash.display.InteractiveObject {
 		mSelectDrag = -1;
 	}
 
-	var mMaxWidth:Int;
-	var mMaxHeight:Int;
+	var mMaxWidth:Float;
+	var mMaxHeight:Float;
 	var mLimitRenderX:Int;
 
 	function RenderRow(inRow:Array<RowChar>, inY:Int, inCharIdx:Int,inAlign:TextFormatAlign, ?inInsert:Int) : Int {
@@ -709,8 +709,8 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 
-	public function GetTextWidth() : Int{ return mMaxWidth; }
-	public function GetTextHeight() : Int{ return mMaxHeight; }
+	public function GetTextWidth() : Float{ return mMaxWidth; }
+	public function GetTextHeight() : Float{ return mMaxHeight; }
 
 	public function GetTextColour() { return mTextColour; }
 	public function SetTextColour(inCol) {
@@ -890,7 +890,7 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 
-	public function setTextFormat(inFmt:TextFormat) {
+	public function setTextFormat(inFmt:TextFormat, /* note: ignored */ ?beginIndex:Int = -1, /* note: ignored */ ?endIndex:Int = -1) {
 		if (inFmt.font!=null)
 			mFace = inFmt.font;
 		if (inFmt.size!=null)

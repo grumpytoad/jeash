@@ -30,21 +30,21 @@ import Html5Dom;
 class TextFormat
 {
    public var align : TextFormatAlign;
-   public var blockIndent : Int;
+   public var blockIndent : Float;
    public var bold : Bool;
    public var bullet : Bool;
    public var color : UInt;
    public var display : String;
    public var font : String;
-   public var indent : Int;
+   public var indent : Float;
    public var italic : Bool;
    public var kerning : Bool;
-   public var leading : Int;
-   public var leftMargin : Int;
-   public var letterSpacing : Int;
-   public var rightMargin : Int;
+   public var leading : Float;
+   public var leftMargin : Float;
+   public var letterSpacing : Float;
+   public var rightMargin : Float;
    public var size : Float;
-   public var tabStops : Int;
+   public var tabStops : UInt;
    public var target : String;
    public var underline : Bool;
    public var url : String;

@@ -33,6 +33,6 @@ class TextEvent extends Event {
 		super(type, bubbles, cancelable);
 		this.text = text;
 	}
-	static var LINK : String;
-	static var TEXT_INPUT : String;
+	public static var LINK : String;
+	public static var TEXT_INPUT : String;
 }
