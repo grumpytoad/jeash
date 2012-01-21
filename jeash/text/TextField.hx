@@ -890,7 +890,7 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 
-	public function setTextFormat(inFmt:TextFormat, /* note: ignored */ ?beginIndex:Int = -1, /* note: ignored */ ?endIndex:Int = -1) {
+	public function setTextFormat(inFmt:TextFormat) {
 		if (inFmt.font!=null)
 			mFace = inFmt.font;
 		if (inFmt.size!=null)
