@@ -80,7 +80,7 @@ class TextField extends jeash.display.InteractiveObject {
 	public var textColor(GetTextColour,SetTextColour):Int;
 	public var textWidth(GetTextWidth,null):Float;
 	public var textHeight(GetTextHeight,null):Float;
-	public var defaultTextFormat(getDefaultTextFormat,setTextFormat) : TextFormat;
+	public var defaultTextFormat(jeashGetDefaultTextFormat,jeashSetDefaultTextFormat) : TextFormat;
 	public static var mDefaultFont = Font.DEFAULT_FONT_NAME;
 
 	private var mHTMLText:String;
@@ -174,6 +174,7 @@ class TextField extends jeash.display.InteractiveObject {
 		mSelectDrag = -1;
 
 		mLineInfo = [];
+		defaultTextFormat = new TextFormat();
 
 
 		name = "TextField " + flash.display.DisplayObject.mNameID++;
@@ -881,16 +882,19 @@ class TextField extends jeash.display.InteractiveObject {
 		// TODO:
 	}
 
+	public function jeashGetDefaultTextFormat() 
+		return defaultTextFormat
+
+	function jeashSetDefaultTextFormat(inFmt:TextFormat) {
+		setTextFormat(inFmt);
+		return inFmt;
+	}
+
 	public function getTextFormat(?beginIndex : Int, ?endIndex : Int) : TextFormat {
 		return new TextFormat();
 	}
 
-	public function getDefaultTextFormat() : TextFormat {
-		return new TextFormat();
-	}
-
-
-	public function setTextFormat(inFmt:TextFormat) {
+	public function setTextFormat(inFmt:TextFormat, ?beginIndex:Int, ?endIndex:Int) {
 		if (inFmt.font!=null)
 			mFace = inFmt.font;
 		if (inFmt.size!=null)

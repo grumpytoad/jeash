@@ -24,15 +24,41 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.events;
+package jeash.net;
 
-class DataEvent extends TextEvent {
-	public var data : String;
-	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?data : String) {
-		super(type, bubbles, cancelable);
-		this.data = data;
-	}
-	public static var DATA : String;
-	public static var UPLOAD_COMPLETE_DATA : String;
+class URLVariables implements Dynamic
+{
+
+   public function new(?inEncoded:String) {
+      if (inEncoded!=null)
+         decode(inEncoded);
+   }
+
+   public function decode(inVars:String) {
+      var fields = Reflect.fields(this);
+
+      for(f in fields)
+         Reflect.deleteField(this,f);
+
+      var fields = inVars.split(";").join("&").split("&");
+      for(f in fields) {
+         var eq = f.indexOf("=");
+         if (eq>0)
+            Reflect.setField(this, StringTools.urlDecode(f.substr(0,eq)),
+                                   StringTools.urlDecode(f.substr(eq+1)) );
+         else if (eq!=0)
+            Reflect.setField(this, StringTools.urlDecode(f),"");
+      }
+   }
+
+   public function toString() : String
+   {
+      var result = new Array<String>();
+      var fields = Reflect.fields(this);
+      for(f in fields)
+          result.push( StringTools.urlEncode(f) + "=" + StringTools.urlEncode(Reflect.field(this,f) ) );
+ 
+      return result.join("&");
+   }
 }
 

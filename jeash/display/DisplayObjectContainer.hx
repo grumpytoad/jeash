@@ -46,6 +46,7 @@ class DisplayObjectContainer extends InteractiveObject
 		jeashChildren = new Array<DisplayObject>();
 		mLastSetupObjs = new Array<DisplayObject>();
 		mouseChildren = true;
+		numChildren = 0;
 		tabChildren = true;
 		super();
 		name = "DisplayObjectContainer " +  flash.display.DisplayObject.mNameID++;

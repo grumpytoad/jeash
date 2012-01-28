@@ -24,15 +24,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.events;
+package jeash.net;
 
-class DataEvent extends TextEvent {
-	public var data : String;
-	public function new(type : String, ?bubbles : Bool, ?cancelable : Bool, ?data : String) {
-		super(type, bubbles, cancelable);
-		this.data = data;
-	}
-	public static var DATA : String;
-	public static var UPLOAD_COMPLETE_DATA : String;
+class URLRequestMethod {
+	public static var DELETE : String;
+	public static var GET : String;
+	public static var HEAD : String;
+	public static var OPTIONS : String;
+	public static var POST : String;
+	public static var PUT : String;
 }
-

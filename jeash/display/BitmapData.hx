@@ -329,7 +329,7 @@ class BitmapData implements IBitmapDrawable {
 	// code to deal with 31-bit ints.
 	private function getInt32 (offset:Int, data:CanvasPixelArray) {
 		var b5, b6, b7, b8, pow = Math.pow;
-		b5 = data[offset+3] & 0xFF;
+		b5 = if (jeashTransparent) 0xFF; else data[offset+3] & 0xFF;
 		b6 = data[offset] & 0xFF;
 		b7 = data[offset+1] & 0xFF;
 		b8 = data[offset+2] & 0xFF;

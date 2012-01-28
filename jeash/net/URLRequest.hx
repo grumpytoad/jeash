@@ -26,15 +26,15 @@
 
 package jeash.net;
 
-class URLRequest
-{
-   public var url:String;
+class URLRequest {
+	public var url:String;
+	public var requestHeaders:Array<URLRequestHeader>;
+	public var method : String;
+	public var data : Dynamic;
 
-   public function new(?inURL:String)
-   {
-      if (inURL!=null)
-         url = inURL;
-   }
+	public function new(?inURL:String) {
+		if (inURL!=null)
+			url = inURL;
+		requestHeaders = [];
+	}
 }
-
-

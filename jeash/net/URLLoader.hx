@@ -68,6 +68,10 @@ class URLLoader extends EventDispatcher
 		http = new Http( request.url );
 		http.onData = onData;
 		http.onError = onError;
+
+		for (header in request.requestHeaders)
+			http.setHeader(header.name, header.value);
+
 		// TODO: make dataFormat uniform with the flash API
 		http.requestUrl( STREAM( (dataFormat == URLLoaderDataFormat.TEXT) ? TEXT : BINARY ) );
 
