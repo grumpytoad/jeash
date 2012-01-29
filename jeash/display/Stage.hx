@@ -273,20 +273,24 @@ class Stage extends DisplayObjectContainer
 
 			case "touchstart":
 				var evt:TouchEvent = cast evt;
+				evt.preventDefault();
 				var touchInfo = new TouchInfo();
 				jeashTouchInfo[evt.changedTouches[0].identifier] = touchInfo;
 				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_BEGIN, touchInfo, false);
+				//jeashOnMouse(cast evt.changedTouches[0], flash.events.MouseEvent.MOUSE_DOWN);
 
 			case "touchmove":
 				var evt:TouchEvent = cast evt;
 				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
 				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_MOVE, touchInfo, true);
+				//jeashOnMouse(cast evt.changedTouches[0], flash.events.MouseEvent.MOUSE_MOVE);
 
 			case "touchend":
 				var evt:TouchEvent = cast evt;
 				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
 				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_END, touchInfo, true);
 				jeashTouchInfo[evt.changedTouches[0].identifier] = null;
+				//jeashOnMouse(cast evt.changedTouches[0], flash.events.MouseEvent.MOUSE_UP);
 
 			default:
 				
@@ -331,7 +335,7 @@ class Stage extends DisplayObjectContainer
 	// @r1095
 	private function jeashOnTouch(event:TouchEvent, touch:Touch, type:String, touchInfo:TouchInfo, isPrimaryTouchPoint:Bool) {
 		var point : Point = untyped 
-			new Point(event.pageX - Lib.mMe.__scr.offsetLeft + window.pageXOffset, event.pageY - Lib.mMe.__scr.offsetTop + window.pageYOffset);
+			new Point(touch.pageX - Lib.mMe.__scr.offsetLeft + window.pageXOffset, touch.pageY - Lib.mMe.__scr.offsetTop + window.pageYOffset);
 
 		var obj = jeashGetObjectUnderPoint(point);
 
@@ -341,7 +345,7 @@ class Stage extends DisplayObjectContainer
 
 		var stack = new Array<InteractiveObject>();
 		if (obj!=null) obj.jeashGetInteractiveObjectStack(stack);
-		
+
 		if (stack.length > 0) {
 			//var obj = stack[0];
 			stack.reverse();
@@ -354,13 +358,21 @@ class Stage extends DisplayObjectContainer
 
 			//if (evt.isPrimaryTouchPoint)
 			jeashCheckInOuts(evt, stack, touchInfo);
+
 			obj.jeashFireEvent(evt);
-			if (evt.isPrimaryTouchPoint && type == flash.events.TouchEvent.TOUCH_MOVE) {
-				if (jeashDragObject != null) jeashDrag(point);
-				
-				var evt = flash.events.MouseEvent.jeashCreate(flash.events.MouseEvent.MOUSE_MOVE, cast event, local, cast obj);
-				obj.jeashFireEvent(evt);
+
+			var mouseType = switch (type) {
+				case flash.events.TouchEvent.TOUCH_BEGIN: flash.events.MouseEvent.MOUSE_DOWN;
+				case flash.events.TouchEvent.TOUCH_END: flash.events.MouseEvent.MOUSE_UP;
+				default: 
+					if (jeashDragObject != null) 
+						jeashDrag(point);
+
+					flash.events.MouseEvent.MOUSE_MOVE;
 			}
+
+			obj.jeashFireEvent(flash.events.MouseEvent.jeashCreate(mouseType, cast evt, local, cast obj));
+
 		} else {
 			var evt = flash.events.TouchEvent.jeashCreate(type, event, touch, point, null);
 			evt.touchPointID = touch.identifier;
