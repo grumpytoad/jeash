@@ -50,7 +50,7 @@ class NetStream extends EventDispatcher {
 	var decodedFrames(default,null) : UInt;
 	var liveDelay(default,null) : Float;
 	var objectEncoding(default,null) : UInt;
-	var soundTransform : flash.media.SoundTransform;
+	var soundTransform : jeash.media.SoundTransform;
 	var time(default,null) : Float;
 	var videoCodec(default,null) : UInt;
 	*/
@@ -92,8 +92,8 @@ class NetStream extends EventDispatcher {
 	
 	/*
 	todo:
-	function attachAudio(microphone : flash.media.Microphone) : Void;
-	function attachCamera(theCamera : flash.media.Camera, ?snapshotMilliseconds : Int) : Void;
+	function attachAudio(microphone : jeash.media.Microphone) : Void;
+	function attachCamera(theCamera : jeash.media.Camera, ?snapshotMilliseconds : Int) : Void;
 	function close() : Void;
 	function pause() : Void;
 	function publish(?name : String, ?type : String) : Void;

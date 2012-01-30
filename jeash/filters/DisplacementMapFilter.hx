@@ -7,12 +7,12 @@ class DisplacementMapFilter extends BitmapFilter {
 	public var color : UInt;
 	public var componentX : UInt;
 	public var componentY : UInt;
-	public var mapBitmap : flash.display.BitmapData;
-	public var mapPoint : flash.geom.Point;
+	public var mapBitmap : jeash.display.BitmapData;
+	public var mapPoint : jeash.geom.Point;
 	public var mode : DisplacementMapFilterMode;
 	public var scaleX : Float;
 	public var scaleY : Float;
-	public function new(?mapBitmap : flash.display.BitmapData, ?mapPoint : flash.geom.Point, ?componentX : UInt, ?componentY : UInt, ?scaleX : Float, ?scaleY : Float, ?mode : DisplacementMapFilterMode, ?color : UInt, ?alpha : Float) 
+	public function new(?mapBitmap : jeash.display.BitmapData, ?mapPoint : jeash.geom.Point, ?componentX : UInt, ?componentY : UInt, ?scaleX : Float, ?scaleY : Float, ?mode : DisplacementMapFilterMode, ?color : UInt, ?alpha : Float) 
 	{
 		super("DisplacementMapFilter");
 		this.mapBitmap = mapBitmap;

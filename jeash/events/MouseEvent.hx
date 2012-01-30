@@ -37,7 +37,7 @@ class MouseEvent extends Event
 	public var delta : Int;
 	public var localX : Float;
 	public var localY : Float;
-	public var relatedObject : flash.display.InteractiveObject;
+	public var relatedObject : jeash.display.InteractiveObject;
 	public var shiftKey : Bool;
 	public var stageX : Float;
 	public var stageY : Float;
@@ -60,7 +60,7 @@ class MouseEvent extends Event
 			cancelable : Bool = false,
 			localX : Float = 0,
 			localY : Float = 0,
-			?relatedObject : flash.display.InteractiveObject,
+			?relatedObject : jeash.display.InteractiveObject,
 			ctrlKey : Bool = false,
 			altKey : Bool = false,
 			shiftKey : Bool = false,
@@ -87,7 +87,7 @@ class MouseEvent extends Event
 		var jeashMouseDown:Bool = false;
 
 		// cross-browser mouse wheel delta sniff
-		var delta = if ( type == flash.events.MouseEvent.MOUSE_WHEEL )
+		var delta = if ( type == jeash.events.MouseEvent.MOUSE_WHEEL )
 		{
 			var mouseEvent : Dynamic = event;
 			if (mouseEvent.wheelDelta) { /* IE/Opera. */
@@ -102,13 +102,13 @@ class MouseEvent extends Event
 		} else { 2; }
 
 		// source: http://unixpapa.com/js/mouse.html
-		if (type == flash.events.MouseEvent.MOUSE_DOWN)
+		if (type == jeash.events.MouseEvent.MOUSE_DOWN)
 			jeashMouseDown = if ( event.which != null ) 
 				event.which == 1
 			else if (event.button != null) 
 				(js.Lib.isIE && event.button == 1 || event.button == 0) 
 			else false;
-		else if (type == flash.events.MouseEvent.MOUSE_UP)
+		else if (type == jeash.events.MouseEvent.MOUSE_UP)
 			if ( event.which != null ) 
 				if (event.which == 1)
 					jeashMouseDown = false;
@@ -118,7 +118,7 @@ class MouseEvent extends Event
 			else 
 				jeashMouseDown = false;
 
-		var pseudoEvent = new flash.events.MouseEvent(type,
+		var pseudoEvent = new jeash.events.MouseEvent(type,
 				true, false,
 				local.x,local.y,
 				null,

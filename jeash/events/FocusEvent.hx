@@ -30,10 +30,10 @@ class FocusEvent extends Event
 {
    public var keyCode : Int;
    public var shiftKey : Bool;
-   public var relatedObject : flash.display.InteractiveObject;
+   public var relatedObject : jeash.display.InteractiveObject;
 
    public function new(type : String, ?bubbles : Bool, ?cancelable : Bool,
-         ?inObject : flash.display.InteractiveObject,
+         ?inObject : jeash.display.InteractiveObject,
          ?inShiftKey : Bool,
          ?inKeyCode : Int)
    {

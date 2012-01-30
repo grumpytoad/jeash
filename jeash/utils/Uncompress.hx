@@ -28,11 +28,11 @@ package jeash.utils;
 
 class Uncompress
 {
-   static public function ConvertStream(inStream:flash.utils.IDataInput,?inSize:Int) : 
-      flash.utils.IDataInput
+   static public function ConvertStream(inStream:jeash.utils.IDataInput,?inSize:Int) : 
+      jeash.utils.IDataInput
    {
 #if flash9
-      var buffer = new flash.utils.ByteArray();
+      var buffer = new jeash.utils.ByteArray();
       inStream.readBytes(buffer,0,inSize);
       buffer.uncompress();
       return buffer;

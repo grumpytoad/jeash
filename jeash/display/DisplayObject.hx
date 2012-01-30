@@ -83,7 +83,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var scrollRect(GetScrollRect,SetScrollRect):Rectangle;
 	public var mask(GetMask,SetMask):DisplayObject;
 	public var filters(jeashGetFilters,jeashSetFilters):Array<Dynamic>;
-	public var blendMode : flash.display.BlendMode;
+	public var blendMode : jeash.display.BlendMode;
 	public var loaderInfo:LoaderInfo;
 
 
@@ -147,12 +147,12 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		if (inObj==this)
 		{
-			var evt = new flash.events.Event(flash.events.Event.ADDED, true, false);
+			var evt = new jeash.events.Event(jeash.events.Event.ADDED, true, false);
 			evt.target = inObj;
 			dispatchEvent(evt);
 		}
 
-		var evt = new flash.events.Event(flash.events.Event.ADDED_TO_STAGE, false, false);
+		var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
 		evt.target = inObj;
 		dispatchEvent(evt);
 	}
@@ -161,11 +161,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	{
 		if (inObj==this)
 		{
-			var evt = new flash.events.Event(flash.events.Event.REMOVED, true, false);
+			var evt = new jeash.events.Event(jeash.events.Event.REMOVED, true, false);
 			evt.target = inObj;
 			dispatchEvent(evt);
 		}
-		var evt = new flash.events.Event(flash.events.Event.REMOVED_FROM_STAGE, false, false);
+		var evt = new jeash.events.Event(jeash.events.Event.REMOVED_FROM_STAGE, false, false);
 		evt.target = inObj;
 		dispatchEvent(evt);
 
@@ -210,7 +210,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	}
 
-	public function GetStage() { return flash.Lib.jeashGetStage(); }
+	public function GetStage() { return jeash.Lib.jeashGetStage(); }
 	public function AsContainer() : DisplayObjectContainer { return null; }
 
 	public function GetScrollRect() : Rectangle
@@ -219,7 +219,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mScrollRect.clone();
 	}
 
-	public function jeashAsInteractiveObject() : flash.display.InteractiveObject
+	public function jeashAsInteractiveObject() : jeash.display.InteractiveObject
 	{ return null; }
 
 	public function SetScrollRect(inRect:Rectangle)
@@ -309,7 +309,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inMatrix;
 	}
 
-	function jeashGetGraphics() : flash.display.Graphics return null
+	function jeashGetGraphics() : jeash.display.Graphics return null
 
 	public function GetOpaqueBackground() { return mOpaqueBackground; }
 	public function SetOpaqueBackground(inBG:Null<Int>)
@@ -437,10 +437,10 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	public function drawToSurface(inSurface : Dynamic,
-			matrix:flash.geom.Matrix,
-			colorTransform:flash.geom.ColorTransform,
+			matrix:jeash.geom.Matrix,
+			colorTransform:jeash.geom.ColorTransform,
 			blendMode:BlendMode,
-			clipRect:flash.geom.Rectangle,
+			clipRect:jeash.geom.Rectangle,
 			smoothing:Bool):Void {
 		if (matrix==null) matrix = new Matrix();
 		jeashRender(matrix, inSurface);
@@ -542,7 +542,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// @r551
-	public function jeashFireEvent(event:flash.events.Event)
+	public function jeashFireEvent(event:jeash.events.Event)
 	{
 		var stack:Array<InteractiveObject> = [];
 		if (this.parent != null)
@@ -586,7 +586,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 
 	// @533
-	public function jeashBroadcast(event:flash.events.Event)
+	public function jeashBroadcast(event:jeash.events.Event)
 	{
 		dispatchEvent(event);
 	}

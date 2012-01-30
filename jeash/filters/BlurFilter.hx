@@ -54,7 +54,7 @@ class BlurFilter extends BitmapFilter {
 
 	}
 
-	override public function clone() : flash.filters.BitmapFilter {
+	override public function clone() : jeash.filters.BitmapFilter {
 		return new BlurFilter(blurX,blurY,quality);
 	}
 

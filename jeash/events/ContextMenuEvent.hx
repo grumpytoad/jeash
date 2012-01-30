@@ -29,8 +29,8 @@ package jeash.events;
 import jeash.display.InteractiveObject;
 
 class ContextMenuEvent extends Event {
-	var contextMenuOwner : flash.display.InteractiveObject;
-	var mouseTarget : flash.display.InteractiveObject;
+	var contextMenuOwner : jeash.display.InteractiveObject;
+	var mouseTarget : jeash.display.InteractiveObject;
 	function new(type : String, bubbles : Bool = false, cancelable : Bool = false, ?mouseTarget : InteractiveObject, ?contextMenuOwner : InteractiveObject) {
 		super(type, bubbles, cancelable);
 		this.mouseTarget = mouseTarget;

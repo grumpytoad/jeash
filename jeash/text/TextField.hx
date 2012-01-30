@@ -151,15 +151,15 @@ class TextField extends jeash.display.InteractiveObject {
 		jeashGraphics.jeashExtentBuffer = 0;
 		mCaretGfx = new Graphics();
 		mFace = mDefaultFont;
-		mAlign = flash.text.TextFormatAlign.LEFT;
+		mAlign = jeash.text.TextFormatAlign.LEFT;
 		mParagraphs = new Paragraphs();
 		mSelStart = -1;
 		mSelEnd = -1;
 		mScrollH = 0;
 		mScrollV = 1;
 
-		mType = flash.text.TextFieldType.DYNAMIC;
-		autoSize = flash.text.TextFieldAutoSize.NONE;
+		mType = jeash.text.TextFieldType.DYNAMIC;
+		autoSize = jeash.text.TextFieldAutoSize.NONE;
 		mTextHeight = 12;
 		mMaxHeight = mTextHeight;
 		mHTMLText = " ";
@@ -177,7 +177,7 @@ class TextField extends jeash.display.InteractiveObject {
 		defaultTextFormat = new TextFormat();
 
 
-		name = "TextField " + flash.display.DisplayObject.mNameID++;
+		name = "TextField " + jeash.display.DisplayObject.mNameID++;
 		jeashGraphics.jeashSurface.id = name;
 
 		borderColor = 0x000000;
@@ -365,7 +365,7 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 	public function GetCaret() { return mInsertPos; }
-	override function jeashGetGraphics() : flash.display.Graphics { return jeashGraphics; }
+	override function jeashGetGraphics() : jeash.display.Graphics { return jeashGraphics; }
 
 	public function getLineIndexAtPoint(inX:Float,inY:Float) : Int {
 		if (mLineInfo.length<1) return -1;
@@ -410,7 +410,7 @@ class TextField extends jeash.display.InteractiveObject {
 			stage.focus = this;
 			var gx = inX/stage.scaleX;
 			var gy = inY/stage.scaleY;
-			var pos = globalToLocal( new flash.geom.Point(gx,gy) );
+			var pos = globalToLocal( new jeash.geom.Point(gx,gy) );
 
 			mSelectDrag = getCharIndexAtPoint(pos.x,pos.y);
 			if (tabEnabled)
@@ -426,7 +426,7 @@ class TextField extends jeash.display.InteractiveObject {
 		{
 			var gx = inX/stage.scaleX;
 			var gy = inY/stage.scaleY;
-			var pos = globalToLocal( new flash.geom.Point(gx,gy) );
+			var pos = globalToLocal( new jeash.geom.Point(gx,gy) );
 			var idx = getCharIndexAtPoint(pos.x,pos.y);
 			if (sSelectionOwner!=this)
 			{
@@ -480,7 +480,7 @@ class TextField extends jeash.display.InteractiveObject {
 		var align_x = 0;
 		var insert_x = 0;
 		if (inInsert!=null) {
-			if (autoSize != flash.text.TextFieldAutoSize.NONE) {
+			if (autoSize != jeash.text.TextFieldAutoSize.NONE) {
 				mScrollH = 0;
 				insert_x = inInsert;
 			} else {
@@ -495,7 +495,7 @@ class TextField extends jeash.display.InteractiveObject {
 			}
 		}
 
-		if (autoSize == flash.text.TextFieldAutoSize.NONE && w<=mLimitRenderX) {
+		if (autoSize == jeash.text.TextFieldAutoSize.NONE && w<=mLimitRenderX) {
 			if (inAlign == TextFormatAlign.CENTER)
 				align_x = (mLimitRenderX-w)>>1;
 			else if (inAlign == TextFormatAlign.RIGHT)
@@ -569,7 +569,7 @@ class TextField extends jeash.display.InteractiveObject {
 		var insert_x:Null<Int> = null;
 
 		mMaxWidth = 0;
-		//mLimitRenderX = (autoSize == flash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
+		//mLimitRenderX = (autoSize == jeash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
 		var wrap = mLimitRenderX = (wordWrap && !mInput) ? Std.int(width) : 999999;
 		var char_idx = 0;
 		var h:Int = 0;
@@ -646,15 +646,15 @@ class TextField extends jeash.display.InteractiveObject {
 		mMaxHeight = h;
 
 		switch(autoSize) {
-			case flash.text.TextFieldAutoSize.LEFT:
+			case jeash.text.TextFieldAutoSize.LEFT:
 				width = w;
 				height = h;
-			case flash.text.TextFieldAutoSize.RIGHT:
+			case jeash.text.TextFieldAutoSize.RIGHT:
 				var x0 = x + width;
 				width = w;
 				height = h;
 				x = x0 - w;
-			case flash.text.TextFieldAutoSize.CENTER:
+			case jeash.text.TextFieldAutoSize.CENTER:
 				var x0 = x + width/2;
 				width = w;
 				height = h;
@@ -685,8 +685,8 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 	// TODO
-	//override public function DoMouseEnter() { flash.Lib.SetTextCursor(true); }
-	//override public function DoMouseLeave() { flash.Lib.SetTextCursor(false); }
+	//override public function DoMouseEnter() { jeash.Lib.SetTextCursor(true); }
+	//override public function DoMouseLeave() { jeash.Lib.SetTextCursor(false); }
 
 	/* override */ public function GetObj(inX:Int,inY:Int, inObj:InteractiveObject ) : InteractiveObject
 	{

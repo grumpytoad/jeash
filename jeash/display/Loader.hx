@@ -55,7 +55,7 @@ class Loader extends DisplayObjectContainer
 	{
 		super();
 		contentLoaderInfo = LoaderInfo.create(this);
-		name = "Loader " + flash.display.DisplayObject.mNameID++;
+		name = "Loader " + jeash.display.DisplayObject.mNameID++;
 	}
 
 	public function load(request:URLRequest, ?context:LoaderContext)

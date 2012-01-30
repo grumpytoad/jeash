@@ -35,7 +35,7 @@ import jeash.events.EventDispatcher;
 **/
 class LoaderInfo extends EventDispatcher {
 
-	public var bytes(default,null) : flash.utils.ByteArray;
+	public var bytes(default,null) : jeash.utils.ByteArray;
 	public var bytesLoaded(default,null) : Int;
 	public var bytesTotal(default,null) : Int;
 	public var childAllowsParent(default,null) : Bool;
@@ -48,10 +48,10 @@ class LoaderInfo extends EventDispatcher {
 	public var parameters(default,null) : Dynamic<String>;
 	public var parentAllowsChild(default,null) : Bool;
 	public var sameDomain(default,null) : Bool;
-	public var sharedEvents(default,null) : flash.events.EventDispatcher;
+	public var sharedEvents(default,null) : jeash.events.EventDispatcher;
 	public var url(default,null) : String;
 	public var width(default,null) : Int;
-	//static function getLoaderInfoByDefinition(object : Dynamic) : flash.display.LoaderInfo;
+	//static function getLoaderInfoByDefinition(object : Dynamic) : jeash.display.LoaderInfo;
 
 	private function new() {
 		super();

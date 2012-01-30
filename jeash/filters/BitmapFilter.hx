@@ -33,7 +33,7 @@ class BitmapFilter
    var mType:String;
 
    public function new(inType) { mType = inType; }
-   public function clone() : flash.filters.BitmapFilter
+   public function clone() : jeash.filters.BitmapFilter
    {
       throw "Implement in subclass. BitmapFilter::clone";
       return null;

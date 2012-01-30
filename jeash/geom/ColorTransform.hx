@@ -59,7 +59,7 @@ class ColorTransform
       color = 0;
    }
 
-   function concat(second : flash.geom.ColorTransform) : Void
+   function concat(second : jeash.geom.ColorTransform) : Void
    {
       throw "Not implemented";
    }

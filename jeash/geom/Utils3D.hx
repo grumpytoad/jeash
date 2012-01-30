@@ -44,5 +44,5 @@ class Utils3D
 		// --
 		return l_oProj;
 	}
-	//static function projectVectors(m : Matrix3D, verts : flash.Vector<Float>, projectedVerts : flash.Vector<Float>, uvts : flash.Vector<Float>) : Void;
+	//static function projectVectors(m : Matrix3D, verts : jeash.Vector<Float>, projectedVerts : jeash.Vector<Float>, uvts : jeash.Vector<Float>) : Void;
 }

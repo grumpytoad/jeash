@@ -65,7 +65,7 @@ class Stage extends DisplayObjectContainer
 	public var frameRate(jeashGetFrameRate,jeashSetFrameRate):Float;
 	public var quality(jeashGetQuality,jeashSetQuality):String;
 	public var scaleMode:StageScaleMode;
-	public var align:flash.display.StageAlign;
+	public var align:jeash.display.StageAlign;
 	public var stageFocusRect:Bool;
 	public var focus(GetFocus,SetFocus):InteractiveObject;
 	public var backgroundColor(jeashGetBackgroundColour,jeashSetBackgroundColour):Int;
@@ -216,22 +216,22 @@ class Stage extends DisplayObjectContainer
 
 		switch(evt.type) {
 			case "mousemove":
-				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_MOVE);
+				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_MOVE);
 
 			case "mousedown":
-				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_DOWN);
+				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_DOWN);
 
 			case "mouseup":
-				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_UP);
+				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_UP);
 
 			case "click":
-				jeashOnMouse(cast evt, flash.events.MouseEvent.CLICK);
+				jeashOnMouse(cast evt, jeash.events.MouseEvent.CLICK);
 
 			case "mousewheel":
-				jeashOnMouse(cast evt, flash.events.MouseEvent.MOUSE_WHEEL);
+				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_WHEEL);
 
 			case "dblclick":
-				jeashOnMouse(cast evt, flash.events.MouseEvent.DOUBLE_CLICK);
+				jeashOnMouse(cast evt, jeash.events.MouseEvent.DOUBLE_CLICK);
 
 			case "keydown":
 				var evt:KeyboardEvent = cast evt; 
@@ -240,7 +240,7 @@ class Stage extends DisplayObjectContainer
 						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
 					} catch (e:Dynamic) {
 						#if debug
-						flash.Lib.trace("keydown error: " + e);
+						jeash.Lib.trace("keydown error: " + e);
 						#end
 						evt.keyCode;
 					}
@@ -259,7 +259,7 @@ class Stage extends DisplayObjectContainer
 						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
 					} catch (e:Dynamic) {
 						#if debug
-						flash.Lib.trace("keyup error: " + e);
+						jeash.Lib.trace("keyup error: " + e);
 						#end
 						evt.keyCode;
 					}
@@ -276,21 +276,21 @@ class Stage extends DisplayObjectContainer
 				evt.preventDefault();
 				var touchInfo = new TouchInfo();
 				jeashTouchInfo[evt.changedTouches[0].identifier] = touchInfo;
-				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_BEGIN, touchInfo, false);
-				//jeashOnMouse(cast evt.changedTouches[0], flash.events.MouseEvent.MOUSE_DOWN);
+				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_BEGIN, touchInfo, false);
+				//jeashOnMouse(cast evt.changedTouches[0], jeash.events.MouseEvent.MOUSE_DOWN);
 
 			case "touchmove":
 				var evt:TouchEvent = cast evt;
 				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
-				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_MOVE, touchInfo, true);
-				//jeashOnMouse(cast evt.changedTouches[0], flash.events.MouseEvent.MOUSE_MOVE);
+				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_MOVE, touchInfo, true);
+				//jeashOnMouse(cast evt.changedTouches[0], jeash.events.MouseEvent.MOUSE_MOVE);
 
 			case "touchend":
 				var evt:TouchEvent = cast evt;
 				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
-				jeashOnTouch(evt, evt.changedTouches[0], flash.events.TouchEvent.TOUCH_END, touchInfo, true);
+				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_END, touchInfo, true);
 				jeashTouchInfo[evt.changedTouches[0].identifier] = null;
-				//jeashOnMouse(cast evt.changedTouches[0], flash.events.MouseEvent.MOUSE_UP);
+				//jeashOnMouse(cast evt.changedTouches[0], jeash.events.MouseEvent.MOUSE_UP);
 
 			default:
 				
@@ -320,13 +320,13 @@ class Stage extends DisplayObjectContainer
 			stack.reverse();
 			var local = obj.globalToLocal(point);
 
-			var evt = flash.events.MouseEvent.jeashCreate(type, event, local, cast obj);
+			var evt = jeash.events.MouseEvent.jeashCreate(type, event, local, cast obj);
 
 			jeashCheckInOuts(evt, stack);
 
 			obj.jeashFireEvent(evt);
 		} else {
-			var evt = flash.events.MouseEvent.jeashCreate(type, event, point, null);
+			var evt = jeash.events.MouseEvent.jeashCreate(type, event, point, null);
 
 			jeashCheckInOuts(evt, stack);
 		}
@@ -351,7 +351,7 @@ class Stage extends DisplayObjectContainer
 			stack.reverse();
 			var local = obj.globalToLocal(point);
 
-			var evt = flash.events.TouchEvent.jeashCreate(type, event, touch, local, cast obj);
+			var evt = jeash.events.TouchEvent.jeashCreate(type, event, touch, local, cast obj);
 
 			evt.touchPointID = touch.identifier;
 			evt.isPrimaryTouchPoint = isPrimaryTouchPoint;
@@ -362,19 +362,19 @@ class Stage extends DisplayObjectContainer
 			obj.jeashFireEvent(evt);
 
 			var mouseType = switch (type) {
-				case flash.events.TouchEvent.TOUCH_BEGIN: flash.events.MouseEvent.MOUSE_DOWN;
-				case flash.events.TouchEvent.TOUCH_END: flash.events.MouseEvent.MOUSE_UP;
+				case jeash.events.TouchEvent.TOUCH_BEGIN: jeash.events.MouseEvent.MOUSE_DOWN;
+				case jeash.events.TouchEvent.TOUCH_END: jeash.events.MouseEvent.MOUSE_UP;
 				default: 
 					if (jeashDragObject != null) 
 						jeashDrag(point);
 
-					flash.events.MouseEvent.MOUSE_MOVE;
+					jeash.events.MouseEvent.MOUSE_MOVE;
 			}
 
-			obj.jeashFireEvent(flash.events.MouseEvent.jeashCreate(mouseType, cast evt, local, cast obj));
+			obj.jeashFireEvent(jeash.events.MouseEvent.jeashCreate(mouseType, cast evt, local, cast obj));
 
 		} else {
-			var evt = flash.events.TouchEvent.jeashCreate(type, event, touch, point, null);
+			var evt = jeash.events.TouchEvent.jeashCreate(type, event, touch, point, null);
 			evt.touchPointID = touch.identifier;
 			evt.isPrimaryTouchPoint = isPrimaryTouchPoint;
 			//if (evt.isPrimaryTouchPoint)
@@ -386,9 +386,9 @@ class Stage extends DisplayObjectContainer
 	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
 			ctrl:Bool, alt:Bool, shift:Bool )
 	{
-		var event = new flash.events.KeyboardEvent(
-				pressed ? flash.events.KeyboardEvent.KEY_DOWN:
-				flash.events.KeyboardEvent.KEY_UP,
+		var event = new jeash.events.KeyboardEvent(
+				pressed ? jeash.events.KeyboardEvent.KEY_DOWN:
+				jeash.events.KeyboardEvent.KEY_UP,
 				true,false,
 				inChar,
 				code,
@@ -403,7 +403,7 @@ class Stage extends DisplayObjectContainer
 		jeashWindowWidth = inW;
 		jeashWindowHeight = inH;
 		//RecalcScale();
-		var event = new flash.events.Event( flash.events.Event.RESIZE );
+		var event = new jeash.events.Event( jeash.events.Event.RESIZE );
 		event.target = this;
 		jeashBroadcast(event);
 	}
@@ -482,18 +482,18 @@ class Stage extends DisplayObjectContainer
 	function jeashStageRender (?_) {
 		if (!jeashStageActive) {
 			jeashOnResize(jeashWindowWidth, jeashWindowHeight);
-			var event = new flash.events.Event( flash.events.Event.ACTIVATE );
+			var event = new jeash.events.Event( jeash.events.Event.ACTIVATE );
 			event.target = this;
 			jeashBroadcast(event);
 			jeashStageActive = true;
 		}
 
-		var event = new flash.events.Event( flash.events.Event.ENTER_FRAME );
+		var event = new jeash.events.Event( jeash.events.Event.ENTER_FRAME );
 		this.jeashBroadcast(event);
 
 		this.jeashRenderAll();
 		
-		var event = new flash.events.Event( flash.events.Event.RENDER );
+		var event = new jeash.events.Event( jeash.events.Event.RENDER );
 		this.jeashBroadcast(event);
 
 		if ( jeashFastMode )

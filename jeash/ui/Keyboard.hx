@@ -93,7 +93,7 @@ class Keyboard
 	public static var F7			= 118;
 	public static var F8			= 119;
 	public static var F9			= 120;
-	//  F10 is used by flash.
+	//  F10 is used by jeash.
 	public static var F10		= 121;
 	public static var F11		= 122;
 	public static var F12		= 123;

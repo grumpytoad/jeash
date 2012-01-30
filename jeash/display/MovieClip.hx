@@ -45,7 +45,7 @@ class MovieClip extends Sprite, implements Dynamic<Dynamic> {
       enabled = true;
       mCurrentFrame = 0;
       mTotalFrames = 0;
-      name = "MovieClip " + flash.display.DisplayObject.mNameID++;
+      name = "MovieClip " + jeash.display.DisplayObject.mNameID++;
    }
 
    public function gotoAndPlay(frame:Dynamic, ?scene:String):Void { }

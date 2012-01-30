@@ -37,17 +37,17 @@ class Point
       y = inY==null ? 0.0 : inY;
    }
 
-   public function add(v : flash.geom.Point) : flash.geom.Point
+   public function add(v : jeash.geom.Point) : jeash.geom.Point
    {
       return new Point(v.x+x,v.y+y);
    }
 
-   public function clone() : flash.geom.Point
+   public function clone() : jeash.geom.Point
    {
       return new Point(x,y);
    }
 
-   public function equals(toCompare : flash.geom.Point) : Bool
+   public function equals(toCompare : jeash.geom.Point) : Bool
    {
       return toCompare.x==x && toCompare.y==y;
    }
@@ -74,25 +74,25 @@ class Point
       x+=dx;
       y+=dy;
    }
-   public function subtract(v : flash.geom.Point) : flash.geom.Point
+   public function subtract(v : jeash.geom.Point) : jeash.geom.Point
    {
       return new Point(x-v.x,y-v.y);
    }
 
-   public static function distance(pt1 : flash.geom.Point, pt2 : flash.geom.Point) : Float
+   public static function distance(pt1 : jeash.geom.Point, pt2 : jeash.geom.Point) : Float
    {
       var dx = pt1.x-pt2.x;
       var dy = pt1.y-pt2.y;
       return Math.sqrt(dx*dx + dy*dy);
    }
 
-   public static function interpolate(pt1 : flash.geom.Point, pt2 : flash.geom.Point, f : Float) : flash.geom.Point
+   public static function interpolate(pt1 : jeash.geom.Point, pt2 : jeash.geom.Point, f : Float) : jeash.geom.Point
    {
       return new Point( pt2.x + f*(pt1.x-pt2.x),
                         pt2.y + f*(pt1.y-pt2.y) );
    }
 
-   public static function polar(len : Float, angle : Float) : flash.geom.Point
+   public static function polar(len : Float, angle : Float) : jeash.geom.Point
    {
       return new Point( len*Math.cos(angle), len*Math.sin(angle) );
    }

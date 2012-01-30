@@ -37,7 +37,7 @@ class TouchEvent extends Event
 	public var delta : Int;
 	public var localX : Float;
 	public var localY : Float;
-	public var relatedObject : flash.display.InteractiveObject;
+	public var relatedObject : jeash.display.InteractiveObject;
 	public var shiftKey : Bool;
 	public var stageX : Float;
 	public var stageY : Float;

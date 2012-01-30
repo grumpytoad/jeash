@@ -479,7 +479,7 @@ class BitmapData implements IBitmapDrawable {
 
 		if (data.inLoader != null)
 		{
-			var e = new flash.events.Event( flash.events.Event.COMPLETE );
+			var e = new jeash.events.Event( jeash.events.Event.COMPLETE );
 			e.target = data.inLoader;
 			data.inLoader.dispatchEvent( e );
 		}
@@ -512,7 +512,7 @@ class BitmapData implements IBitmapDrawable {
 
 	}
 
-	public function unlock(?changeRect : flash.geom.Rectangle) : Void {
+	public function unlock(?changeRect : jeash.geom.Rectangle) : Void {
 		jeashLocked = false;
 
 		var ctx: CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
@@ -530,8 +530,8 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function drawToSurface(inSurface : Dynamic,
-			matrix:flash.geom.Matrix,
-			colorTransform:flash.geom.ColorTransform,
+			matrix:jeash.geom.Matrix,
+			colorTransform:jeash.geom.ColorTransform,
 			blendMode: BlendMode,
 			clipRect:Rectangle,
 			smothing:Bool):Void {

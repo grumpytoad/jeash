@@ -69,15 +69,15 @@ class Lib
 	public static var mCollectEveryFrame:Bool = false;
 
 	public static var mQuitOnEscape:Bool = true;
-	static var mStage:flash.display.Stage;
-	static var mMainClassRoot:flash.display.MovieClip;
-	static var mCurrent:flash.display.MovieClip;
+	static var mStage:jeash.display.Stage;
+	static var mMainClassRoot:jeash.display.MovieClip;
+	static var mCurrent:jeash.display.MovieClip;
 	static var mRolling:InteractiveObject;
 	static var mDownObj:InteractiveObject;
 	static var mMouseX:Int;
 	static var mMouseY:Int;
 
-	public static var mLastMouse:flash.geom.Point = new flash.geom.Point();
+	public static var mLastMouse:jeash.geom.Point = new jeash.geom.Point();
 
 	var __scr : HTMLDivElement;
 	var mArgs:Array<String>;
@@ -91,7 +91,7 @@ class Lib
 	static inline var DEFAULT_WIDTH = 500;
 	static inline var DEFAULT_HEIGHT = 500;
 
-	var jeashTraceTextField:flash.text.TextField;
+	var jeashTraceTextField:jeash.text.TextField;
 
 	function new(title:String, width:Int, height:Int)
 	{
@@ -191,7 +191,7 @@ class Lib
 		{
 			var width = jeashGetWidth();
 			var height = jeashGetHeight();
-			mStage = new flash.display.Stage(width, height);
+			mStage = new jeash.display.Stage(width, height);
 
 			mStage.addChild(jeashGetCurrent());
 		}
@@ -388,7 +388,7 @@ class Lib
 				try {
 					mMe.__scr.oncontextmenu = function () { return false; }
 				} catch (e:Dynamic) {
-					flash.Lib.trace("Disable right click not supported in this browser.");
+					jeash.Lib.trace("Disable right click not supported in this browser.");
 				}
 			}
 	}

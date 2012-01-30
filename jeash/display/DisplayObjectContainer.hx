@@ -49,13 +49,13 @@ class DisplayObjectContainer extends InteractiveObject
 		numChildren = 0;
 		tabChildren = true;
 		super();
-		name = "DisplayObjectContainer " +  flash.display.DisplayObject.mNameID++;
+		name = "DisplayObjectContainer " +  jeash.display.DisplayObject.mNameID++;
 	}
 
 	override public function AsContainer() { return this; }
 
 	// @r498
-	override public function jeashBroadcast(event:flash.events.Event)
+	override public function jeashBroadcast(event:jeash.events.Event)
 	{
 		var i = 0;
 		if (jeashChildren.length>0)
