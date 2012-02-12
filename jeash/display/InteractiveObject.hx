@@ -48,8 +48,6 @@ class InteractiveObject extends DisplayObject {
 
 	override public function toString() { return name; }
 
-	public function OnKey(inKey:jeash.events.KeyboardEvent):Void { }
-
 	override public function jeashAsInteractiveObject() return this
 
 	public function jeashGetTabIndex() { return jeashTabIndex; }

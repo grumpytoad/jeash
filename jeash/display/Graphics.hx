@@ -261,13 +261,11 @@ class Graphics
 	private var originY:Float;
 	private var nextDrawIndex:Int;
 	
-	// After this ("warm up") period, the canvas sheet will only expand,
-	// and will not contract if the drawing list changes. 
 	private var jeashRenderFrame:Int;
-	private static inline var JEASH_SIZING_WARM_UP = 10;
 	private static inline var JEASH_MAX_DIMENSION = 5000;
 	public var jeashExtentBuffer:Float;
 	public var jeashIsTile:Bool;
+	var jeashClearNextCycle:Bool;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -309,6 +307,7 @@ class Graphics
 		jeashExtentBuffer = 0;
 		jeashIsTile = false;
 		jeashExtent = new Rectangle();
+		jeashClearNextCycle = true;
 	}
 
 	public function SetSurface(inSurface:Dynamic) {
@@ -360,6 +359,11 @@ class Graphics
 
 		if (jeashExtent.width - jeashExtent.x != jeashSurface.width || jeashExtent.height - jeashExtent.y != jeashSurface.height) {
 			jeashAdjustSurface();
+		}
+
+		if (jeashClearNextCycle) {
+			jeashClearCanvas();
+			jeashClearNextCycle = false;
 		}
 
 		var ctx = getContext();
@@ -826,7 +830,7 @@ class Graphics
 		mLastMoveID = 0;
 
 		// clear the canvas
-		jeashClearCanvas();
+		jeashClearNextCycle = true;
 
 
 		mLineJobs = [];
@@ -846,8 +850,8 @@ class Graphics
 		minY=y<minY?y:minY;
 		jeashExtent.x = minX;
 		jeashExtent.y = minY;
-		jeashExtent.width = maxX-minX;
-		jeashExtent.height = maxY-minY;
+		jeashExtent.width = maxX-minX+1;
+		jeashExtent.height = maxY-minY+1;
 	}
 
 	public function moveTo(inX:Float,inY:Float) {

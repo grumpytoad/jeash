@@ -526,7 +526,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return mBoundsRect.clone();
 	}
 
-	public function GetFocusObjects(outObjs:Array<InteractiveObject>) { }
 	inline function __BlendIndex():Int
 	{
 		return blendMode == null ? Graphics.BLEND_NORMAL : Type.enumIndex(blendMode);

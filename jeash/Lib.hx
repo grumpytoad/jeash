@@ -43,15 +43,7 @@ import jeash.geom.Matrix;
 import jeash.geom.Point;
 import jeash.net.URLRequest;
 
-/**
- * @author	Hugh Sanderson
- * @author	Lee Sylvester
- * @author	Niel Drummond
- * @author	Russell Weir
- *
- */
-class Lib
-{
+class Lib {
 	var mKilled:Bool;
 	static var mMe:Lib;
 	static inline var DEFAULT_PRIORITY = ["2d", "swf"];
@@ -83,8 +75,8 @@ class Lib
 	var mArgs:Array<String>;
 
 	static inline var VENDOR_HTML_TAG = "data-";
-	static inline var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'focus', 'dblclick', 'click', 'blur' ];
-	static inline var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown' ];
+	static inline var HTML_DIV_EVENT_TYPES = [ 'resize', 'mouseup', 'mouseover', 'mouseout', 'mousemove', 'mousedown', 'mousewheel', 'dblclick', 'click' ];
+	static inline var HTML_WINDOW_EVENT_TYPES = [ 'keyup', 'keypress', 'keydown', 'resize' ];
 	static inline var HTML_TOUCH_EVENT_TYPES = [ 'touchstart', 'touchmove', 'touchend' ]; 
 
 	static inline var JEASH_IDENTIFIER = 'haxe:jeash';
@@ -429,12 +421,13 @@ class Lib
 		return window.innerHeight; 
 	}
 
-	public static function jeashSetCursor(hand:Bool) {
+	public static function jeashSetCursor(type:CursorType) {
 		if (mMe != null) 
-			if (hand) 
-				mMe.__scr.style.cursor = "pointer";
-			else
-				mMe.__scr.style.cursor = "default";
+			mMe.__scr.style.cursor = switch (type) {
+				case Pointer: "pointer";
+				case Text: "text";
+				default: "default";
+			}
 	}
 
 	public inline static function jeashSetSurfaceVisible(surface:HTMLElement, visible:Bool) {
@@ -504,11 +497,11 @@ class Lib
 
 				{
 					var window : Window = cast js.Lib.window;
-					window.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+					window.addEventListener(type, jeashGetStage().jeashProcessStageEvent, false);
 				}
 
 				jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
-					ParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
+					jeashParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
 							return switch (pos) {
 							case 0: res | (cur << 16);
 							case 1: res | (cur << 8);
@@ -532,8 +525,7 @@ class Lib
 			return mMe;
 	}
 
-	static function ParseColor( str:String, cb: Int -> Int -> Int -> Int) 
-	{
+	static function jeashParseColor( str:String, cb: Int -> Int -> Int -> Int) {
 		var re = ~/rgb\(([0-9]*), ?([0-9]*), ?([0-9]*)\)/;
 		var hex = ~/#([0-9a-zA-Z][0-9a-zA-Z])([0-9a-zA-Z][0-9a-zA-Z])([0-9a-zA-Z][0-9a-zA-Z])/;
 		if ( re.match(str) )
@@ -558,23 +550,26 @@ class Lib
 		}
 	}
 
-	static function jeashGetWidth()
-	{
+	static function jeashGetWidth() {
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		return tgt.clientWidth > 0 ? tgt.clientWidth : Lib.DEFAULT_WIDTH;
 	}
 
-	static function jeashGetHeight()
-	{
+	static function jeashGetHeight() {
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		return tgt.clientHeight > 0 ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
 	}
 
-	static function jeashBootstrap()
-	{
+	static function jeashBootstrap() {
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		var lib = Run(tgt, jeashGetWidth(), jeashGetHeight());
 		return lib;
 	}
-
 }
+
+private enum CursorType {
+	Pointer;
+	Text;
+	Default;
+}
+

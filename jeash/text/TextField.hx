@@ -28,6 +28,7 @@ package jeash.text;
 import jeash.display.Graphics;
 import jeash.geom.Matrix;
 import jeash.geom.Rectangle;
+import jeash.geom.Point;
 import jeash.display.InteractiveObject;
 import jeash.display.DisplayObject;
 import jeash.text.TextFormatAlign;
@@ -127,7 +128,7 @@ class TextField extends jeash.display.InteractiveObject {
 	var mSelEnd:Int;
 	var mInsertPos:Int;
 	var mSelectDrag:Int;
-	var mInput:Bool;
+	var jeashInputEnabled:Bool;
 
 	var mWidth:Float;
 	var mHeight:Float;
@@ -140,6 +141,11 @@ class TextField extends jeash.display.InteractiveObject {
 
 	var jeashGraphics:Graphics;
 	var mCaretGfx:Graphics;
+
+	var jeashCaretTimer:haxe.Timer;
+	var jeashCaretVisible:Bool;
+
+	static var CARET_BLINK_SPEED = 1000;
 
 	public function new() {
 		super();
@@ -169,7 +175,7 @@ class TextField extends jeash.display.InteractiveObject {
 		mTryFreeType = true;
 		selectable = true;
 		mInsertPos = 0;
-		mInput = false;
+		jeashInputEnabled = false;
 		mDownChar = 0;
 		mSelectDrag = -1;
 
@@ -184,16 +190,18 @@ class TextField extends jeash.display.InteractiveObject {
 		border = false;
 		backgroundColor = 0xffffff;
 		background = false;
+
+		jeashCaretVisible = false;
+		jeashCaretTimer = new haxe.Timer(CARET_BLINK_SPEED);
+
 	}
 
-	// TODO: untested
-	public function ClearSelection() {
+	public function jeashClearSelection() {
 		mSelStart = mSelEnd = -1; mSelectionAnchored = false;
 		Rebuild();
 	}
 
-	// TODO: untested
-	public function DeleteSelection() {
+	public function jeashDeleteSelection() {
 		if (mSelEnd > mSelStart && mSelStart>=0) {
 			mText = mText.substr(0,mSelStart) + mText.substr(mSelEnd);
 			mInsertPos = mSelStart;
@@ -202,23 +210,21 @@ class TextField extends jeash.display.InteractiveObject {
 		}
 	}
 
-	// TODO: unimplemented and untested
-	public function OnMoveKeyStart(inShift:Bool) {
+	public function jeashOnMoveKeyStart(inShift:Bool) {
 		if (inShift && selectable) {
 			if (!mSelectionAnchored) {
 				mSelectionAnchored = true;
 				mSelectionAnchor = mInsertPos;
 				if (sSelectionOwner!=this) {
 					if (sSelectionOwner!=null)
-						sSelectionOwner.ClearSelection();
+						sSelectionOwner.jeashClearSelection();
 					sSelectionOwner = this;
 				}
 			}
-		} else ClearSelection();
+		} else jeashClearSelection();
 	}
 
-	// TODO: unimplemented and untested
-	public function OnMoveKeyEnd() {
+	public function jeashOnMoveKeyEnd() {
 		if (mSelectionAnchored) {
 			if (mInsertPos<mSelectionAnchor) {
 				mSelStart = mInsertPos;
@@ -230,47 +236,58 @@ class TextField extends jeash.display.InteractiveObject {
 		}
 	}
 
-	// TODO: unimplemented and untested
-	override public function OnKey(inKey:KeyboardEvent):Void {
+	public function jeashOnKey(inKey:KeyboardEvent):Void {
 		if (inKey.type!=KeyboardEvent.KEY_DOWN)
 			return;
 
 		var key = inKey.keyCode;
-		//trace(key);
 		var ascii = inKey.charCode;
 		var shift = inKey.shiftKey;
 
+		/* TODO: What's this ? remove ?
 		// ctrl-c
 		if ( ascii==3 ) {
 			if (mSelEnd > mSelStart && mSelStart>=0)
-				//Manager.setClipboardString( text.substr(mSelStart,mSelEnd-mSelStart) );
 				throw "To implement setClipboardString. TextField.OnKey";
 			return;
-		}
+		} */
 
-		if (mInput) {
+		if (jeashInputEnabled) {
 			if (key==Keyboard.LEFT) {
-				OnMoveKeyStart(shift);
+				jeashOnMoveKeyStart(shift);
 				mInsertPos--;
-				OnMoveKeyEnd();
+				jeashOnMoveKeyEnd();
 			} else if (key==Keyboard.RIGHT) {
-				OnMoveKeyStart(shift);
+				jeashOnMoveKeyStart(shift);
 				mInsertPos++;
-				OnMoveKeyEnd();
+				jeashOnMoveKeyEnd();
 			} else if (key==Keyboard.HOME) {
-				OnMoveKeyStart(shift);
+				jeashOnMoveKeyStart(shift);
 				mInsertPos = 0;
-				OnMoveKeyEnd();
+				jeashOnMoveKeyEnd();
 			} else if (key==Keyboard.END) {
-				OnMoveKeyStart(shift);
+				jeashOnMoveKeyStart(shift);
 				mInsertPos = mText.length;
-				OnMoveKeyEnd();
+				jeashOnMoveKeyEnd();
+			} else if (key==Keyboard.ENTER) {
+				if (mSelEnd> mSelStart && mSelStart>=0)
+					jeashDeleteSelection();
+				mText = mText.substr(0,mInsertPos) + "\n" + mText.substr(mInsertPos);
+				mInsertPos++;
+			} else if (key==Keyboard.SPACE) {
+				if (mSelEnd> mSelStart && mSelStart>=0)
+					jeashDeleteSelection();
+				mText = mText.substr(0,mInsertPos) + " " + mText.substr(mInsertPos);
+				mInsertPos++;
+			} else if (key==Keyboard.TAB) {
+				if (mSelEnd> mSelStart && mSelStart>=0)
+					jeashDeleteSelection();
+				mText = mText.substr(0,mInsertPos) + "\t" + mText.substr(mInsertPos);
 			}
-			/* TODO: check if needed
-#if neko
+			/* TODO: implement copy&paste - cross-browser solution ?
 			else if ( (key==Keyboard.INSERT && shift) || ascii==22)
 			{
-				DeleteSelection();
+				jeashDeleteSelection();
 				var str = Manager.getClipboardString();
 				if (str!=null && str!="")
 				{
@@ -284,29 +301,30 @@ class TextField extends jeash.display.InteractiveObject {
 				{
 					Manager.setClipboardString( mText.substr(mSelStart,mSelEnd-mSelStart) );
 					if (ascii!=3)
-						DeleteSelection();
+						jeashDeleteSelection();
 				}
 			}
-
-#end
 			 */
 			else if (key==Keyboard.DELETE || key==Keyboard.BACKSPACE) {
 				if (mSelEnd> mSelStart && mSelStart>=0)
-					DeleteSelection();
+					jeashDeleteSelection();
 				else {
+					var l = mText.length;
 					if (key==Keyboard.BACKSPACE && mInsertPos>0)
 						mInsertPos--;
-					var l = mText.length;
+
 					if (mInsertPos>l) {
 						if (l>0)
 							mText = mText.substr(0,l-1);
+					} else if (mInsertPos==0 && key==Keyboard.BACKSPACE) {
+						// no-op
 					} else {
 						mText = mText.substr(0,mInsertPos) + mText.substr(mInsertPos+1);
 					}
 				}
-			} else if (ascii>=32 && ascii<128) {
+			} else if (ascii>=48 && ascii<128) {
 				if (mSelEnd> mSelStart && mSelStart>=0)
-					DeleteSelection();
+					jeashDeleteSelection();
 				mText = mText.substr(0,mInsertPos) + String.fromCharCode(ascii) + mText.substr(mInsertPos);
 				mInsertPos++;
 			}
@@ -321,14 +339,68 @@ class TextField extends jeash.display.InteractiveObject {
 		}
 	}
 
-	// TODO: unimplemented and untested
-	public function OnFocusIn(inMouse:Bool) {
-		if (mInput && selectable && !inMouse) {
+	function jeashCaretTimerCallback () {
+		if (visible && jeashInputEnabled && stage.focus == this) {
+			jeashCaretVisible = !jeashCaretVisible;
+			Lib.jeashSetSurfaceVisible(mCaretGfx.jeashSurface, jeashCaretVisible);
+		}
+	}
+
+	/* Not implemented - AVM2 focus model
+	public function jeashOnFocusIn(event:jeash.events.FocusEvent) {
+		if (jeashInputEnabled && selectable && !inMouse) {
 			mSelStart = 0;
 			mSelEnd = mText.length;
 			RebuildText();
 		}
+	} */
+
+	function jeashOnMouseDown(event:jeash.events.MouseEvent) {
+		if (tabEnabled || selectable) {
+			if (sSelectionOwner != null)
+				sSelectionOwner.jeashClearSelection();
+
+			sSelectionOwner = this;
+
+			mSelectDrag = getCharIndexAtPoint(event.localX, event.localY);
+			if (tabEnabled)
+				mInsertPos = mSelectDrag;
+			mSelStart = mSelEnd = -1;
+			RebuildText();
+		}
 	}
+
+	function jeashOnMouseDrag(event:jeash.events.MouseEvent) {
+		if ( (tabEnabled||selectable) && mSelectDrag>=0) {
+			var idx = getCharIndexAtPoint(event.localX, event.localY)+1;
+			if (sSelectionOwner!=this) {
+				if (sSelectionOwner!=null)
+					sSelectionOwner.jeashClearSelection();
+				sSelectionOwner = this;
+			}
+
+			if (idx<mSelectDrag) {
+				mSelStart = idx;
+				mSelEnd = mSelectDrag;
+			} else if (idx>mSelectDrag) {
+				mSelStart = mSelectDrag;
+				mSelEnd = idx;
+			}
+			else
+				mSelStart = mSelEnd = -1;
+
+			if (tabEnabled)
+				mInsertPos = idx;
+			RebuildText();
+		}
+	}
+
+	function jeashOnMouseUp(event:jeash.events.MouseEvent) {
+		mSelectDrag = -1;
+	}
+
+	function jeashOnMouseOver(_) { jeash.Lib.jeashSetCursor(Text); }
+	function jeashOnMouseOut(_) { jeash.Lib.jeashSetCursor(Default); }
 
 	override public function jeashGetWidth() : Float { return mWidth; }
 	override public function jeashGetHeight() : Float { return mHeight; }
@@ -355,8 +427,8 @@ class TextField extends jeash.display.InteractiveObject {
 	public function SetType(inType:String) : String {
 		mType = inType;
 
-		mInput = mType == TextFieldType.INPUT;
-		if (mInput && mHTMLMode)
+		jeashInputEnabled = mType == TextFieldType.INPUT;
+		if (jeashInputEnabled && mHTMLMode)
 			ConvertHTMLToText(true);
 
 		tabEnabled = type == TextFieldType.INPUT;
@@ -384,8 +456,7 @@ class TextField extends jeash.display.InteractiveObject {
 
 		var line = mLineInfo[li];
 		var idx = line.mIndex;
-		for(x in line.mX)
-		{
+		for(x in line.mX) {
 			if (x>inX) return idx;
 			idx++;
 		}
@@ -398,72 +469,11 @@ class TextField extends jeash.display.InteractiveObject {
 		return null;
 	}
 
-	// Not used?
-	public function OnMouseDown(inX:Int, inY:Int) {
-		if (tabEnabled || selectable)
-		{
-			if (sSelectionOwner != null)
-				sSelectionOwner.ClearSelection();
-
-			sSelectionOwner = this;
-
-			stage.focus = this;
-			var gx = inX/stage.scaleX;
-			var gy = inY/stage.scaleY;
-			var pos = globalToLocal( new jeash.geom.Point(gx,gy) );
-
-			mSelectDrag = getCharIndexAtPoint(pos.x,pos.y);
-			if (tabEnabled)
-				mInsertPos = mSelectDrag;
-			mSelStart = mSelEnd = -1;
-			RebuildText();
-		}
-	}
-
-	// Not used?
-	public function OnMouseDrag(inX:Int, inY:Int) {
-		if ( (tabEnabled||selectable) && mSelectDrag>=0)
-		{
-			var gx = inX/stage.scaleX;
-			var gy = inY/stage.scaleY;
-			var pos = globalToLocal( new jeash.geom.Point(gx,gy) );
-			var idx = getCharIndexAtPoint(pos.x,pos.y);
-			if (sSelectionOwner!=this)
-			{
-				if (sSelectionOwner!=null)
-					sSelectionOwner.ClearSelection();
-				sSelectionOwner = this;
-			}
-
-			if (idx<mSelectDrag)
-			{
-				mSelStart = idx;
-				mSelEnd = mSelectDrag;
-			}
-			else if (idx>mSelectDrag)
-			{
-				mSelStart = mSelectDrag;
-				mSelEnd = idx;
-			}
-			else
-				mSelStart = mSelEnd = -1;
-
-			if (tabEnabled)
-				mInsertPos = idx;
-			RebuildText();
-		}
-	}
-
-	// Not used?
-	public function OnMouseUp(inX:Int, inY:Int) {
-		mSelectDrag = -1;
-	}
-
 	var mMaxWidth:Float;
 	var mMaxHeight:Float;
 	var mLimitRenderX:Int;
 
-	function RenderRow(inRow:Array<RowChar>, inY:Int, inCharIdx:Int,inAlign:TextFormatAlign, ?inInsert:Int) : Int {
+	function RenderRow(inRow:Array<RowChar>, inY:Int, inCharIdx:Int, inAlign:TextFormatAlign, ?inInsert:Int) : Int {
 		var h = 0;
 		var w = 0;
 		for(chr in inRow) {
@@ -480,6 +490,7 @@ class TextField extends jeash.display.InteractiveObject {
 		var align_x = 0;
 		var insert_x = 0;
 		if (inInsert!=null) {
+			// TODO: check if this is necessary.
 			if (autoSize != jeash.text.TextFieldAutoSize.NONE) {
 				mScrollH = 0;
 				insert_x = inInsert;
@@ -503,7 +514,7 @@ class TextField extends jeash.display.InteractiveObject {
 		}
 
 		var x_list = new Array<Int>();
-		mLineInfo.push( { mY0:inY, mIndex:inCharIdx, mX:x_list } );
+		mLineInfo.push( { mY0:inY, mIndex:inCharIdx-1, mX:x_list } );
 
 		var cache_sel_font : FontInstance = null;
 		var cache_normal_font : FontInstance = null;
@@ -543,7 +554,7 @@ class TextField extends jeash.display.InteractiveObject {
 
 
 		if (inInsert!=null) {
-			mCaretGfx.lineStyle(1,mTextColour);
+			mCaretGfx.lineStyle(1, mTextColour);
 			mCaretGfx.moveTo(inInsert+align_x-mScrollH ,inY);
 			mCaretGfx.lineTo(inInsert+align_x-mScrollH ,inY+full_height);
 		}
@@ -557,8 +568,7 @@ class TextField extends jeash.display.InteractiveObject {
 		jeashGraphics.clear();
 		mCaretGfx.clear();
 
-		if (background)
-		{
+		if (background) {
 			jeashGraphics.beginFill(backgroundColor);
 			jeashGraphics.drawRect(-2,-2,width+4,height+4);
 			jeashGraphics.endFill();
@@ -570,7 +580,7 @@ class TextField extends jeash.display.InteractiveObject {
 
 		mMaxWidth = 0;
 		//mLimitRenderX = (autoSize == jeash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
-		var wrap = mLimitRenderX = (wordWrap && !mInput) ? Std.int(width) : 999999;
+		var wrap = mLimitRenderX = (wordWrap && !jeashInputEnabled) ? Std.int(width) : 999999;
 		var char_idx = 0;
 		var h:Int = 0;
 
@@ -595,7 +605,7 @@ class TextField extends jeash.display.InteractiveObject {
 				last_word_char_idx = char_idx;
 
 				for(ch in 0...text.length) {
-					if (char_idx == mInsertPos && mInput)
+					if (char_idx == mInsertPos && jeashInputEnabled)
 						insert_x = tx;
 
 					var g = text.charCodeAt(ch);
@@ -635,8 +645,8 @@ class TextField extends jeash.display.InteractiveObject {
 				}
 			}
 			if (row.length>0) {
-				var pos = (mInput && insert_x==null) ? tx : (insert_x==null ? 0 : insert_x);
-				h+=RenderRow(row,h,start_idx,paragraph.align,pos);
+				h+=RenderRow(row,h,start_idx,paragraph.align,insert_x);
+				insert_x = null;
 			}
 		}
 
@@ -664,7 +674,7 @@ class TextField extends jeash.display.InteractiveObject {
 					height = h;
 		}
 
-		if (char_idx==0 && mInput) {
+		if (char_idx==0 && jeashInputEnabled) {
 			var x = 0;
 			if (mAlign==TextFormatAlign.CENTER)
 				x = Std.int(width/2);
@@ -682,24 +692,8 @@ class TextField extends jeash.display.InteractiveObject {
 			jeashGraphics.drawRect(-2,-2,width+4,height+4);
 		}
 
-	}
-
-	// TODO
-	//override public function DoMouseEnter() { jeash.Lib.SetTextCursor(true); }
-	//override public function DoMouseLeave() { jeash.Lib.SetTextCursor(false); }
-
-	/* override */ public function GetObj(inX:Int,inY:Int, inObj:InteractiveObject ) : InteractiveObject
-	{
-		var inv = mFullMatrix.clone();
-		inv.invert();
-		var px = inv.a*inX + inv.c*inY + inv.tx;
-		var py = inv.b*inX + inv.d*inY + inv.ty;
-
-		if (px>0 && px<width && py>0 && py<height) {
-			return this;
-		}
-
-		return null;
+		mCaretGfx.jeashRender();
+		Lib.jeashSetSurfaceTransform(mCaretGfx.jeashSurface, mFullMatrix.clone());
 	}
 
 	override public function GetBackgroundRect() : Rectangle {
@@ -752,12 +746,6 @@ class TextField extends jeash.display.InteractiveObject {
 			RebuildText();
 		}
 	}
-
-	override public function GetFocusObjects(outObjs:Array<InteractiveObject>) {
-		if (mInput)
-			outObjs.push(this);
-	}
-
 
 	public function SetAutoSize(inAutoSize:String) : String {
 		autoSize = inAutoSize;
@@ -863,7 +851,7 @@ class TextField extends jeash.display.InteractiveObject {
 			var font = FontInstance.CreateSolid( mFace, mTextHeight, mTextColour, 1.0  );
 			var paras = mText.split("\n");
 			for(paragraph in paras)
-				mParagraphs.push( { align:mAlign, spans: [ { font : font, text:paragraph }] } );
+				mParagraphs.push( { align:mAlign, spans: [ { font : font, text:paragraph+"\n" }] } );
 		}
 		Rebuild();
 	}
@@ -873,7 +861,7 @@ class TextField extends jeash.display.InteractiveObject {
 		mHTMLText = inHTMLText;
 		mHTMLMode = true;
 		RebuildText();
-		if (mInput)
+		if (jeashInputEnabled)
 			ConvertHTMLToText(true);
 		return mHTMLText;
 	}
@@ -907,6 +895,49 @@ class TextField extends jeash.display.InteractiveObject {
 		RebuildText();
 		return getTextFormat();
 	}
+
+	override function jeashDoAdded(inObj:DisplayObject) {
+		super.jeashDoAdded(inObj);
+		if (inObj==this) {
+			addEventListener(jeash.events.MouseEvent.MOUSE_DOWN, jeashOnMouseDown);
+			addEventListener(jeash.events.MouseEvent.MOUSE_UP, jeashOnMouseUp);
+			addEventListener(jeash.events.MouseEvent.MOUSE_MOVE, jeashOnMouseDrag);
+			addEventListener(jeash.events.MouseEvent.MOUSE_OVER, jeashOnMouseOver);
+			addEventListener(jeash.events.MouseEvent.MOUSE_OUT, jeashOnMouseOut);
+			addEventListener(jeash.events.KeyboardEvent.KEY_DOWN, jeashOnKey);
+
+			jeashCaretTimer.run = jeashCaretTimerCallback;
+		}
+	}
+
+	override function jeashDoRemoved(inObj:DisplayObject) {
+		super.jeashDoRemoved(inObj);
+		if (inObj==this) {
+			removeEventListener(jeash.events.MouseEvent.MOUSE_DOWN, jeashOnMouseDown);
+			removeEventListener(jeash.events.MouseEvent.MOUSE_UP, jeashOnMouseUp);
+			removeEventListener(jeash.events.MouseEvent.MOUSE_MOVE, jeashOnMouseDrag);
+			removeEventListener(jeash.events.KeyboardEvent.KEY_DOWN, jeashOnKey);
+			removeEventListener(jeash.events.MouseEvent.MOUSE_OVER, jeashOnMouseOver);
+			removeEventListener(jeash.events.MouseEvent.MOUSE_OUT, jeashOnMouseOut);
+
+			Lib.jeashRemoveSurface(mCaretGfx.jeashSurface);
+			jeashCaretTimer.stop();
+		}
+	}
+
+	override function jeashAddToStage() {
+		Lib.jeashAppendSurface(jeashGraphics.jeashSurface);
+		Lib.jeashAppendSurface(mCaretGfx.jeashSurface);
+		Lib.jeashSetSurfaceVisible(mCaretGfx.jeashSurface, jeashCaretVisible);
+	}
+
+	override public function jeashGetObjectUnderPoint(point:Point):DisplayObject 
+		if (!visible) return null; 
+		else if (this.mText.length > 1) {
+			var local = globalToLocal(point);
+			if (local.x < 0 || local.y < 0 || local.x > mMaxWidth || local.y > mMaxHeight) return null; else return cast this;
+		}
+		else return super.jeashGetObjectUnderPoint(point)
 
 }
 

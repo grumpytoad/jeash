@@ -91,10 +91,10 @@ class Sprite extends DisplayObjectContainer {
 			removeEventListener(MouseEvent.ROLL_OUT, jeashCursorCallbackOut);
 
 		if (!cursor) {
-			Lib.jeashSetCursor(false);
+			Lib.jeashSetCursor(Default);
 		} else {
-			jeashCursorCallbackOver = function (_) { Lib.jeashSetCursor(true); }
-			jeashCursorCallbackOut = function (_) { Lib.jeashSetCursor(false); }
+			jeashCursorCallbackOver = function (_) { Lib.jeashSetCursor(Pointer); }
+			jeashCursorCallbackOut = function (_) { Lib.jeashSetCursor(Default); }
 			addEventListener(MouseEvent.ROLL_OVER, jeashCursorCallbackOver);
 			addEventListener(MouseEvent.ROLL_OUT, jeashCursorCallbackOut);
 		}

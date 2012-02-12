@@ -145,12 +145,6 @@ class DisplayObjectContainer extends InteractiveObject
 		return r;
 	}
 
-	override public function GetFocusObjects(outObjs:Array<InteractiveObject>)
-	{
-		for(obj in jeashChildren)
-			obj.GetFocusObjects(outObjs);
-	}
-
 	public override function jeashGetNumChildren() {
 		return jeashChildren.length;
 	}

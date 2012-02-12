@@ -57,6 +57,7 @@ class Stage extends DisplayObjectContainer
 	var jeashBackgroundColour:Int;
 	var jeashShowDefaultContextMenu:Bool;
 	var jeashTouchInfo:Array<TouchInfo>;
+	var jeashFocusOverObjects:Array<InteractiveObject>;
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
@@ -67,7 +68,7 @@ class Stage extends DisplayObjectContainer
 	public var scaleMode:StageScaleMode;
 	public var align:jeash.display.StageAlign;
 	public var stageFocusRect:Bool;
-	public var focus(GetFocus,SetFocus):InteractiveObject;
+	public var focus(jeashGetFocus,jeashSetFocus):InteractiveObject;
 	public var backgroundColor(jeashGetBackgroundColour,jeashSetBackgroundColour):Int;
 	public var showDefaultContextMenu(jeashGetShowDefaultContextMenu,jeashSetShowDefaultContextMenu):Bool;
 	public var displayState(jeashGetDisplayState,jeashSetDisplayState):StageDisplayState;
@@ -77,7 +78,7 @@ class Stage extends DisplayObjectContainer
 	public function jeashGetStageWidth() { return jeashWindowWidth; }
 	public function jeashGetStageHeight() { return jeashWindowHeight; }
 
-	private var mFocusObject : InteractiveObject;
+	private var jeashFocusObject : InteractiveObject;
 	static var jeashMouseChanges : Array<String> = [ jeash.events.MouseEvent.MOUSE_OUT, jeash.events.MouseEvent.MOUSE_OVER, jeash.events.MouseEvent.ROLL_OUT, jeash.events.MouseEvent.ROLL_OVER ];
 	static var jeashTouchChanges : Array<String> = [ jeash.events.TouchEvent.TOUCH_OUT, jeash.events.TouchEvent.TOUCH_OVER,	jeash.events.TouchEvent.TOUCH_ROLL_OUT, jeash.events.TouchEvent.TOUCH_ROLL_OVER ];
 	static inline var DEFAULT_FRAMERATE = 60.0;
@@ -89,7 +90,7 @@ class Stage extends DisplayObjectContainer
 	public function new(width:Int, height:Int)
 	{
 		super();
-		mFocusObject = null;
+		jeashFocusObject = null;
 		jeashWindowWidth = width;
 		jeashWindowHeight = height;
 		stageFocusRect = false;
@@ -107,6 +108,7 @@ class Stage extends DisplayObjectContainer
 		jeashMouseOverObjects = [];
 		showDefaultContextMenu = true;
 		jeashTouchInfo = [];
+		jeashFocusOverObjects = [];
 		// bug in 2.07 release
 		// displayState = StageDisplayState.NORMAL;
 	}
@@ -168,6 +170,41 @@ class Stage extends DisplayObjectContainer
 		jeashDragObject = null;
 	}
 
+	function jeashCheckFocusInOuts(event:FocusEvent, inStack:Array<InteractiveObject>) {
+
+		var new_n = inStack.length;
+		var new_obj:InteractiveObject = new_n > 0 ? inStack[new_n - 1] : null;
+		var old_n = jeashFocusOverObjects.length;
+		var old_obj:InteractiveObject = old_n > 0 ? jeashFocusOverObjects[old_n - 1] : null;
+		
+		if (new_obj != old_obj)
+		{
+			// focusOver/focusOut goes only over the non-common objects in the tree...
+			var common = 0;
+			while (common < new_n && common < old_n && inStack[common] == jeashFocusOverObjects[common] )
+				common++;
+			
+			var focusOut = new jeash.events.FocusEvent(jeash.events.FocusEvent.FOCUS_OUT, false, false, new_obj, false /* not implemented */, 0 /* not implemented */);
+			
+			var i = old_n - 1;
+			while (i >= common) {
+				jeashFocusOverObjects[i].dispatchEvent(focusOut);
+				i--;
+			}
+			
+			var focusIn = new jeash.events.FocusEvent(jeash.events.FocusEvent.FOCUS_IN, false, false, old_obj, false /* not implemented */, 0 /* not implemented */);
+			var i = new_n - 1;
+			
+			while (i >= common) {
+				inStack[i].dispatchEvent(focusIn);
+				i--;
+			}
+			
+			jeashFocusOverObjects = inStack;
+			focus = new_obj;
+		}
+	}
+
 	// @r551 without touch events
 	private function jeashCheckInOuts(event:jeash.events.Event, stack:Array<InteractiveObject>, ?touchInfo:TouchInfo) {
 		var prev = touchInfo == null ? jeashMouseOverObjects : touchInfo.touchOverObjects;
@@ -214,6 +251,7 @@ class Stage extends DisplayObjectContainer
 	public function jeashProcessStageEvent(evt:Html5Dom.Event) {
 		evt.stopPropagation();
 
+		if (evt.type == "focus") js.Lib.window.alert("HHIII");
 		switch(evt.type) {
 			case "mousemove":
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_MOVE);
@@ -233,67 +271,35 @@ class Stage extends DisplayObjectContainer
 			case "dblclick":
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.DOUBLE_CLICK);
 
-			case "keydown":
-				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null)
-					try {
-						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
-					} catch (e:Dynamic) {
-						#if debug
-						jeash.Lib.trace("keydown error: " + e);
-						#end
-						evt.keyCode;
-					}
-				else
-					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+			case "keypress":
+				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_DOWN);
+				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_UP);
 
-				jeashOnKey( keyCode, true,
-						evt.keyLocation,
-						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
+			case "keydown":
+				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_DOWN);
 
 			case "keyup":
-				var evt:KeyboardEvent = cast evt; 
-				var keyCode = if (evt.keyIdentifier != null)
-					try {
-						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
-					} catch (e:Dynamic) {
-						#if debug
-						jeash.Lib.trace("keyup error: " + e);
-						#end
-						evt.keyCode;
-					}
-				else
-					Keyboard.jeashConvertMozillaCode(evt.keyCode);
-
-				jeashOnKey( keyCode, false,
-						evt.keyLocation,
-						evt.ctrlKey, evt.altKey,
-						evt.shiftKey );
-
+				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_UP);
+					
 			case "touchstart":
 				var evt:TouchEvent = cast evt;
 				evt.preventDefault();
 				var touchInfo = new TouchInfo();
 				jeashTouchInfo[evt.changedTouches[0].identifier] = touchInfo;
 				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_BEGIN, touchInfo, false);
-				//jeashOnMouse(cast evt.changedTouches[0], jeash.events.MouseEvent.MOUSE_DOWN);
 
 			case "touchmove":
 				var evt:TouchEvent = cast evt;
 				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
 				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_MOVE, touchInfo, true);
-				//jeashOnMouse(cast evt.changedTouches[0], jeash.events.MouseEvent.MOUSE_MOVE);
 
 			case "touchend":
 				var evt:TouchEvent = cast evt;
 				var touchInfo = jeashTouchInfo[evt.changedTouches[0].identifier];
 				jeashOnTouch(evt, evt.changedTouches[0], jeash.events.TouchEvent.TOUCH_END, touchInfo, true);
 				jeashTouchInfo[evt.changedTouches[0].identifier] = null;
-				//jeashOnMouse(cast evt.changedTouches[0], jeash.events.MouseEvent.MOUSE_UP);
 
 			default:
-				
 		}
 	}
 
@@ -323,12 +329,14 @@ class Stage extends DisplayObjectContainer
 			var evt = jeash.events.MouseEvent.jeashCreate(type, event, local, cast obj);
 
 			jeashCheckInOuts(evt, stack);
+			if (type == jeash.events.MouseEvent.MOUSE_DOWN) jeashCheckFocusInOuts(cast evt, stack);
 
 			obj.jeashFireEvent(evt);
 		} else {
 			var evt = jeash.events.MouseEvent.jeashCreate(type, event, point, null);
 
 			jeashCheckInOuts(evt, stack);
+			if (type == jeash.events.MouseEvent.MOUSE_DOWN) jeashCheckFocusInOuts(cast evt, stack);
 		}
 	}
 
@@ -382,20 +390,28 @@ class Stage extends DisplayObjectContainer
 		}
 	}
 
+	function jeashOnKey(evt:KeyboardEvent, type:String) {
 
-	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
-			ctrl:Bool, alt:Bool, shift:Bool )
-	{
+		var charCode = if (evt.which != null && evt.which != 0) evt.which;
+		else if (evt.charCode != null && evt.charCode != 0) evt.charCode;
+		else evt.keyCode;
+
+		// capture "special" keys properly, get proper charCodes for "normal" keys
+		if ((evt.type != "keypress" && charCode >= 48) || (evt.type == "keypress" && charCode < 48)) return;
+
+		// prevent special keys accessing browser features
+		if (charCode < 45) evt.preventDefault();
+
 		var event = new jeash.events.KeyboardEvent(
-				pressed ? jeash.events.KeyboardEvent.KEY_DOWN:
-				jeash.events.KeyboardEvent.KEY_UP,
-				true,false,
-				inChar,
-				code,
-				(shift || ctrl) ? 1 : 0, // TODO
-				ctrl,alt,shift);
+				type,
+				true, false,
+				charCode,
+				evt.keyCode,
+				(evt.shiftKey || evt.ctrlKey) ? 1 : 0, 
+				evt.ctrlKey, evt.altKey, evt.shiftKey);
 
 		dispatchEvent(event);
+		stage.focus.dispatchEvent(event);
 	}
 
 	public function jeashOnResize(inW:Int, inH:Int)
@@ -416,15 +432,8 @@ class Stage extends DisplayObjectContainer
 		return col;
 	}
 
-	public function DoSetFocus(inObj:InteractiveObject,inKeyCode:Int)
-	{
-		// TODO
-		return inObj;
-	}
-
-	public function SetFocus(inObj:InteractiveObject) { return DoSetFocus(inObj,-1); }
-
-	public function GetFocus() { return mFocusObject; }
+	public function jeashSetFocus(inObj:InteractiveObject) { return jeashFocusObject = inObj; }
+	public function jeashGetFocus() { return jeashFocusObject; }
 
 	public function jeashRenderAll() {
 		jeashRender(jeashStageMatrix);

@@ -36,7 +36,8 @@ class Keyboard
 	public static var KEY_5			= 53;
 	public static var KEY_6			= 54;
 	public static var KEY_7			= 55;
-	public static var KEY_8			= 56; public static var KEY_9			= 57; 
+	public static var KEY_8			= 56; 
+	public static var KEY_9			= 57; 
 	public static var A			= 65;
 	public static var B			= 66;
 	public static var C			= 67;

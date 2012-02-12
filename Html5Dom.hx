@@ -2621,6 +2621,8 @@ extern interface KeyboardEvent implements UIEvent {
     public var metaKey              (default, null): Bool;
     public var repeat               (default, null): Bool;
     public var keyCode              (default, null): Int; // Note: W3C non-conformant
+    public var charCode             (default, null): Int; // Note: W3C non-conformant
+    public var which                (default, null): Int; // Note: W3C non-conformant
     
     public function getModifierState(keyIdentifierArg: DOMString): Bool;
     
