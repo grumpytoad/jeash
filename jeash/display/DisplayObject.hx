@@ -450,14 +450,15 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if (!visible) return null;
 		var gfx = jeashGetGraphics();
 		if (gfx != null) {
+			var extX = gfx.jeashExtent.x;
+			var extY = gfx.jeashExtent.y;
 			var local = globalToLocal(point);
+			if (local.x-extX < 0 || local.y-extY < 0 || (local.x-extX)*scaleX > width || (local.y-extY)*scaleY > height) return null; 
 			switch (stage.jeashPointInPathMode) {
 				case USER_SPACE:
-					if (local.x < 0 || local.y < 0 || (local.x)*scaleX > width || (local.y)*scaleY > height) return null; 
 					if (gfx.jeashHitTest(local.x, local.y))
 						return cast this;
 				case DEVICE_SPACE:
-					if (local.x < 0 || local.y < 0 || (local.x)*scaleX > width || (local.y)*scaleY > height) return null; 
 					if (gfx.jeashHitTest((local.x)*scaleX, (local.y)*scaleY))
 						return cast this;
 			}
