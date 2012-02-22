@@ -67,7 +67,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	public var rotation(jeashGetRotation,jeashSetRotation):Float;
 	
 	public var accessibilityProperties:AccessibilityProperties;
-	public var alpha(jeashGetAlpha,jeashSetAlpha):Float;
+	public var alpha:Float;
 	public var name(default,default):String;
 	public var cacheAsBitmap:Bool;
 	public var width(jeashGetWidth,jeashSetWidth):Float;
@@ -738,12 +738,5 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return jeashRotation;
 	}
 
-	function jeashGetAlpha() {
-		if (parent != null)
-			return alpha * parent.alpha;
-		else
-			return alpha;
-	}
 
-	function jeashSetAlpha(a:Float) return alpha = a
 }
