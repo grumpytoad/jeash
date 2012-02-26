@@ -411,7 +411,8 @@ class Stage extends DisplayObjectContainer
 				evt.ctrlKey, evt.altKey, evt.shiftKey);
 
 		dispatchEvent(event);
-		stage.focus.dispatchEvent(event);
+		if (stage.focus != null)
+			stage.focus.dispatchEvent(event);
 	}
 
 	public function jeashOnResize(inW:Int, inH:Int)
