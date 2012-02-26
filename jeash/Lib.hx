@@ -336,6 +336,15 @@ class Lib {
 		surface.style.setProperty("text-align", align, "");
 	}
 
+	public static function jeashSetContentEditable(surface:HTMLElement, contentEditable:Bool = true) {
+		surface.setAttribute("contentEditable", contentEditable ? "true" : "false");
+	}
+
+	public static function jeashDesignMode(mode:Bool) {
+		var document:HTMLDocument = cast js.Lib.document;
+		document.designMode = mode ? 'on' : 'off';
+	}
+
 	public static function jeashSurfaceHitTest(surface:HTMLElement, x:Float, y:Float)
 	{
 		for ( i in 0...surface.childNodes.length )

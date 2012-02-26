@@ -251,7 +251,6 @@ class Stage extends DisplayObjectContainer
 	public function jeashProcessStageEvent(evt:Html5Dom.Event) {
 		evt.stopPropagation();
 
-		if (evt.type == "focus") js.Lib.window.alert("HHIII");
 		switch(evt.type) {
 			case "mousemove":
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_MOVE);

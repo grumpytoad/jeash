@@ -40,8 +40,6 @@ class Shape extends DisplayObject {
 	public function new() {
 		Lib.canvas;
 		jeashGraphics = new Graphics();
-		if(jeashGraphics!=null)
-			jeashGraphics.owner = this;
 		super();
 		name = "Shape " + DisplayObject.mNameID++;
 	}

@@ -60,8 +60,7 @@ import jeash.display.IGraphicsFill;
 
 typedef DrawList = Array<Drawable>;
 
-class GfxPoint
-{
+class GfxPoint {
 	public function new(inX:Float,inY:Float,inCX:Float,inCY:Float,inType:Int)
 	{ x = inX; y=inY; cx=inCX; cy=inCY; type=inType; }
 
@@ -74,8 +73,7 @@ class GfxPoint
 
 typedef GfxPoints = Array<GfxPoint>;
 
-typedef GradPoint = 
-{
+typedef GradPoint = {
 	var col:Int;
 	var alpha:Float;
 	var ratio:Int;
@@ -83,16 +81,14 @@ typedef GradPoint =
 
 typedef GradPoints = Array<GradPoint>;
 
-typedef Grad =
-{
+typedef Grad = {
 	var points:GradPoints;
 	var matrix:Matrix;
 	var flags:Int;
 	var focal:Float;
 }
 
-class LineJob
-{
+class LineJob {
 	public function new( inGrad:Grad, inPoint_idx0:Int, inPoint_idx1:Int, inThickness:Float,
 			inAlpha:Float, inColour:Int, inPixel_hinting:Int, inJoints:Int, inCaps:Int,
 			inScale_mode:Int, inMiter_limit:Float)
@@ -123,8 +119,7 @@ class LineJob
 	public var miter_limit:Float;
 }
 
-typedef Drawable =
-{
+typedef Drawable = {
 	var points:GfxPoints;
 	var fillColour:Int;
 	var fillAlpha:Float;
@@ -133,8 +128,7 @@ typedef Drawable =
 	var lineJobs:LineJobs;
 }
 
-typedef Texture =
-{
+typedef Texture = {
 	var texture_buffer:Dynamic;
 	var matrix:Matrix;
 	var flags:Int;
@@ -142,87 +136,43 @@ typedef Texture =
 
 typedef LineJobs = Array<LineJob>;
 
-enum PointInPathMode
-{
+enum PointInPathMode {
 	USER_SPACE;
 	DEVICE_SPACE;
 }
 
-class Graphics
-{
-	public static var defaultFontName = "ARIAL.TTF";
-	public static var defaultFontSize = 12;
-	public static var immediateMatrix = null;
-	public static var immediateMask:Dynamic = null;
+class Graphics {
+	private static inline var RADIAL  = 0x0001;
 
-	public static var TOP = 0;
-	public static var CENTER = 1;
-	public static var BOTTOM = 2;
+	private static inline var SPREAD_REPEAT  = 0x0002;
+	private static inline var SPREAD_REFLECT = 0x0004;
 
-	public static var LEFT = 0;
-	public static var RIGHT = 2;
+	private static inline var  END_NONE         = 0x0000;
+	private static inline var  END_ROUND        = 0x0100;
+	private static inline var  END_SQUARE       = 0x0200;
 
-	public static var RADIAL  = 0x0001;
+	private static inline var  CORNER_ROUND     = 0x0000;
+	private static inline var  CORNER_MITER     = 0x1000;
+	private static inline var  CORNER_BEVEL     = 0x2000;
 
-	public static var SPREAD_REPEAT  = 0x0002;
-	public static var SPREAD_REFLECT = 0x0004;
+	private static inline var  PIXEL_HINTING    = 0x4000;
 
+	private static inline var BMP_REPEAT  = 0x0010;
+	private static inline var BMP_SMOOTH  = 0x10000;
 
-	private static var  EDGE_MASK        = 0x00f0;
-	private static var  EDGE_CLAMP       = 0x0000;
-	private static var  EDGE_REPEAT      = 0x0010;
-	private static var  EDGE_UNCHECKED   = 0x0020;
-	private static var  EDGE_REPEAT_POW2 = 0x0030;
+	private static inline var  SCALE_NONE       = 0;
+	private static inline var  SCALE_VERTICAL   = 1;
+	private static inline var  SCALE_HORIZONTAL = 2;
+	private static inline var  SCALE_NORMAL     = 3;
 
-	private static var  END_NONE         = 0x0000;
-	private static var  END_ROUND        = 0x0100;
-	private static var  END_SQUARE       = 0x0200;
-	private static var  END_MASK         = 0x0300;
-	private static var  END_SHIFT        = 8;
-
-	private static var  CORNER_ROUND     = 0x0000;
-	private static var  CORNER_MITER     = 0x1000;
-	private static var  CORNER_BEVEL     = 0x2000;
-	private static var  CORNER_MASK      = 0x3000;
-	private static var  CORNER_SHIFT     = 12;
-
-	private static var  PIXEL_HINTING    = 0x4000;
-
-	public static var BMP_REPEAT  = 0x0010;
-	public static var BMP_SMOOTH  = 0x10000;
-
-
-	private static var  SCALE_NONE       = 0;
-	private static var  SCALE_VERTICAL   = 1;
-	private static var  SCALE_HORIZONTAL = 2;
-	private static var  SCALE_NORMAL     = 3;
-
-	static var MOVE = 0;
-	static var LINE = 1;
-	static var CURVE = 2;
-
-	public static var BLEND_ADD = 0;
-	public static var BLEND_ALPHA = 1;
-	public static var BLEND_DARKEN = 2;
-	public static var BLEND_DIFFERENCE = 3;
-	public static var BLEND_ERASE = 4;
-	public static var BLEND_HARDLIGHT = 5;
-	public static var BLEND_INVERT = 6;
-	public static var BLEND_LAYER = 7;
-	public static var BLEND_LIGHTEN = 8;
-	public static var BLEND_MULTIPLY = 9;
-	public static var BLEND_NORMAL = 10;
-	public static var BLEND_OVERLAY = 11;
-	public static var BLEND_SCREEN = 12;
-	public static var BLEND_SUBTRACT = 13;
-	public static var BLEND_SHADER = 14;
+	private static inline var MOVE = 0;
+	private static inline var LINE = 1;
+	private static inline var CURVE = 2;
 
 	public static inline var TILE_SCALE    = 0x0001;
 	public static inline var TILE_ROTATION = 0x0002;
 	public static inline var TILE_RGB      = 0x0004;
 	public static inline var TILE_ALPHA    = 0x0008;
-
-	static inline var TILE_SMOOTH         = 0x1000;
 
 	public var jeashSurface(default,null):HTMLCanvasElement;
 	public var jeashChanged:Bool;
@@ -231,20 +181,18 @@ class Graphics
 	private var mPoints:GfxPoints;
 
 	// Solids ...
-	private var mSolid:Bool;
 	private var mFilling:Bool;
 	private var mFillColour:Int;
 	private var mFillAlpha:Float;
 	private var mSolidGradient:Grad;
-	public var mBitmap(default,null):Texture;
+	private var mBitmap(default,null):Texture;
 
 	// Lines ...
 	private var mCurrentLine:LineJob;
 	private var mLineJobs:LineJobs;
-	private var mNoClip:Bool;
 
 	// List of drawing commands ...
-	public var mDrawList(default,null):DrawList;
+	private var mDrawList(default,null):DrawList;
 	private var mLineDraws:DrawList;
 
 	// Current position ...
@@ -252,18 +200,12 @@ class Graphics
 	private var mPenY:Float;
 	private var mLastMoveID:Int;
 
-	public var mMatrix(default,null):Matrix;
-
-	public var owner:DisplayObject;
 	private var mBoundsDirty:Bool;
 	public var jeashExtent(default,null):Rectangle;
-	private var originX:Float;
-	private var originY:Float;
 	private var nextDrawIndex:Int;
 	
 	private static inline var JEASH_MAX_DIMENSION = 5000;
-	public var jeashIsTile:Bool;
-	var jeashClearNextCycle:Bool;
+	private var jeashClearNextCycle:Bool;
 
 	public function new(?inSurface:HTMLCanvasElement)
 	{
@@ -275,13 +217,9 @@ class Graphics
 			jeashSurface = inSurface;
 		}
 
-		mMatrix = new Matrix();
-
 		mLastMoveID = 0;
 		mPenX = 0.0;
 		mPenY = 0.0;
-		originX = 0;
-		originY = 0;
 
 		mDrawList = new DrawList();
 
@@ -293,15 +231,12 @@ class Graphics
 		mFillColour = 0x000000;
 		mFillAlpha = 0.0;
 		mLastMoveID = 0;
-		mNoClip = false;
-		//mSurfaceAlpha = 1.0;
 
 		jeashClearLine();
 		mLineJobs = [];
 		jeashChanged = true;
 		nextDrawIndex = 0;
 
-		jeashIsTile = false;
 		jeashExtent = new Rectangle();
 		jeashClearNextCycle = true;
 	}
@@ -478,11 +413,8 @@ class Graphics
 		jeashChanged = false;
 		nextDrawIndex = len;
 
-
 		return true;
-
 	}
-
 
 	public function jeashHitTest(inX:Float, inY:Float) : Bool
 	{
@@ -830,8 +762,6 @@ class Graphics
 
 
 		mLineJobs = [];
-		
-		markBoundsDirty();
 	}
 
 	function jeashExpandStandardExtent(x:Float, y:Float) {
@@ -990,8 +920,6 @@ class Graphics
 		}
 
 		jeashChanged = true;
-		//standardExtent=null;
-		markBoundsDirty();
 	}
 
 	public function drawGraphicsData(points:Vector<IGraphicsData>) {
@@ -1064,44 +992,17 @@ class Graphics
 		return rv;
 	}
 
-	public function drawTiles(sheet:Tilesheet, xyid:Array<Float>, smooth:Bool=false /* NOTE: ignored */, flags:Int = 0) {
-
-		jeashIsTile = true;
-		Lib.jeashDrawSurfaceRect(sheet.jeashSurface, jeashSurface, xyid[0], xyid[1], sheet.jeashTileRects[cast xyid[2]]);
-
-		if (flags != 0) {
-			if ((flags & TILE_SCALE) == TILE_SCALE) Lib.jeashSetSurfaceScale(jeashSurface, xyid[3]);
-			if ((flags & TILE_ROTATION) == TILE_ROTATION) Lib.jeashSetSurfaceRotation(jeashSurface, xyid[4]);
-
-			// TODO: TILE_RGB unsupported, is this just a simple overlay or a more complex shader ? ...
-
-			if ((flags & TILE_ALPHA) == TILE_ALPHA) Lib.jeashSetSurfaceOpacity(jeashSurface, xyid[8]);
-		}
-	}
-
-	public inline function markBoundsClean(){
-		mBoundsDirty=false;
-	}
-
-	inline function markBoundsDirty() {
-		if(!mBoundsDirty){
-			mBoundsDirty=true;
-			if(owner!=null)
-				owner.jeashInvalidateBounds();
-		}
-	}
-
-	inline function getContext() : CanvasRenderingContext2D
-	{
+	inline function getContext() : CanvasRenderingContext2D {
 	       	try {
 			return jeashSurface.getContext("2d");
 		} catch (e:Dynamic) {
-			flash.Lib.trace("2d canvas API not implemented for: " + jeashSurface);
 			return null;
 		}
 	}
 
 	function jeashAdjustSurface() {
+		if (Reflect.field(jeashSurface, "getContext") == null) return;
+
 		var width = Math.ceil(jeashExtent.width - jeashExtent.x);
 		var height = Math.ceil(jeashExtent.height - jeashExtent.y);
 

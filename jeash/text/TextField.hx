@@ -150,6 +150,7 @@ class TextField extends jeash.display.InteractiveObject {
 	public function new() {
 		super();
 		mWidth = 100;
+		mHeight = 20;
 		mHTMLMode = false;
 		multiline = false;
 		jeashGraphics = new Graphics();
@@ -179,7 +180,6 @@ class TextField extends jeash.display.InteractiveObject {
 
 		mLineInfo = [];
 		defaultTextFormat = new TextFormat();
-
 
 		name = "TextField " + jeash.display.DisplayObject.mNameID++;
 		jeashGraphics.jeashSurface.id = name;
@@ -355,21 +355,25 @@ class TextField extends jeash.display.InteractiveObject {
 
 	function jeashOnMouseDown(event:jeash.events.MouseEvent) {
 		if (tabEnabled || selectable) {
-			if (sSelectionOwner != null)
-				sSelectionOwner.jeashClearSelection();
+			if (mHTMLMode) {
+				Lib.jeashDesignMode(true);
+			} else {
+				if (sSelectionOwner != null)
+					sSelectionOwner.jeashClearSelection();
 
-			sSelectionOwner = this;
+				sSelectionOwner = this;
 
-			mSelectDrag = getCharIndexAtPoint(event.localX, event.localY);
-			if (tabEnabled)
-				mInsertPos = mSelectDrag;
-			mSelStart = mSelEnd = -1;
-			RebuildText();
+				mSelectDrag = getCharIndexAtPoint(event.localX, event.localY);
+				if (tabEnabled)
+					mInsertPos = mSelectDrag;
+				mSelStart = mSelEnd = -1;
+				RebuildText();
+			}
 		}
 	}
 
 	function jeashOnMouseDrag(event:jeash.events.MouseEvent) {
-		if ( (tabEnabled||selectable) && mSelectDrag>=0) {
+		if ( (tabEnabled||selectable) && mSelectDrag>=0 && !mHTMLMode) {
 			var idx = getCharIndexAtPoint(event.localX, event.localY)+1;
 			if (sSelectionOwner!=this) {
 				if (sSelectionOwner!=null)
@@ -395,6 +399,7 @@ class TextField extends jeash.display.InteractiveObject {
 
 	function jeashOnMouseUp(event:jeash.events.MouseEvent) {
 		mSelectDrag = -1;
+		if (mHTMLMode) Lib.jeashDesignMode(false);
 	}
 
 	function jeashOnMouseOver(_) { jeash.Lib.jeashSetCursor(Text); }
@@ -441,8 +446,13 @@ class TextField extends jeash.display.InteractiveObject {
 		mType = inType;
 
 		jeashInputEnabled = mType == TextFieldType.INPUT;
-		if (jeashInputEnabled && mHTMLMode)
-			ConvertHTMLToText(true);
+		if (mHTMLMode) {
+			if (jeashInputEnabled) {
+				Lib.jeashSetContentEditable(jeashGraphics.jeashSurface, true);
+			} else {
+				Lib.jeashSetContentEditable(jeashGraphics.jeashSurface, false);
+			}
+		}
 
 		tabEnabled = type == TextFieldType.INPUT;
 		Rebuild();
@@ -576,6 +586,9 @@ class TextField extends jeash.display.InteractiveObject {
 	}
 
 	function Rebuild() {
+
+		if (mHTMLMode) return;
+
 		mLineInfo = [];
 
 		jeashGraphics.clear();
@@ -593,7 +606,7 @@ class TextField extends jeash.display.InteractiveObject {
 
 		mMaxWidth = 0;
 		//mLimitRenderX = (autoSize == jeash.text.TextFieldAutoSize.NONE) ? Std.int(width) : 999999;
-		var wrap = mLimitRenderX = (wordWrap && !jeashInputEnabled) ? Std.int(width) : 999999;
+		var wrap = mLimitRenderX = (wordWrap && !jeashInputEnabled) ? Std.int(mWidth) : 999999;
 		var char_idx = 0;
 		var h:Int = 0;
 
@@ -729,7 +742,7 @@ class TextField extends jeash.display.InteractiveObject {
 
 	public function SetText(inText:String) {
 		mText = inText;
-		mHTMLText = inText;
+		//mHTMLText = inText;
 		mHTMLMode = false;
 		RebuildText();
 		jeashInvalidateBounds();
@@ -797,65 +810,10 @@ class TextField extends jeash.display.InteractiveObject {
 		return Std.parseInt("0x"+col.substr(1));
 	}
 
-	function AddXML(x:Xml,a:SpanAttribs) {
-		var type = x.nodeType;
-		if (type==Xml.Document || type==Xml.Element) {
-			if (type==Xml.Element) {
-				a = {face:a.face, height:a.height, colour:a.colour, align:a.align};
-				switch(x.nodeName) {
-					case "p":
-						var l = mParagraphs.length;
-						var align = x.get("align");
-						if (align!=null)
-							a.align = Type.createEnum(TextFormatAlign, align);
-
-						if (l>0 && mParagraphs[l-1].spans.length>0 && multiline)
-							mParagraphs.push( { align:a.align, spans:[] } );
-
-					case "font":
-						var face = x.get("face");
-						if (face!=null) a.face = face;
-						var height = x.get("size");
-						if (height!=null) a.height = Std.int(Std.parseFloat(height));
-						var col = x.get("color");
-						if (col!=null) a.colour = DecodeColour(col);
-
-					case "br":
-						var l = mParagraphs.length;
-						if (l>0 && mParagraphs[l-1].spans.length>0 && multiline)
-							mParagraphs.push( { align:a.align, spans:[] } );
-				}
-			}
-			for(child in x) {
-				AddXML(child,a);
-			}
-		} else {
-			var text = x.nodeValue;
-			var font = FontInstance.CreateSolid( a.face, a.height, a.colour, 1.0  );
-
-			if (font!=null && text!="") {
-				//trace("Add span " + a.face + "/" + a.height + "/" + a.colour );
-				var span : Span = { text: text, font:font };
-
-				var l =  mParagraphs.length;
-				if (mParagraphs.length<1)
-					mParagraphs.push( { align : a.align, spans: [ span ] } );
-				else
-					mParagraphs[l-1].spans.push(span);
-			}
-		}
-	}
-
 	public function RebuildText() {
 		mParagraphs = [];
 
-		if (mHTMLMode) {
-			var xml = Xml.parse(mHTMLText);
-
-			var a  = { face:mFace, height:mTextHeight, colour:mTextColour, align: mAlign };
-
-			AddXML(xml,a);
-		} else {
+		if (!mHTMLMode) {
 			var font = FontInstance.CreateSolid( mFace, mTextHeight, mTextColour, 1.0  );
 			var paras = mText.split("\n");
 			for(paragraph in paras)
@@ -867,11 +825,33 @@ class TextField extends jeash.display.InteractiveObject {
 	public function SetHTMLText(inHTMLText:String) {
 		mParagraphs = new Paragraphs();
 		mHTMLText = inHTMLText;
+
+		if (!mHTMLMode) {
+			var wrapper : HTMLCanvasElement = cast js.Lib.document.createElement("div");
+			wrapper.innerHTML = inHTMLText;
+
+			var destination = new Graphics(wrapper);
+
+			var jeashSurface = jeashGraphics.jeashSurface;
+			if (Lib.jeashIsOnStage(jeashSurface)) {
+				Lib.jeashAppendSurface(wrapper);
+				Lib.jeashCopyStyle(jeashSurface, wrapper);
+				Lib.jeashSwapSurface(jeashSurface, wrapper);
+				Lib.jeashRemoveSurface(jeashSurface);
+			}
+
+			jeashGraphics = destination;
+			jeashGraphics.jeashExtent.width = wrapper.width;
+			jeashGraphics.jeashExtent.height = wrapper.height;
+
+		} else {
+			jeashGraphics.jeashSurface.innerHTML = inHTMLText;
+		}
+
 		mHTMLMode = true;
 		RebuildText();
 		jeashInvalidateBounds();
-		if (jeashInputEnabled)
-			ConvertHTMLToText(true);
+
 		return mHTMLText;
 	}
 
@@ -910,7 +890,7 @@ class TextField extends jeash.display.InteractiveObject {
 		super.jeashDoAdded(inObj);
 		if (inObj==this) {
 			addEventListener(jeash.events.MouseEvent.MOUSE_DOWN, jeashOnMouseDown);
-			addEventListener(jeash.events.MouseEvent.MOUSE_UP, jeashOnMouseUp);
+			stage.addEventListener(jeash.events.MouseEvent.MOUSE_UP, jeashOnMouseUp);
 			addEventListener(jeash.events.MouseEvent.MOUSE_MOVE, jeashOnMouseDrag);
 			addEventListener(jeash.events.MouseEvent.MOUSE_OVER, jeashOnMouseOver);
 			addEventListener(jeash.events.MouseEvent.MOUSE_OUT, jeashOnMouseOut);
@@ -924,7 +904,7 @@ class TextField extends jeash.display.InteractiveObject {
 		super.jeashDoRemoved(inObj);
 		if (inObj==this) {
 			removeEventListener(jeash.events.MouseEvent.MOUSE_DOWN, jeashOnMouseDown);
-			removeEventListener(jeash.events.MouseEvent.MOUSE_UP, jeashOnMouseUp);
+			stage.removeEventListener(jeash.events.MouseEvent.MOUSE_UP, jeashOnMouseUp);
 			removeEventListener(jeash.events.MouseEvent.MOUSE_MOVE, jeashOnMouseDrag);
 			removeEventListener(jeash.events.KeyboardEvent.KEY_DOWN, jeashOnKey);
 			removeEventListener(jeash.events.MouseEvent.MOUSE_OVER, jeashOnMouseOver);
@@ -1028,3 +1008,4 @@ class FontInstance {
 		return mFont.jeashGetAdvance(inChar, mHeight);
 	}
 }
+

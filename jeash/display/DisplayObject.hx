@@ -405,7 +405,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 		if (gfx!=null) {
 			// Cases when the rendering phase should be skipped
-			if (gfx.jeashIsTile || !jeashVisible) return;
+			if (!jeashVisible) return;
 
 			if(mMtxDirty || mMtxChainDirty){
 				jeashValidateMatrix();
@@ -511,7 +511,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		else
 		{
 			mBoundsRect = gfx.jeashExtent.clone();
-			gfx.markBoundsClean();
 			if (mScale9Grid!=null)
 			{
 				mBoundsRect.width *= scaleX;
@@ -526,11 +525,6 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		if(mBoundsDirty)
 			BuildBounds();
 		return mBoundsRect.clone();
-	}
-
-	inline function __BlendIndex():Int
-	{
-		return blendMode == null ? Graphics.BLEND_NORMAL : Type.enumIndex(blendMode);
 	}
 
 	public function jeashGetInteractiveObjectStack(outStack:Array<InteractiveObject>)
