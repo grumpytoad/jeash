@@ -261,9 +261,7 @@ class Graphics
 	private var originY:Float;
 	private var nextDrawIndex:Int;
 	
-	private var jeashRenderFrame:Int;
 	private static inline var JEASH_MAX_DIMENSION = 5000;
-	public var jeashExtentBuffer:Float;
 	public var jeashIsTile:Bool;
 	var jeashClearNextCycle:Bool;
 
@@ -302,9 +300,7 @@ class Graphics
 		mLineJobs = [];
 		jeashChanged = true;
 		nextDrawIndex = 0;
-		jeashRenderFrame = 0;
 
-		jeashExtentBuffer = 0;
 		jeashIsTile = false;
 		jeashExtent = new Rectangle();
 		jeashClearNextCycle = true;
@@ -850,8 +846,8 @@ class Graphics
 		minY=y<minY?y:minY;
 		jeashExtent.x = minX;
 		jeashExtent.y = minY;
-		jeashExtent.width = maxX-minX+1;
-		jeashExtent.height = maxY-minY+1;
+		jeashExtent.width = maxX-minX;
+		jeashExtent.height = maxY-minY;
 	}
 
 	public function moveTo(inX:Float,inY:Float) {

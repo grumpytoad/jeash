@@ -149,12 +149,10 @@ class TextField extends jeash.display.InteractiveObject {
 
 	public function new() {
 		super();
-		mWidth = 40;
-		mHeight = 20;
+		mWidth = 100;
 		mHTMLMode = false;
 		multiline = false;
 		jeashGraphics = new Graphics();
-		jeashGraphics.jeashExtentBuffer = 0;
 		mCaretGfx = new Graphics();
 		mFace = mDefaultFont;
 		mAlign = jeash.text.TextFormatAlign.LEFT;
@@ -402,24 +400,39 @@ class TextField extends jeash.display.InteractiveObject {
 	function jeashOnMouseOver(_) { jeash.Lib.jeashSetCursor(Text); }
 	function jeashOnMouseOut(_) { jeash.Lib.jeashSetCursor(Default); }
 
-	override public function jeashGetWidth() : Float { return mWidth; }
-	override public function jeashGetHeight() : Float { return mHeight; }
+	override public function jeashGetWidth() : Float { 
+		return getBounds(this.stage).width;
+	}
+	override public function jeashGetHeight() : Float { 
+		return getBounds(this.stage).height;
+	}
 	override public function jeashSetWidth(inWidth:Float) : Float {
+
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+
 		if (inWidth!=mWidth) {
 			mWidth = inWidth;
-			jeashGraphics.jeashSurface.width = Math.round(inWidth);
 			Rebuild();
 		}
+
 		return mWidth;
 	}
 
 	override public function jeashSetHeight(inHeight:Float) : Float {
-		if (inHeight!=mHeight)
-		{
+		
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		
+		if (inHeight!=mHeight) {
 			mHeight = inHeight;
-			jeashGraphics.jeashSurface.height = Math.round(inHeight);
 			Rebuild();
 		}
+
 		return mHeight;
 	}
 
@@ -657,18 +670,12 @@ class TextField extends jeash.display.InteractiveObject {
 
 		switch(autoSize) {
 			case jeash.text.TextFieldAutoSize.LEFT:
-				width = w;
-				height = h;
 			case jeash.text.TextFieldAutoSize.RIGHT:
 				var x0 = x + width;
-				width = w;
-				height = h;
-				x = x0 - w;
+				x = mWidth - x0;
 			case jeash.text.TextFieldAutoSize.CENTER:
 				var x0 = x + width/2;
-				width = w;
-				height = h;
-				x = x0 - w/2;
+				x = mWidth/2 - x0;
 			default:
 				if (wordWrap)
 					height = h;
@@ -725,6 +732,7 @@ class TextField extends jeash.display.InteractiveObject {
 		mHTMLText = inText;
 		mHTMLMode = false;
 		RebuildText();
+		jeashInvalidateBounds();
 		return mText;
 	}
 
@@ -861,6 +869,7 @@ class TextField extends jeash.display.InteractiveObject {
 		mHTMLText = inHTMLText;
 		mHTMLMode = true;
 		RebuildText();
+		jeashInvalidateBounds();
 		if (jeashInputEnabled)
 			ConvertHTMLToText(true);
 		return mHTMLText;
@@ -893,6 +902,7 @@ class TextField extends jeash.display.InteractiveObject {
 			mTextColour = inFmt.color;
 
 		RebuildText();
+		jeashInvalidateBounds();
 		return getTextFormat();
 	}
 

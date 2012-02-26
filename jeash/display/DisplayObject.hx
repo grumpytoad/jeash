@@ -134,6 +134,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mMask = null;
 		mMaskingObj = null;
 		mBoundsRect = new Rectangle();
+		mBoundsDirty = true;
 		mGraphicsBounds = null;
 		mMaskHandle = null;
 		name = "DisplayObject " + mNameID++;
@@ -413,11 +414,11 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			var m = mFullMatrix.clone();
 
 			if (jeashFilters != null && (gfx.jeashChanged || inMask != null)) {
-				gfx.jeashRender(inMask, m);
+				if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
 				for (filter in jeashFilters) {
 					filter.jeashApplyFilter(gfx.jeashSurface);
 				}
-			} else gfx.jeashRender(inMask, m);
+			} else if (gfx.jeashRender(inMask, m)) jeashInvalidateBounds();
 
 			m.tx = m.tx + gfx.jeashExtent.x*m.a + gfx.jeashExtent.y*m.c;
 			m.ty = m.ty + gfx.jeashExtent.x*m.b + gfx.jeashExtent.y*m.d;
