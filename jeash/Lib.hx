@@ -559,12 +559,12 @@ class Lib {
 		}
 	}
 
-	static function jeashGetWidth() {
+	static public function jeashGetWidth() {
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		return tgt.clientWidth > 0 ? tgt.clientWidth : Lib.DEFAULT_WIDTH;
 	}
 
-	static function jeashGetHeight() {
+	static public function jeashGetHeight() {
 		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		return tgt.clientHeight > 0 ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
 	}

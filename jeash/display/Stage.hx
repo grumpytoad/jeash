@@ -75,8 +75,8 @@ class Stage extends DisplayObjectContainer
 	public var fullScreenWidth(jeashGetFullScreenWidth,null):UInt;
 	public var fullScreenHeight(jeashGetFullScreenHeight,null):UInt;
 
-	public function jeashGetStageWidth() { return jeashWindowWidth; }
-	public function jeashGetStageHeight() { return jeashWindowHeight; }
+	public function jeashGetStageWidth() { return jeash.Lib.jeashGetWidth(); }
+	public function jeashGetStageHeight() { return jeash.Lib.jeashGetHeight(); }
 
 	private var jeashFocusObject : InteractiveObject;
 	static var jeashMouseChanges : Array<String> = [ jeash.events.MouseEvent.MOUSE_OUT, jeash.events.MouseEvent.MOUSE_OVER, jeash.events.MouseEvent.ROLL_OUT, jeash.events.MouseEvent.ROLL_OVER ];
@@ -252,6 +252,9 @@ class Stage extends DisplayObjectContainer
 		evt.stopPropagation();
 
 		switch(evt.type) {
+			case "resize":
+				jeashOnResize(jeashGetStageWidth(), jeashGetStageHeight());
+
 			case "mousemove":
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.MOUSE_MOVE);
 
