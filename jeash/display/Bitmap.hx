@@ -47,7 +47,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		super();
 		pixelSnapping = inPixelSnapping;
 		smoothing = inSmoothing;
-		name = "Bitmap " + DisplayObject.mNameID++;
+		name = "Bitmap_" + DisplayObject.mNameID++;
 
 		jeashGraphics = new Graphics();
 

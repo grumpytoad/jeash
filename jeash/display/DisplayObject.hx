@@ -45,13 +45,6 @@ import jeash.filters.BitmapFilter;
 import jeash.display.BitmapData;
 import jeash.Lib;
 
-typedef BufferData =
-{
-	var buffer:WebGLBuffer;
-	var size:Int;
-	var location:GLint;
-}
-
 /**
  * @author	Niel Drummond
  * @author	Hugh Sanderson
@@ -733,5 +726,46 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return jeashRotation;
 	}
 
+	public function jeashAnimate(animFrames:Array<DisplayObjectAnimationFrame>) {
 
+		var gfx = jeashGetGraphics();
+		if (gfx == null) return;
+		var spec = [];
+		var flags = 0;
+
+		for (i in 0...animFrames.length) {
+			var frame = animFrames[i];
+
+			var matrix = new Matrix();
+			matrix.a=frame.scaleX;
+			matrix.d=frame.scaleY;
+			
+			var rad = frame.rotation * Math.PI / 180.0;
+		
+			if(rad!=0.0)
+				matrix.rotate(rad);
+			
+			matrix.tx=frame.x;
+			matrix.ty=frame.y;	
+			
+			if (parent!=null)
+				matrix = parent.getFullMatrix(matrix);
+
+			spec.push( { matrix: matrix, opacity: frame.alpha, clip: frame.clip } );
+		}
+
+
+		Lib.jeashSetSurfaceAnimation(gfx.jeashSurface, spec, name);
+	}
 }
+
+typedef DisplayObjectAnimationFrame = {
+	x: Float,
+	y: Float,
+	scaleX: Float,
+	scaleY: Float,
+	rotation: Float,
+	alpha: Float,
+	clip: Rectangle
+}
+

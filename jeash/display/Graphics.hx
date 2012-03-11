@@ -1027,4 +1027,3 @@ class Graphics {
 		jeashSurface = dstCanvas;
 	}
 }
-

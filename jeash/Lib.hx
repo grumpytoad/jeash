@@ -226,7 +226,7 @@ class Lib {
 
 		if ( c1 != -1 && c2 != -1 )
 		{
-			swap = mMe.__scr.removeChild(mMe.__scr.childNodes[c1]);
+			swap = jeashRemoveSurface(cast mMe.__scr.childNodes[c1]);
 			if (c2>c1) c2--;
 			if (c2 < mMe.__scr.childNodes.length-1)
 			{
@@ -235,7 +235,7 @@ class Lib {
 				mMe.__scr.appendChild(swap);
 			}
 
-			swap = mMe.__scr.removeChild(mMe.__scr.childNodes[c2]);
+			swap = jeashRemoveSurface(cast mMe.__scr.childNodes[c2]);
 			if (c1>c2) c1--;
 			if (c1 < mMe.__scr.childNodes.length-1)
 			{
@@ -247,7 +247,6 @@ class Lib {
 	}
 
 	public static function jeashIsOnStage(surface:HTMLElement) {
-
 		for ( i in 0...mMe.__scr.childNodes.length )
 			if ( mMe.__scr.childNodes[i] == surface ) {
 				return true;
@@ -257,10 +256,15 @@ class Lib {
 	}
 
 	public static function jeashRemoveSurface(surface:HTMLElement) {
-		if (mMe.__scr != null)
-		{
+		if (mMe.__scr != null) {
+			var anim = surface.getAttribute("data-jeash-anim");
+			if (anim != null) {
+			       var style = js.Lib.document.getElementById(anim);
+			       if (style != null) mMe.__scr.removeChild(cast style);
+			}
 			mMe.__scr.removeChild(surface);
 		}
+		return surface;
 	}
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix) {
@@ -471,6 +475,56 @@ class Lib {
 		surface.style.setProperty("-ms-transform", "rotate(" + rotate + "deg)", "");
 	}
 
+	public static function jeashSetSurfaceAnimation(surface:HTMLCanvasElement, spec:Array<AnimationFrame>, id:String) {
+		if (spec.length == 0 || id.length == 0 || !jeashIsOnStage(surface)) return;
+		var document:HTMLDocument = cast js.Lib.document;
+		var div:HTMLDivElement = cast document.createElement("div");
+
+		// TODO: sanitize id
+
+		// TODO: to be revisited... (see webkit-canvas and -moz-element)
+		div.style.backgroundImage = "url(" + surface.toDataURL("image/png", {}) + ")";
+
+		var style: Dynamic = cast mMe.__scr.appendChild(document.createElement("style"));
+		style.sheet.id = "__jeash_anim_" + id + "__";
+
+		// clean-up reference
+		div.setAttribute("data-jeash-anim", style.sheet.id);
+
+		var keyframeStylesheetRule = "";
+		var keyframeTpl = new haxe.Template("::perc::% { -moz-transform: ::matrixMoz::; -webkit-transform: ::matrixReg::; -o-transform: ::matrixReg::; -ms-transform: ::matrixReg::; background-position: ::left::px ::top::px; width: ::width::px; height: ::height::px; opacity: ::alpha::; } ");
+
+		for (i in 0...spec.length) {
+			var perc = i/(spec.length) * 100;
+			var frame = spec[i];
+			keyframeStylesheetRule += keyframeTpl.execute({
+				perc: perc,
+				matrixMoz: frame.matrix.toMozString(),
+				matrixReg: frame.matrix.toString(),
+				left: - frame.clip.x,
+				top: - frame.clip.y,
+				width: frame.clip.width,
+				height: frame.clip.height,
+				alpha: frame.opacity
+			});
+		}
+
+		var animationTpl = new haxe.Template("#::id:: { -webkit-animation: ::id:: ::duration::s steps(::steps::, end) infinite; }");
+		var animationStylesheetRule = animationTpl.execute({
+			id: id,
+			duration: spec.length/Lib.current.stage.frameRate,
+			steps: 1
+		});
+			
+		style.sheet.insertRule("@-webkit-keyframes " + id + " {" + keyframeStylesheetRule + "}", 0);
+		style.sheet.insertRule(animationStylesheetRule, 1);
+
+		Lib.jeashAppendSurface(div);
+		Lib.jeashCopyStyle(surface, div);
+		Lib.jeashSwapSurface(surface, div);
+		Lib.jeashRemoveSurface(surface);
+	}
+
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 
 	{
 			mMe = new Lib( tgt.id, width, height );
@@ -574,6 +628,13 @@ class Lib {
 		var lib = Run(tgt, jeashGetWidth(), jeashGetHeight());
 		return lib;
 	}
+
+}
+
+typedef AnimationFrame = {
+	matrix: Matrix,
+	opacity: Float,
+	clip: Rectangle
 }
 
 private enum CursorType {
@@ -581,4 +642,3 @@ private enum CursorType {
 	Text;
 	Default;
 }
-
