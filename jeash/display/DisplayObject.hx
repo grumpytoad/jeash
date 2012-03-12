@@ -113,8 +113,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	var jeashFilters:Array<BitmapFilter>;
 	
 	
-	public function new()
-	{
+	public function new() {
 		parent = null;
 		super(null);
 		x = y = 0;

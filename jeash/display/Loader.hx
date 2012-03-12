@@ -100,10 +100,9 @@ class Loader extends DisplayObjectContainer
 		}
 	}
 	
-	private function handleLoad(e:Event):Void
-	{
+	private function handleLoad(e:Event):Void {
+		content.jeashInvalidateBounds();
 		contentLoaderInfo.removeEventListener(Event.COMPLETE, handleLoad);
-		jeashInvalidateBounds();
 	}
 	
 	override function BuildBounds()
