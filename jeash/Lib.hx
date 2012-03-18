@@ -475,7 +475,7 @@ class Lib {
 		surface.style.setProperty("-ms-transform", "rotate(" + rotate + "deg)", "");
 	}
 
-	public static function jeashSetSurfaceAnimation(surface:HTMLCanvasElement, spec:Array<AnimationFrame>, id:String) {
+	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>, id:String) {
 		if (spec.length == 0 || id.length == 0 || !jeashIsOnStage(surface)) return;
 		var document:HTMLDocument = cast js.Lib.document;
 		var div:HTMLDivElement = cast document.createElement("div");
@@ -494,14 +494,9 @@ class Lib {
 		var keyframeStylesheetRule = "";
 		var keyframeTpl = new haxe.Template(
 				"::perc::% { 
-					-moz-transform: ::matrixMoz::; 
-					-webkit-transform: ::matrixReg::; 
-					-o-transform: ::matrixReg::; 
-					-ms-transform: ::matrixReg::; 
 					background-position: ::left::px ::top::px; 
 					width: ::width::px; 
 					height: ::height::px; 
-					opacity: ::alpha::; 
 				} ");
 
 		for (i in 0...spec.length) {
@@ -509,13 +504,10 @@ class Lib {
 			var frame = spec[i];
 			keyframeStylesheetRule += keyframeTpl.execute({
 				perc: perc,
-				matrixMoz: frame.matrix.toMozString(),
-				matrixReg: frame.matrix.toString(),
-				left: - frame.clip.x,
-				top: - frame.clip.y,
-				width: frame.clip.width,
-				height: frame.clip.height,
-				alpha: frame.opacity
+				left: - frame.x,
+				top: - frame.y,
+				width: frame.width,
+				height: frame.height
 			});
 		}
 
@@ -651,12 +643,6 @@ class Lib {
 		return lib;
 	}
 
-}
-
-typedef AnimationFrame = {
-	matrix: Matrix,
-	opacity: Float,
-	clip: Rectangle
 }
 
 private enum CursorType {
