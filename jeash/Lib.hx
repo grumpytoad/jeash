@@ -475,53 +475,40 @@ class Lib {
 		surface.style.setProperty("-ms-transform", "rotate(" + rotate + "deg)", "");
 	}
 
-	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>, id:String) {
-		if (spec.length == 0 || id.length == 0 || !jeashIsOnStage(surface)) return;
+	public static function jeashCreateSurfaceAnimationCSS<T>(surface:HTMLElement, data:Array<T>, template:haxe.Template, templateFunc:T -> Dynamic, discrete:Bool = false, infinite:Bool = false) {
 		var document:HTMLDocument = cast js.Lib.document;
-		var div:HTMLDivElement = cast document.createElement("div");
 
-		// TODO: sanitize id
-
-		// TODO: to be revisited... (see webkit-canvas and -moz-element)
-		div.style.backgroundImage = "url(" + surface.toDataURL("image/png", {}) + ")";
-
-		var style: Dynamic = cast mMe.__scr.appendChild(document.createElement("style"));
-		style.sheet.id = "__jeash_anim_" + id + "__";
-
-		// clean-up reference
-		div.setAttribute("data-jeash-anim", style.sheet.id);
-
-		var keyframeStylesheetRule = "";
-		var keyframeTpl = new haxe.Template(
-				"::perc::% { 
-					background-position: ::left::px ::top::px; 
-					width: ::width::px; 
-					height: ::height::px; 
-				} ");
-
-		for (i in 0...spec.length) {
-			var perc = i/(spec.length-1) * 100;
-			var frame = spec[i];
-			keyframeStylesheetRule += keyframeTpl.execute({
-				perc: perc,
-				left: - frame.x,
-				top: - frame.y,
-				width: frame.width,
-				height: frame.height
-			});
+		// TODO: getSanitizedOrGenerate ID
+		if (surface.id == null || surface.id == "") {
+			// generate id ?
+			Lib.trace("Failed to create a CSS Style tag for a surface without an id attribute");
+			return;
 		}
 
-		var animationTpl = new haxe.Template(
-				"#::id:: { 
-					-animation: ::id:: ::duration::s steps(::steps::, end) infinite; 
-					-moz-animation: ::id:: ::duration::s steps(::steps::, end) infinite; 
-					-webkit-animation: ::id:: ::duration::s steps(::steps::, end) infinite; 
-					-o-animation: ::id:: ::duration::s steps(::steps::, end) infinite; 
-					-ms-animation: ::id:: ::duration::s steps(::steps::, end) infinite; 
-				}");
-		var animationStylesheetRule = animationTpl.execute({
-			id: id,
-			duration: spec.length/Lib.current.stage.frameRate,
+		var style: Dynamic = null;
+	       	if (surface.getAttribute("data-jeash-anim") != null) {
+			style = document.getElementById(surface.getAttribute("data-jeash-anim"));
+		} else {
+			style = cast mMe.__scr.appendChild(document.createElement("style"));
+			style.sheet.id = "__jeash_anim_" + surface.id + "__";
+			surface.setAttribute("data-jeash-anim", style.sheet.id);
+		}
+		
+		var keyframeStylesheetRule = "";
+		for (i in 0...data.length) {
+			var perc = i/(data.length-1) * 100;
+			var frame = data[i];
+			keyframeStylesheetRule += perc + "% { " + template.execute(templateFunc(frame)) + " } ";
+		}
+
+		var animationDiscreteRule = if (discrete) "steps(::steps::, end)"; else "";
+		var animationInfiniteRule = if (infinite) "infinite"; else "";
+		var animationTpl = "";
+		for (prefix in ["-animation", "-moz-animation", "-webkit-animation", "-o-animation", "-ms-animation"])
+		       animationTpl += prefix + ": ::id:: ::duration::s " + animationDiscreteRule + " " + animationInfiniteRule  + "; ";
+		var animationStylesheetRule = new haxe.Template(animationTpl).execute({
+			id: surface.id,
+			duration: data.length/Lib.current.stage.frameRate,
 			steps: 1
 		});
 			
@@ -529,9 +516,33 @@ class Lib {
 		for (variant in ["", "-moz-", "-webkit-", "-o-", "-ms-"])
 			// a try catch is necessary, because browsers throw exceptions on unknown vendor prefixes.
 			try {
-				style.sheet.insertRule("@" + variant + "keyframes " + id + " {" + keyframeStylesheetRule + "}", rules.length);
+				style.sheet.insertRule("@" + variant + "keyframes " + surface.id + " {" + keyframeStylesheetRule + "}", rules.length);
 			} catch (e:Dynamic) { }
-		style.sheet.insertRule(animationStylesheetRule, rules.length);
+		style.sheet.insertRule("#" + surface.id + " { " + animationStylesheetRule + " } ", rules.length);
+
+		return style;
+	}
+
+	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>) {
+		if (spec.length == 0 || !jeashIsOnStage(surface)) return;
+		var document:HTMLDocument = cast js.Lib.document;
+		var div:HTMLDivElement = cast document.createElement("div");
+
+		// TODO: to be revisited... (see webkit-canvas and -moz-element)
+		div.style.backgroundImage = "url(" + surface.toDataURL("image/png", {}) + ")";
+		div.id = surface.id;
+
+		var keyframeTpl = new haxe.Template("background-position: ::left::px ::top::px; width: ::width::px; height: ::height::px; ");
+		var templateFunc = function (frame:Rectangle) {
+			return {
+				left: - frame.x,
+				top: - frame.y,
+				width: frame.width,
+				height: frame.height
+			}
+		}
+
+		jeashCreateSurfaceAnimationCSS(div, spec, keyframeTpl, templateFunc, true, true);
 
 		Lib.jeashAppendSurface(div);
 		Lib.jeashCopyStyle(surface, div);
