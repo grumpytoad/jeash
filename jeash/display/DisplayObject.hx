@@ -136,18 +136,18 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 
 	override public function toString() { return name; }
 
-	function jeashDoAdded(inObj:DisplayObject)
-	{
-		if (inObj==this)
-		{
+	function jeashDoAdded(inObj:DisplayObject) {
+		if (inObj==this) {
 			var evt = new jeash.events.Event(jeash.events.Event.ADDED, true, false);
 			evt.target = inObj;
 			dispatchEvent(evt);
 		}
 
-		var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
-		evt.target = inObj;
-		dispatchEvent(evt);
+		if (jeashIsOnStage()) {
+			var evt = new jeash.events.Event(jeash.events.Event.ADDED_TO_STAGE, false, false);
+			evt.target = inObj;
+			dispatchEvent(evt);
+		}
 	}
 
 	function jeashDoRemoved(inObj:DisplayObject)
@@ -724,15 +724,5 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	private function jeashGetRotation():Float{
 		return jeashRotation;
 	}
-}
-
-typedef DisplayObjectAnimationFrame = {
-	x: Float,
-	y: Float,
-	scaleX: Float,
-	scaleY: Float,
-	rotation: Float,
-	alpha: Float,
-	clip: Rectangle
 }
 

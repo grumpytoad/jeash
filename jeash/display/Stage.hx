@@ -83,10 +83,6 @@ class Stage extends DisplayObjectContainer
 	static var jeashTouchChanges : Array<String> = [ jeash.events.TouchEvent.TOUCH_OUT, jeash.events.TouchEvent.TOUCH_OVER,	jeash.events.TouchEvent.TOUCH_ROLL_OUT, jeash.events.TouchEvent.TOUCH_ROLL_OVER ];
 	static inline var DEFAULT_FRAMERATE = 60.0;
 
-	// for openGL renderers
-	public var mProjMatrix : Array<Float>;
-	static inline var DEFAULT_PROJ_MATRIX = [1., 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0];
-
 	public function new(width:Int, height:Int)
 	{
 		super();
@@ -103,7 +99,7 @@ class Stage extends DisplayObjectContainer
 		loaderInfo = LoaderInfo.create(null);
 		loaderInfo.parameters.width = Std.string(jeashWindowWidth);
 		loaderInfo.parameters.height = Std.string(jeashWindowHeight);
-		mProjMatrix = DEFAULT_PROJ_MATRIX;
+
 		jeashPointInPathMode = Graphics.jeashDetectIsPointInPathMode();
 		jeashMouseOverObjects = [];
 		showDefaultContextMenu = true;

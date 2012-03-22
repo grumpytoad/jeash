@@ -272,6 +272,7 @@ class Lib {
 			surface.style.left = matrix.tx + "px";
 			surface.style.top = matrix.ty + "px";
 		} else {
+			surface.style.left = "0px"; surface.style.top = "0px";
 			surface.style.setProperty("-moz-transform", matrix.toMozString(), "");
 			surface.style.setProperty("-webkit-transform", matrix.toString(), "");
 			surface.style.setProperty("-o-transform", matrix.toString(), "");
