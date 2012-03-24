@@ -46,27 +46,11 @@ import jeash.net.URLRequest;
 class Lib {
 	var mKilled:Bool;
 	static var mMe:Lib;
-	static inline var DEFAULT_PRIORITY = ["2d", "swf"];
-	public static var context(default,null):String;
 	public static var current(jeashGetCurrent,null):MovieClip;
-	public static var glContext(default,null):WebGLRenderingContext;
-	static var mShowCursor = true;
-	static var mShowFPS = false;
 
-	var mRequestedWidth:Int;
-	var mRequestedHeight:Int;
-	var mResizePending:Bool;
-	static var mFullscreen:Bool= false;
-	public static var mCollectEveryFrame:Bool = false;
-
-	public static var mQuitOnEscape:Bool = true;
 	static var mStage:jeash.display.Stage;
 	static var mMainClassRoot:jeash.display.MovieClip;
 	static var mCurrent:jeash.display.MovieClip;
-	static var mRolling:InteractiveObject;
-	static var mDownObj:InteractiveObject;
-	static var mMouseX:Int;
-	static var mMouseY:Int;
 
 	public static var mLastMouse:jeash.geom.Point = new jeash.geom.Point();
 
@@ -87,9 +71,6 @@ class Lib {
 	function new(title:String, width:Int, height:Int)
 	{
 		mKilled = false;
-		mRequestedWidth = width;
-		mRequestedHeight = height;
-		mResizePending = false;
 
 		// ... this should go in Stage.hx
 		__scr = cast js.Lib.document.getElementById(title);
@@ -139,6 +120,7 @@ class Lib {
 			mMainClassRoot = new MovieClip();
 			mCurrent = mMainClassRoot;
 			mCurrent.name = "Root MovieClip";
+			jeashGetStage().addChild(mCurrent);
 
 		}
 		return mMainClassRoot;
@@ -161,7 +143,7 @@ class Lib {
 			var height = jeashGetHeight();
 			mStage = new jeash.display.Stage(width, height);
 
-			mStage.addChild(jeashGetCurrent());
+			//mStage.addChild(jeashGetCurrent());
 		}
 
 		return mStage; 
@@ -428,8 +410,10 @@ class Lib {
 	}
 
 	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { 
-		var regex = ~/[^a-zA-Z0-9]/g;
-		surface.id = regex.replace(name, "_"); 
+		if (surface.id == null || surface.id.length == 0) {
+			var regex = ~/[^a-zA-Z0-9]/g;
+			surface.id = regex.replace(name, "_"); 
+		}
 	}
 
 	public inline static function jeashDrawSurfaceRect(surface:HTMLElement, tgt:HTMLCanvasElement, x:Float, y:Float, rect:Rectangle) {
@@ -503,8 +487,8 @@ class Lib {
 		return style;
 	}
 
-	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>) {
-		if (spec.length == 0 || !jeashIsOnStage(surface)) return;
+	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>) : HTMLElement {
+		if (spec.length == 0) return surface;
 		var document:HTMLDocument = cast js.Lib.document;
 		var div:HTMLDivElement = cast document.createElement("div");
 
@@ -524,10 +508,16 @@ class Lib {
 
 		jeashCreateSurfaceAnimationCSS(div, spec, keyframeTpl, templateFunc, true, true);
 
-		Lib.jeashAppendSurface(div);
-		Lib.jeashCopyStyle(surface, div);
-		Lib.jeashSwapSurface(surface, div);
-		Lib.jeashRemoveSurface(surface);
+		if (jeashIsOnStage(surface)) {
+			Lib.jeashAppendSurface(div);
+			Lib.jeashCopyStyle(surface, div);
+			Lib.jeashSwapSurface(surface, div);
+			Lib.jeashRemoveSurface(surface);
+		} else {
+			Lib.jeashCopyStyle(surface, div);
+		}
+
+		return div;
 	}
 
 	static function Run( tgt:HTMLDivElement, width:Int, height:Int ) 

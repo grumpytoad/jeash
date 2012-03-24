@@ -124,5 +124,6 @@ class Loader extends DisplayObjectContainer
 		}
 	}
 
-	override function jeashIsOnStage () return true
+	override function jeashIsOnStage () 
+		if (parent != null && parent.jeashIsOnStage() == true) return true; else return false
 }

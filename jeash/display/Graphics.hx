@@ -207,7 +207,7 @@ class Graphics {
 	private static inline var JEASH_MAX_DIMENSION = 5000;
 	private var jeashClearNextCycle:Bool;
 
-	public function new(?inSurface:HTMLCanvasElement) {
+	public function new(?inSurface:HTMLElement) {
 
 		// sanity check
 		Lib.jeashBootstrap();
@@ -217,7 +217,7 @@ class Graphics {
 			jeashSurface.width = 0;
 			jeashSurface.height = 0;
 		} else {
-			jeashSurface = inSurface;
+			jeashSurface = cast inSurface;
 		}
 
 		mLastMoveID = 0;

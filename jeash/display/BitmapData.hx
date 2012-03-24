@@ -93,6 +93,8 @@ class BitmapData implements IBitmapDrawable {
 	var jeashAssignedBitmaps:Int;
 	var jeashInitColor:Int;
 
+	static var mNameID = 0;
+
 	public function new(inWidth:Int, inHeight:Int,
 			?inTransparent:Bool = true,
 			?inFillColor:Int) {
@@ -105,6 +107,7 @@ class BitmapData implements IBitmapDrawable {
 		mTextureBuffer = cast js.Lib.document.createElement('canvas');
 		mTextureBuffer.width = inWidth;
 		mTextureBuffer.height = inHeight;
+		Lib.jeashSetSurfaceId(mTextureBuffer, "BitmapData " + mNameID++);
 
 		jeashTransparent = inTransparent;
 		rect = new Rectangle(0,0,inWidth,inHeight);
