@@ -46,12 +46,10 @@ class Sprite extends DisplayObjectContainer {
 	var jeashDropTarget:DisplayObject;
 
 	public function new() {
-		Lib.canvas;
 		jeashGraphics = new Graphics();
 		super();
 		buttonMode = false;
 		name = "Sprite " + DisplayObject.mNameID++;
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
 	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void {

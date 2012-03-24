@@ -54,8 +54,6 @@ class Bitmap extends jeash.display.DisplayObject {
 		if (inBitmapData != null) {
 			jeashSetBitmapData(inBitmapData);
 		}
-
-		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
 	public function jeashSetBitmapData(inBitmapData:BitmapData) : BitmapData {

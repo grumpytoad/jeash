@@ -207,8 +207,11 @@ class Graphics {
 	private static inline var JEASH_MAX_DIMENSION = 5000;
 	private var jeashClearNextCycle:Bool;
 
-	public function new(?inSurface:HTMLCanvasElement)
-	{
+	public function new(?inSurface:HTMLCanvasElement) {
+
+		// sanity check
+		Lib.jeashBootstrap();
+
 		if ( inSurface == null ) {
 			jeashSurface = cast js.Lib.document.createElement("canvas");
 			jeashSurface.width = 0;
@@ -1015,6 +1018,8 @@ class Graphics {
 
 		dstCanvas.width = width;
 		dstCanvas.height = height;
+
+		if (jeashSurface.id != null) Lib.jeashSetSurfaceId(dstCanvas, jeashSurface.id);
 
 		Lib.jeashDrawToSurface(jeashSurface, dstCanvas);
 		if (Lib.jeashIsOnStage(jeashSurface)) {

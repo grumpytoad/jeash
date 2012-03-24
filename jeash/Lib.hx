@@ -50,7 +50,6 @@ class Lib {
 	public static var context(default,null):String;
 	public static var current(jeashGetCurrent,null):MovieClip;
 	public static var glContext(default,null):WebGLRenderingContext;
-	public static var canvas(jeashGetCanvas,null):HTMLCanvasElement;
 	static var mShowCursor = true;
 	static var mShowFPS = false;
 
@@ -97,7 +96,6 @@ class Lib {
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
 		__scr.style.setProperty("overflow", "hidden", "");
 		__scr.style.setProperty("position", "absolute", ""); // necessary for chrome ctx.isPointInPath
-		__scr.appendChild( Lib.canvas );
 
 	}
 
@@ -134,29 +132,8 @@ class Lib {
 		}
 	}
 
-	static function jeashGetCanvas() : HTMLCanvasElement
-	{
-		untyped
-		{
-			if ( Lib.canvas == null )
-			{
-				if ( document == null ) throw "Document not loaded yet, cannot create root canvas!";
-				Lib.canvas = document.createElement("canvas");
-				Lib.canvas.id = "Root Surface";
-				Lib.context = "2d";
-
-				jeashBootstrap();
-
-				starttime = haxe.Timer.stamp();
-
-			}
-			return Lib.canvas;
-		}
-	}
-
 	static public function jeashGetCurrent() : MovieClip
 	{
-		Lib.canvas;
 		if ( mMainClassRoot == null )
 		{
 			mMainClassRoot = new MovieClip();
@@ -178,7 +155,6 @@ class Lib {
 	}
 
 	public static function jeashGetStage() { 
-		Lib.canvas;
 		if ( mStage == null )
 		{
 			var width = jeashGetWidth();
@@ -451,7 +427,10 @@ class Lib {
 			surface.style.setProperty("display", "none", "");
 	}
 
-	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { surface.id = name; }
+	public inline static function jeashSetSurfaceId(surface:HTMLElement, name:String) { 
+		var regex = ~/[^a-zA-Z0-9]/g;
+		surface.id = regex.replace(name, "_"); 
+	}
 
 	public inline static function jeashDrawSurfaceRect(surface:HTMLElement, tgt:HTMLCanvasElement, x:Float, y:Float, rect:Rectangle) {
 		var tgtCtx = tgt.getContext('2d');
@@ -555,61 +534,55 @@ class Lib {
 	{
 			mMe = new Lib( tgt.id, width, height );
 
-			Lib.canvas.width = width;
-			Lib.canvas.height = height;
-
-			if ( !StringTools.startsWith(Lib.context, "swf") )
+			for ( i in 0...tgt.attributes.length)
 			{
-				for ( i in 0...tgt.attributes.length)
+				var attr : Attr = cast tgt.attributes.item(i);
+				if (StringTools.startsWith(attr.name, VENDOR_HTML_TAG))
 				{
-					var attr : Attr = cast tgt.attributes.item(i);
-					if (StringTools.startsWith(attr.name, VENDOR_HTML_TAG))
+					switch (attr.name)
 					{
-						switch (attr.name)
-						{
-							case VENDOR_HTML_TAG + 'framerate':
-								jeashGetStage().frameRate = Std.parseFloat(attr.value);
-							default:
-						}
+						case VENDOR_HTML_TAG + 'framerate':
+							jeashGetStage().frameRate = Std.parseFloat(attr.value);
+						default:
 					}
 				}
-
-				for (type in HTML_TOUCH_EVENT_TYPES) {
-					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
-				}
-
-				for (type in HTML_DIV_EVENT_TYPES) 
-					tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
-
-
-				for (type in HTML_WINDOW_EVENT_TYPES) 
-
-				{
-					var window : Window = cast js.Lib.window;
-					window.addEventListener(type, jeashGetStage().jeashProcessStageEvent, false);
-				}
-
-				jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
-					jeashParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
-							return switch (pos) {
-							case 0: res | (cur << 16);
-							case 1: res | (cur << 8);
-							case 2: res | (cur);
-							}
-							}); else 0xFFFFFF;
-
-				// This ensures that a canvas hitTest hits the root movieclip
-				Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);
-				Lib.current.graphics.drawRect(0, 0, width, height);
-				Lib.current.graphics.jeashSurface.id = "Root MovieClip";
-
-				mMe.jeashTraceTextField = new TextField();
-				mMe.jeashTraceTextField.width = jeashGetStage().stageWidth;
-				mMe.jeashTraceTextField.wordWrap = true;
-				Lib.current.addChild(mMe.jeashTraceTextField);
-
-				jeashGetStage().jeashUpdateNextWake();
 			}
+
+			for (type in HTML_TOUCH_EVENT_TYPES) {
+				tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+			}
+
+			for (type in HTML_DIV_EVENT_TYPES) 
+				tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+
+
+			for (type in HTML_WINDOW_EVENT_TYPES) 
+
+			{
+				var window : Window = cast js.Lib.window;
+				window.addEventListener(type, jeashGetStage().jeashProcessStageEvent, false);
+			}
+
+			jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
+				jeashParseColor( tgt.style.backgroundColor, function (res, pos, cur) { 
+						return switch (pos) {
+						case 0: res | (cur << 16);
+						case 1: res | (cur << 8);
+						case 2: res | (cur);
+						}
+						}); else 0xFFFFFF;
+
+			// This ensures that a canvas hitTest hits the root movieclip
+			Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);
+			Lib.current.graphics.drawRect(0, 0, width, height);
+			jeashSetSurfaceId(Lib.current.graphics.jeashSurface, "Root MovieClip");
+
+			mMe.jeashTraceTextField = new TextField();
+			mMe.jeashTraceTextField.width = jeashGetStage().stageWidth;
+			mMe.jeashTraceTextField.wordWrap = true;
+			Lib.current.addChild(mMe.jeashTraceTextField);
+
+			jeashGetStage().jeashUpdateNextWake();
 
 			return mMe;
 	}
@@ -649,10 +622,11 @@ class Lib {
 		return tgt.clientHeight > 0 ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
 	}
 
-	static function jeashBootstrap() {
-		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
-		var lib = Run(tgt, jeashGetWidth(), jeashGetHeight());
-		return lib;
+	public static function jeashBootstrap() {
+		if (mMe == null) {
+			var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+			Run(tgt, jeashGetWidth(), jeashGetHeight());
+		}
 	}
 
 }

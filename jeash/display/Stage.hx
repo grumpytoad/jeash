@@ -459,8 +459,6 @@ class Stage extends DisplayObjectContainer
 
 	function jeashGetFrameRate() { return jeashFrameRate; }
 	function jeashSetFrameRate(speed:Float):Float {
-		if ( StringTools.startsWith(Lib.context, "swf") ) return speed;
-
 		var window : Window = cast js.Lib.window;
 		if (speed == 0 && window.postMessage != null)
 			jeashFastMode = true;

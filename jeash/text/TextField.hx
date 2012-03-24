@@ -182,7 +182,7 @@ class TextField extends jeash.display.InteractiveObject {
 		defaultTextFormat = new TextFormat();
 
 		name = "TextField " + jeash.display.DisplayObject.mNameID++;
-		jeashGraphics.jeashSurface.id = name;
+		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 
 		borderColor = 0x000000;
 		border = false;

@@ -38,7 +38,6 @@ class Shape extends DisplayObject {
 	public var graphics(jeashGetGraphics,null):Graphics;
 
 	public function new() {
-		Lib.canvas;
 		jeashGraphics = new Graphics();
 		super();
 		name = "Shape " + DisplayObject.mNameID++;
