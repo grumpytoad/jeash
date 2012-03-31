@@ -269,15 +269,43 @@ class Stage extends DisplayObjectContainer
 			case "dblclick":
 				jeashOnMouse(cast evt, jeash.events.MouseEvent.DOUBLE_CLICK);
 
-			case "keypress":
-				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_DOWN);
-				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_UP);
-
 			case "keydown":
-				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_DOWN);
+				var evt:KeyboardEvent = cast evt; 
+				var keyCode = if (evt.keyIdentifier != null)
+					try {
+						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+					} catch (e:Dynamic) {
+						#if debug
+						jeash.Lib.trace("keydown error: " + e);
+						#end
+						evt.keyCode;
+					}
+				else
+					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+
+				jeashOnKey( keyCode, true,
+						evt.keyLocation,
+						evt.ctrlKey, evt.altKey,
+						evt.shiftKey );
 
 			case "keyup":
-				jeashOnKey(cast evt, jeash.events.KeyboardEvent.KEY_UP);
+				var evt:KeyboardEvent = cast evt; 
+				var keyCode = if (evt.keyIdentifier != null)
+					try {
+						Keyboard.jeashConvertWebkitCode(evt.keyIdentifier);
+					} catch (e:Dynamic) {
+						#if debug
+						jeash.Lib.trace("keyup error: " + e);
+						#end
+						evt.keyCode;
+					}
+				else
+					Keyboard.jeashConvertMozillaCode(evt.keyCode);
+
+				jeashOnKey( keyCode, false,
+						evt.keyLocation,
+						evt.ctrlKey, evt.altKey,
+						evt.shiftKey );
 					
 			case "touchstart":
 				var evt:TouchEvent = cast evt;
@@ -388,30 +416,21 @@ class Stage extends DisplayObjectContainer
 		}
 	}
 
-	function jeashOnKey(evt:KeyboardEvent, type:String) {
-
-		var charCode = if (evt.which != null && evt.which != 0) evt.which;
-		else if (evt.charCode != null && evt.charCode != 0) evt.charCode;
-		else evt.keyCode;
-
-		// capture "special" keys properly, get proper charCodes for "normal" keys
-		if ((evt.type != "keypress" && charCode >= 48) || (evt.type == "keypress" && charCode < 48)) return;
-
-		// prevent special keys accessing browser features
-		if (charCode < 45) evt.preventDefault();
-
+	function jeashOnKey( code:Int , pressed : Bool, inChar:Int,
+			ctrl:Bool, alt:Bool, shift:Bool )
+	{
 		var event = new jeash.events.KeyboardEvent(
-				type,
-				true, false,
-				charCode,
-				evt.keyCode,
-				(evt.shiftKey || evt.ctrlKey) ? 1 : 0, 
-				evt.ctrlKey, evt.altKey, evt.shiftKey);
+				pressed ? jeash.events.KeyboardEvent.KEY_DOWN:
+				jeash.events.KeyboardEvent.KEY_UP,
+				true,false,
+				inChar,
+				code,
+				(shift || ctrl) ? 1 : 0, // TODO
+				ctrl,alt,shift);
 
 		dispatchEvent(event);
-		if (stage.focus != null)
-			stage.focus.dispatchEvent(event);
 	}
+
 
 	public function jeashOnResize(inW:Int, inH:Int)
 	{

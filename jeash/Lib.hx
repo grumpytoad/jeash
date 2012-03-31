@@ -72,11 +72,12 @@ class Lib {
 	{
 		mKilled = false;
 
-		// ... this should go in Stage.hx
 		__scr = cast js.Lib.document.getElementById(title);
 		if ( __scr == null ) throw "Element with id '" + title + "' not found";
 		__scr.style.setProperty("overflow", "hidden", "");
 		__scr.style.setProperty("position", "absolute", ""); // necessary for chrome ctx.isPointInPath
+		__scr.style.width = width + "px";
+		__scr.style.height = height + "px";
 
 	}
 
@@ -160,10 +161,11 @@ class Lib {
 			surface.style.setProperty("-o-transform-origin", "0 0", "");
 			surface.style.setProperty("-ms-transform-origin", "0 0", "");
 
-			// disable blue selection rectangle 
+			// disable blue selection rectangle, but only for canvas elements
 			untyped {
 				try {
-					surface.onmouseover = surface.onselectstart = function () { return false; }
+					if (surface.localName == "canvas")
+						surface.onmouseover = surface.onselectstart = function () { return false; }
 				} catch (e:Dynamic) {}
 			}
 
