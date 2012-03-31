@@ -68,6 +68,7 @@ class ImageDataLease {
 
 typedef CopyPixelAtom = {
 	var handle:HTMLCanvasElement;
+	var transparentFiller:HTMLCanvasElement;
 	var sourceX:Float;
 	var sourceY:Float;
 	var sourceWidth:Float;
@@ -92,6 +93,7 @@ class BitmapData implements IBitmapDrawable {
 	var jeashLeaseNum:Int;
 	var jeashAssignedBitmaps:Int;
 	var jeashInitColor:Int;
+	var jeashTransparentFiller:HTMLCanvasElement;
 
 	static var mNameID = 0;
 
@@ -114,6 +116,14 @@ class BitmapData implements IBitmapDrawable {
 
 		if ( inFillColor != null ) {
 			if (!jeashTransparent) inFillColor |= 0xFF000000;
+			else {
+				jeashTransparentFiller = cast js.Lib.document.createElement('canvas');
+				jeashTransparentFiller.width = inWidth;
+				jeashTransparentFiller.height = inHeight;
+				var ctx = jeashTransparentFiller.getContext('2d');
+				ctx.fillStyle = 'rgba(0,0,0,0);';
+				ctx.fill();
+			}
 			jeashInitColor = inFillColor;
 			jeashFillRect(rect, inFillColor);
 		}
@@ -197,9 +207,15 @@ class BitmapData implements IBitmapDrawable {
 			jeashBuildLease();
 
 			var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
+			if (jeashTransparent && sourceBitmapData.jeashTransparent) {
+				var trpCtx: CanvasRenderingContext2D = sourceBitmapData.jeashTransparentFiller.getContext('2d');
+				var trpData = trpCtx.getImageData(sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height);
+				ctx.putImageData(trpData, destPoint.x, destPoint.y);
+			}
+
 			ctx.drawImage(sourceBitmapData.handle(), sourceRect.x, sourceRect.y, sourceRect.width, sourceRect.height, destPoint.x, destPoint.y, sourceRect.width, sourceRect.height);
 		} else {
-			jeashCopyPixelList[jeashCopyPixelList.length] = {handle:sourceBitmapData.handle(), sourceX:sourceRect.x, sourceY:sourceRect.y, sourceWidth:sourceRect.width, sourceHeight:sourceRect.height, destX:destPoint.x, destY:destPoint.y};
+			jeashCopyPixelList[jeashCopyPixelList.length] = {handle:sourceBitmapData.handle(), transparentFiller:sourceBitmapData.jeashTransparentFiller, sourceX:sourceRect.x, sourceY:sourceRect.y, sourceWidth:sourceRect.width, sourceHeight:sourceRect.height, destX:destPoint.x, destY:destPoint.y};
 		}
 	}
 
@@ -247,6 +263,11 @@ class BitmapData implements IBitmapDrawable {
 		var a: Int = (jeashTransparent)? (color >>> 24) : 0xFF;
 
 		if (!jeashLocked) {
+			if (jeashTransparent) {
+				var trpCtx: CanvasRenderingContext2D = jeashTransparentFiller.getContext('2d');
+				var trpData = trpCtx.getImageData(rect.x, rect.y, rect.width, rect.height);
+				ctx.putImageData(trpData, rect.x, rect.y);
+			}
 			var style = 'rgba('; style += r; style += ', '; style += g; style += ', '; style += b; style += ', '; style += (a/256); style += ')';
 			ctx.fillStyle = style;
 			ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
@@ -526,6 +547,12 @@ class BitmapData implements IBitmapDrawable {
 				ctx.putImageData (jeashImageData, 0, 0);
 
 		for (copyCache in jeashCopyPixelList) {
+			if (jeashTransparent && copyCache.transparentFiller != null) {
+				var trpCtx: CanvasRenderingContext2D = copyCache.transparentFiller.getContext('2d');
+				var trpData = trpCtx.getImageData(copyCache.sourceX, copyCache.sourceY, copyCache.sourceWidth, copyCache.sourceHeight);
+				ctx.putImageData(trpData, copyCache.destX, copyCache.destY);
+			}
+
 			ctx.drawImage(copyCache.handle, copyCache.sourceX, copyCache.sourceY, copyCache.sourceWidth, copyCache.sourceHeight, copyCache.destX, copyCache.destY, copyCache.sourceWidth, copyCache.sourceHeight);
 		}
 
