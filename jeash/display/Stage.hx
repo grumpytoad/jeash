@@ -45,7 +45,6 @@ class Stage extends DisplayObjectContainer
 	var jeashWindowHeight : Int;
 	var jeashTimer : Dynamic;
 	var jeashInterval : Int;
-	var jeashFastMode : Bool;
 	var jeashDragObject:DisplayObject;
 	var jeashDragBounds:Rectangle;
 	var jeashDragOffsetX:Float;
@@ -479,13 +478,7 @@ class Stage extends DisplayObjectContainer
 	function jeashGetFrameRate() { return jeashFrameRate; }
 	function jeashSetFrameRate(speed:Float):Float {
 		var window : Window = cast js.Lib.window;
-		if (speed == 0 && window.postMessage != null)
-			jeashFastMode = true;
-		else
-		{
-			jeashFastMode = false;
-			jeashInterval = Std.int( 1000.0/speed );
-		}
+		jeashInterval = Std.int( 1000.0/speed );
 
 		jeashUpdateNextWake();
 
@@ -496,12 +489,7 @@ class Stage extends DisplayObjectContainer
 	public function jeashUpdateNextWake () {
 		var window : Window = cast js.Lib.window;
 		window.clearInterval( jeashTimer );
-		if ( jeashFastMode ) {
-			window.addEventListener( 'message', jeashStageRender, false );
-			window.postMessage('a', cast window.location);
-		} else {
-			jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
-		}
+		jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
 	}
 
 	function jeashStageRender (?_) {
@@ -520,9 +508,6 @@ class Stage extends DisplayObjectContainer
 		
 		var event = new jeash.events.Event( jeash.events.Event.RENDER );
 		this.jeashBroadcast(event);
-
-		if ( jeashFastMode )
-			untyped window.postMessage('a', window.location);
 	}
 
 	override function jeashIsOnStage() { return true; }
