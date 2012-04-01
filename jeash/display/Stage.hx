@@ -85,8 +85,6 @@ class Stage extends DisplayObjectContainer
 	static inline var DEFAULT_FRAMERATE = 60.0;
 	static inline var UI_EVENTS_QUEUE_MAX = 1000;
 
-	public static var requestAnimationFrame:(Event -> Void) -> Void;
-
 	public function new(width:Int, height:Int)
 	{
 		super();
@@ -97,20 +95,6 @@ class Stage extends DisplayObjectContainer
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
 		tabEnabled = true;
-
-		var window : Window = cast js.Lib.window;
-		requestAnimationFrame =
-			if (Reflect.field(window, "requestAnimationFrame") != null) Reflect.field(window, "requestAnimationFrame");
-			else if (Reflect.field(window, "webkitRequestAnimationFrame") != null) Reflect.field(window, "webkitRequestAnimationFrame");
-			else if (Reflect.field(window, "mozRequestAnimationFrame") != null) Reflect.field(window, "mozRequestAnimationFrame");
-			else if (Reflect.field(window, "oRequestAnimationFrame") != null) Reflect.field(window, "oRequestAnimationFrame");
-			else if (Reflect.field(window, "msRequestAnimationFrame") != null) Reflect.field(window, "msRequestAnimationFrame");
-			else function (cb) { 
-				window.clearInterval(jeashTimer); 
-				jeashTimer = window.setInterval(cb, jeashInterval, []); 
-			}
-
-
 		frameRate=DEFAULT_FRAMERATE;
 		jeashSetBackgroundColour(0xffffff);
 		name = "Stage";
@@ -510,10 +494,11 @@ class Stage extends DisplayObjectContainer
 
 	public function jeashUpdateNextWake () {
 		var window : Window = cast js.Lib.window;
-		Reflect.callMethod(window, requestAnimationFrame, [callback(jeashStageRender)]);
+		window.clearInterval( jeashTimer );
+		jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
 	}
 
-	function jeashStageRender () {
+	function jeashStageRender (?_) {
 		if (!jeashStageActive) {
 			jeashOnResize(jeashWindowWidth, jeashWindowHeight);
 			var event = new jeash.events.Event( jeash.events.Event.ACTIVATE );
@@ -537,8 +522,6 @@ class Stage extends DisplayObjectContainer
 		
 		var event = new jeash.events.Event( jeash.events.Event.RENDER );
 		this.jeashBroadcast(event);
-
-		this.jeashUpdateNextWake ();
 	}
 
 	override function jeashIsOnStage() { return true; }
