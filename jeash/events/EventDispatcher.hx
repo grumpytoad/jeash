@@ -64,8 +64,7 @@ class EventDispatcher implements IEventDispatcher
 		return l1.mPriority==l2.mPriority?0:(l1.mPriority>l2.mPriority?-1:1);
 	}
 
-	public function new(?target : IEventDispatcher) : Void
-	{
+	public function new(?target : IEventDispatcher) : Void {
 		if(target != null)
 			jeashTarget = target;
 		else
@@ -91,23 +90,21 @@ class EventDispatcher implements IEventDispatcher
 		var list = getList(type);
 
 		if (!existList(type)) {
-			list = new ListenerList();
+			list = [];
 			setList(type, list);
 		}
 
-		var l =  new Listener(inListener,capture,priority);
-		list.push(l);
+		list.push(new Listener(inListener,capture,priority));
+		list.sort(compareListeners);
 	}
 
 	public function dispatchEvent(event : Event) : Bool {
 		if(event.target == null)
 			event.target = jeashTarget;
 
-		var list = getList(event.type);
 		var capture = event.eventPhase==EventPhase.CAPTURING_PHASE;
 		if (existList(event.type)) {
-			list.sort(compareListeners);
-			
+			var list = getList(event.type);
 			var idx = 0;
 			while(idx<list.length) {
 				var listener = list[idx];
