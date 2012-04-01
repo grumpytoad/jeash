@@ -113,17 +113,17 @@ class BitmapData implements IBitmapDrawable {
 
 		jeashTransparent = inTransparent;
 		rect = new Rectangle(0,0,inWidth,inHeight);
+		if (jeashTransparent) {
+			jeashTransparentFiller = cast js.Lib.document.createElement('canvas');
+			jeashTransparentFiller.width = inWidth;
+			jeashTransparentFiller.height = inHeight;
+			var ctx = jeashTransparentFiller.getContext('2d');
+			ctx.fillStyle = 'rgba(0,0,0,0);';
+			ctx.fill();
+		}
 
 		if ( inFillColor != null ) {
 			if (!jeashTransparent) inFillColor |= 0xFF000000;
-			else {
-				jeashTransparentFiller = cast js.Lib.document.createElement('canvas');
-				jeashTransparentFiller.width = inWidth;
-				jeashTransparentFiller.height = inHeight;
-				var ctx = jeashTransparentFiller.getContext('2d');
-				ctx.fillStyle = 'rgba(0,0,0,0);';
-				ctx.fill();
-			}
 			jeashInitColor = inFillColor;
 			jeashFillRect(rect, inFillColor);
 		}

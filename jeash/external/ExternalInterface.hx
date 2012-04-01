@@ -30,7 +30,6 @@ class ExternalInterface {
 	static var mCallbacks:Hash<Dynamic>;
 	public static inline var available : Bool = true;
 
-	public static inline var objectID : String = jeash.Lib.canvas.id;
 	public static function addCallback(functionName : String, closure : Dynamic) 
 	{
 		if (mCallbacks == null) mCallbacks = new Hash();
