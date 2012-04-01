@@ -57,6 +57,8 @@ class Stage extends DisplayObjectContainer
 	var jeashShowDefaultContextMenu:Bool;
 	var jeashTouchInfo:Array<TouchInfo>;
 	var jeashFocusOverObjects:Array<InteractiveObject>;
+	var jeashUIEventsQueue:Array<Event>;
+	var jeashUIEventsQueueIndex:Int;
 
 	public var jeashPointInPathMode(default,null):PointInPathMode;
 
@@ -74,13 +76,16 @@ class Stage extends DisplayObjectContainer
 	public var fullScreenWidth(jeashGetFullScreenWidth,null):UInt;
 	public var fullScreenHeight(jeashGetFullScreenHeight,null):UInt;
 
-	public function jeashGetStageWidth() { return jeash.Lib.jeashGetWidth(); }
-	public function jeashGetStageHeight() { return jeash.Lib.jeashGetHeight(); }
+	public function jeashGetStageWidth() { return jeashWindowWidth; }
+	public function jeashGetStageHeight() { return jeashWindowHeight; }
 
 	private var jeashFocusObject : InteractiveObject;
 	static var jeashMouseChanges : Array<String> = [ jeash.events.MouseEvent.MOUSE_OUT, jeash.events.MouseEvent.MOUSE_OVER, jeash.events.MouseEvent.ROLL_OUT, jeash.events.MouseEvent.ROLL_OVER ];
 	static var jeashTouchChanges : Array<String> = [ jeash.events.TouchEvent.TOUCH_OUT, jeash.events.TouchEvent.TOUCH_OVER,	jeash.events.TouchEvent.TOUCH_ROLL_OUT, jeash.events.TouchEvent.TOUCH_ROLL_OVER ];
 	static inline var DEFAULT_FRAMERATE = 60.0;
+	static inline var UI_EVENTS_QUEUE_MAX = 1000;
+
+	public static var requestAnimationFrame:(Event -> Void) -> Void;
 
 	public function new(width:Int, height:Int)
 	{
@@ -92,6 +97,20 @@ class Stage extends DisplayObjectContainer
 		scaleMode = StageScaleMode.SHOW_ALL;
 		jeashStageMatrix = new Matrix();
 		tabEnabled = true;
+
+		var window : Window = cast js.Lib.window;
+		requestAnimationFrame =
+			if (Reflect.field(window, "requestAnimationFrame") != null) Reflect.field(window, "requestAnimationFrame");
+			else if (Reflect.field(window, "webkitRequestAnimationFrame") != null) Reflect.field(window, "webkitRequestAnimationFrame");
+			else if (Reflect.field(window, "mozRequestAnimationFrame") != null) Reflect.field(window, "mozRequestAnimationFrame");
+			else if (Reflect.field(window, "oRequestAnimationFrame") != null) Reflect.field(window, "oRequestAnimationFrame");
+			else if (Reflect.field(window, "msRequestAnimationFrame") != null) Reflect.field(window, "msRequestAnimationFrame");
+			else function (cb) { 
+				window.clearInterval(jeashTimer); 
+				jeashTimer = window.setInterval(cb, jeashInterval, []); 
+			}
+
+
 		frameRate=DEFAULT_FRAMERATE;
 		jeashSetBackgroundColour(0xffffff);
 		name = "Stage";
@@ -104,6 +123,9 @@ class Stage extends DisplayObjectContainer
 		showDefaultContextMenu = true;
 		jeashTouchInfo = [];
 		jeashFocusOverObjects = [];
+		jeashUIEventsQueue = untyped __new__("Array", UI_EVENTS_QUEUE_MAX);
+		jeashUIEventsQueueIndex = 0;
+
 		// bug in 2.07 release
 		// displayState = StageDisplayState.NORMAL;
 	}
@@ -242,6 +264,9 @@ class Stage extends DisplayObjectContainer
 				touchInfo.touchOverObjects = stack;
 		}
 	}
+
+	public function jeashQueueStageEvent(evt:Html5Dom.Event)
+		jeashUIEventsQueue[jeashUIEventsQueueIndex++] = evt
 
 	public function jeashProcessStageEvent(evt:Html5Dom.Event) {
 		evt.stopPropagation();
@@ -389,7 +414,6 @@ class Stage extends DisplayObjectContainer
 			evt.touchPointID = touch.identifier;
 			evt.isPrimaryTouchPoint = isPrimaryTouchPoint;
 
-			//if (evt.isPrimaryTouchPoint)
 			jeashCheckInOuts(evt, stack, touchInfo);
 
 			obj.jeashFireEvent(evt);
@@ -410,7 +434,6 @@ class Stage extends DisplayObjectContainer
 			var evt = jeash.events.TouchEvent.jeashCreate(type, event, touch, point, null);
 			evt.touchPointID = touch.identifier;
 			evt.isPrimaryTouchPoint = isPrimaryTouchPoint;
-			//if (evt.isPrimaryTouchPoint)
 			jeashCheckInOuts(evt, stack, touchInfo);
 		}
 	}
@@ -435,7 +458,6 @@ class Stage extends DisplayObjectContainer
 	{
 		jeashWindowWidth = inW;
 		jeashWindowHeight = inH;
-		//RecalcScale();
 		var event = new jeash.events.Event( jeash.events.Event.RESIZE );
 		event.target = this;
 		jeashBroadcast(event);
@@ -488,11 +510,10 @@ class Stage extends DisplayObjectContainer
 
 	public function jeashUpdateNextWake () {
 		var window : Window = cast js.Lib.window;
-		window.clearInterval( jeashTimer );
-		jeashTimer = window.setInterval( jeashStageRender, jeashInterval, [] );
+		Reflect.callMethod(window, requestAnimationFrame, [callback(jeashStageRender)]);
 	}
 
-	function jeashStageRender (?_) {
+	function jeashStageRender () {
 		if (!jeashStageActive) {
 			jeashOnResize(jeashWindowWidth, jeashWindowHeight);
 			var event = new jeash.events.Event( jeash.events.Event.ACTIVATE );
@@ -501,6 +522,14 @@ class Stage extends DisplayObjectContainer
 			jeashStageActive = true;
 		}
 
+		// Dispatch all queued UI events before the main render loop.
+		for (i in 0...jeashUIEventsQueueIndex) {
+			if (jeashUIEventsQueue[i] != null) {
+				jeashProcessStageEvent(jeashUIEventsQueue[i]);
+			}
+		}
+		jeashUIEventsQueueIndex = 0;
+
 		var event = new jeash.events.Event( jeash.events.Event.ENTER_FRAME );
 		this.jeashBroadcast(event);
 
@@ -508,6 +537,8 @@ class Stage extends DisplayObjectContainer
 		
 		var event = new jeash.events.Event( jeash.events.Event.RENDER );
 		this.jeashBroadcast(event);
+
+		this.jeashUpdateNextWake ();
 	}
 
 	override function jeashIsOnStage() { return true; }
@@ -542,8 +573,8 @@ class Stage extends DisplayObjectContainer
 
 }
 
-class TouchInfo 
-{
+class TouchInfo {
 	public var touchOverObjects:Array<InteractiveObject>;
 	public function new() touchOverObjects = []
 }
+

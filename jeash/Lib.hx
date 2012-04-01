@@ -37,7 +37,6 @@ import jeash.events.EventPhase;
 import jeash.display.DisplayObjectContainer;
 import jeash.display.DisplayObject;
 import jeash.display.InteractiveObject;
-import jeash.text.TextField;
 import jeash.geom.Rectangle;
 import jeash.geom.Matrix;
 import jeash.geom.Point;
@@ -66,8 +65,6 @@ class Lib {
 	static inline var DEFAULT_WIDTH = 500;
 	static inline var DEFAULT_HEIGHT = 500;
 
-	var jeashTraceTextField:jeash.text.TextField;
-
 	function new(title:String, width:Int, height:Int)
 	{
 		mKilled = false;
@@ -83,17 +80,7 @@ class Lib {
 
 	static public function trace( arg:Dynamic ) {
 		untyped {
-#if debug
-			if (mMe.jeashTraceTextField != null)
-				mMe.jeashTraceTextField.text += arg + "\n";
-			else if (window.console != null)
-				window.console.log(arg);
-#else
-			if (window.console != null)
-				window.console.log(arg);
-			else if (mMe.jeashTraceTextField != null)
-				mMe.jeashTraceTextField.text += arg + "\n";
-#end
+			if (window.console != null) window.console.log(arg);
 		}
 	}
 
@@ -541,18 +528,18 @@ class Lib {
 			}
 
 			for (type in HTML_TOUCH_EVENT_TYPES) {
-				tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+				tgt.addEventListener(type, jeashGetStage().jeashQueueStageEvent, true);
 			}
 
 			for (type in HTML_DIV_EVENT_TYPES) 
-				tgt.addEventListener(type, jeashGetStage().jeashProcessStageEvent, true);
+				tgt.addEventListener(type, jeashGetStage().jeashQueueStageEvent, true);
 
 
+			var window : Window = cast js.Lib.window;
 			for (type in HTML_WINDOW_EVENT_TYPES) 
 
 			{
-				var window : Window = cast js.Lib.window;
-				window.addEventListener(type, jeashGetStage().jeashProcessStageEvent, false);
+				window.addEventListener(type, jeashGetStage().jeashQueueStageEvent, false);
 			}
 
 			jeashGetStage().backgroundColor = if (tgt.style.backgroundColor != null && tgt.style.backgroundColor != "")
@@ -568,11 +555,6 @@ class Lib {
 			Lib.current.graphics.beginFill(jeashGetStage().backgroundColor);
 			Lib.current.graphics.drawRect(0, 0, width, height);
 			jeashSetSurfaceId(Lib.current.graphics.jeashSurface, "Root MovieClip");
-
-			mMe.jeashTraceTextField = new TextField();
-			mMe.jeashTraceTextField.width = jeashGetStage().stageWidth;
-			mMe.jeashTraceTextField.wordWrap = true;
-			Lib.current.addChild(mMe.jeashTraceTextField);
 
 			jeashGetStage().jeashUpdateNextWake();
 
@@ -605,12 +587,12 @@ class Lib {
 	}
 
 	static public function jeashGetWidth() {
-		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		var tgt : HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		return tgt.clientWidth > 0 ? tgt.clientWidth : Lib.DEFAULT_WIDTH;
 	}
 
 	static public function jeashGetHeight() {
-		var tgt : HTMLDivElement = cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
+		var tgt : HTMLDivElement = if (Lib.mMe != null) Lib.mMe.__scr; else cast js.Lib.document.getElementById(JEASH_IDENTIFIER);
 		return tgt.clientHeight > 0 ? tgt.clientHeight : Lib.DEFAULT_HEIGHT;
 	}
 
