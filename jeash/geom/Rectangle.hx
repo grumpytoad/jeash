@@ -35,13 +35,13 @@ class Rectangle
    public var width : Float;
    public var height : Float;
 
-   public function new(?inX : Float, ?inY : Float,
-                ?inWidth : Float, ?inHeight : Float) : Void
+   public function new(inX : Float = 0., inY : Float = 0.,
+                inWidth : Float = 0., inHeight : Float = 0.) : Void
    {
-      x = inX==null ? 0 : inX;
-      y = inY==null ? 0 : inY;
-      width = inWidth==null ? 0 : inWidth;
-      height = inHeight==null ? 0 : inHeight;
+      x = inX;
+      y = inY;
+      width = inWidth;
+      height =  inHeight;
    }
 
    public var left(get_left,set_left) : Float;

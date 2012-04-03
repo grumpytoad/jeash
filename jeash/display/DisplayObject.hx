@@ -130,6 +130,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		mGraphicsBounds = null;
 		mMaskHandle = null;
 		name = "DisplayObject " + mNameID++;
+		jeashFilters = [];
 
 		visible = true;
 	}
@@ -391,7 +392,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	}
 	
 
-	public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
+	public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement) {
 		
 		var gfx = jeashGetGraphics();
 

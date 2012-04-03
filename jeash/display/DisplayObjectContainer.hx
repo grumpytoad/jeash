@@ -55,23 +55,9 @@ class DisplayObjectContainer extends InteractiveObject
 	override public function AsContainer() { return this; }
 
 	// @r498
-	override public function jeashBroadcast(event:jeash.events.Event)
-	{
-		var i = 0;
-		if (jeashChildren.length>0)
-			while(true)
-			{
-				var child = jeashChildren[i];
-				child.jeashBroadcast(event);
-				if (i>=jeashChildren.length)
-					break;
-				if (jeashChildren[i]==child)
-				{
-					i++;
-					if (i>=jeashChildren.length)
-						break;
-				}
-			}
+	override public function jeashBroadcast(event:jeash.events.Event) {
+		for (child in jeashChildren)
+			child.jeashBroadcast(event);
 		dispatchEvent(event);
 	}
 
@@ -149,7 +135,7 @@ class DisplayObjectContainer extends InteractiveObject
 		return jeashChildren.length;
 	}
 
-	override public function jeashRender(inParentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
+	override public function jeashRender(inParentMatrix:Matrix, inMask:HTMLCanvasElement) {
 
 		if (!visible) return;
 

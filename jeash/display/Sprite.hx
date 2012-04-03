@@ -100,5 +100,63 @@ class Sprite extends DisplayObjectContainer {
 	}
 
 	function jeashGetDropTarget() return jeashDropTarget
+
+	// force monomorphic access for better JIT-ing
+	override public function jeashSetX(n:Float):Float {
+		jeashInvalidateMatrix(true);
+		jeashX=n;
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		return n;
+	}
+
+	// force monomorphic access for better JIT-ing
+	override public function jeashSetY(n:Float):Float {
+		jeashInvalidateMatrix(true);
+		jeashY=n;
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		return n;
+	}
+
+	// force monomorphic access for better JIT-ing
+	override public function jeashSetScaleX(inS:Float) { 
+		if(jeashScaleX==inS)
+			return inS;		
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		if(!mMtxDirty)
+			jeashInvalidateMatrix(true);	
+		jeashScaleX=inS;
+		return inS;
+	}
+
+	// force monomorphic access for better JIT-ing
+	override public function jeashSetScaleY(inS:Float) { 
+		if(jeashScaleY==inS)
+			return inS;		
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+		if(mBoundsDirty)
+			BuildBounds();
+		if(!mMtxDirty)
+			jeashInvalidateMatrix(true);	
+		jeashScaleY=inS;
+		return inS;
+	}
+
+	// force monomorphic access for better JIT-ing
+	override private function jeashSetRotation(n:Float):Float{
+		if(!mMtxDirty)
+			jeashInvalidateMatrix(true);
+		if(parent!=null)
+			parent.jeashInvalidateBounds();
+
+		jeashRotation = n;
+		return n;
+	}
+	
 }
 

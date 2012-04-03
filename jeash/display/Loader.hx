@@ -102,7 +102,7 @@ class Loader extends DisplayObjectContainer
 	
 	private function handleLoad(e:Event):Void {
 		content.jeashInvalidateBounds();
-		content.jeashRender(null);
+		content.jeashRender(null, null);
 		contentLoaderInfo.removeEventListener(Event.COMPLETE, handleLoad);
 	}
 	

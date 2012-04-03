@@ -89,7 +89,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		} 
 	}
 
-	override public function jeashRender(parentMatrix:Matrix, ?inMask:HTMLCanvasElement) {
+	override public function jeashRender(parentMatrix:Matrix, inMask:HTMLCanvasElement) {
 		if (bitmapData == null) return;
 		if(mMtxDirty || mMtxChainDirty){
 			jeashValidateMatrix();

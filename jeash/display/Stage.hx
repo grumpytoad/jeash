@@ -459,7 +459,7 @@ class Stage extends DisplayObjectContainer
 	public function jeashGetFocus() { return jeashFocusObject; }
 
 	public function jeashRenderAll() {
-		jeashRender(jeashStageMatrix);
+		jeashRender(jeashStageMatrix, null);
 	}
 
 	public function jeashRenderToCanvas(canvas:HTMLCanvasElement) {
