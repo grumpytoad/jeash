@@ -50,9 +50,11 @@ class Bitmap extends jeash.display.DisplayObject {
 		name = "Bitmap_" + DisplayObject.mNameID++;
 
 		jeashGraphics = new Graphics();
+		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 
 		if (inBitmapData != null) {
 			jeashSetBitmapData(inBitmapData);
+			jeashRender(null, null);
 		}
 	}
 
@@ -62,7 +64,7 @@ class Bitmap extends jeash.display.DisplayObject {
 		return inBitmapData;
 	}
 
-	override function jeashGetGraphics() return jeashGraphics
+	override public function jeashGetGraphics() return jeashGraphics
 	
 	override function BuildBounds() {
 		super.BuildBounds();

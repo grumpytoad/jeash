@@ -50,6 +50,7 @@ class Sprite extends DisplayObjectContainer {
 		super();
 		buttonMode = false;
 		name = "Sprite " + DisplayObject.mNameID++;
+		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 	}
 
 	public function startDrag(?lockCenter:Bool, ?bounds:Rectangle):Void {
@@ -74,7 +75,7 @@ class Sprite extends DisplayObjectContainer {
 		}
 	}
 
-	override function jeashGetGraphics() { 
+	override public function jeashGetGraphics() { 
 		return jeashGraphics; 
 	}
 

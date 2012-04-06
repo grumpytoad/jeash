@@ -68,6 +68,7 @@ class Video extends DisplayObject {
 		this.height = height;
 		
 		name = "Video_" + DisplayObject.mNameID++;
+		Lib.jeashSetSurfaceId(jeashGraphics.jeashSurface, name);
 		
 		this.smoothing = false;
 		this.deblocking = 0;

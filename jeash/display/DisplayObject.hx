@@ -303,7 +303,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		return inMatrix;
 	}
 
-	function jeashGetGraphics() : jeash.display.Graphics return null
+	public function jeashGetGraphics() : jeash.display.Graphics return null
 
 	public function GetOpaqueBackground() { return mOpaqueBackground; }
 	public function SetOpaqueBackground(inBG:Null<Int>)
