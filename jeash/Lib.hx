@@ -215,7 +215,7 @@ class Lib {
 	}
 
 	public static function jeashSetSurfaceTransform(surface:HTMLElement, matrix:Matrix) {
-		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1) {
+		if (matrix.a == 1 && matrix.b == 0 && matrix.c == 0 && matrix.d == 1 && surface.getAttribute("data-jeash-anim") == null) {
 			surface.style.left = matrix.tx + "px";
 			surface.style.top = matrix.ty + "px";
 		} else {
@@ -428,7 +428,7 @@ class Lib {
 		surface.style.setProperty("-ms-transform", "rotate(" + rotate + "deg)", "");
 	}
 
-	public static function jeashCreateSurfaceAnimationCSS<T>(surface:HTMLElement, data:Array<T>, template:haxe.Template, templateFunc:T -> Dynamic, discrete:Bool = false, infinite:Bool = false) {
+	public static function jeashCreateSurfaceAnimationCSS<T>(surface:HTMLElement, data:Array<T>, template:haxe.Template, templateFunc:T -> Dynamic, fps:Float = 25, discrete:Bool = false, infinite:Bool = false) {
 		var document:HTMLDocument = cast js.Lib.document;
 
 		// TODO: getSanitizedOrGenerate ID
@@ -461,7 +461,7 @@ class Lib {
 		       animationTpl += prefix + ": ::id:: ::duration::s " + animationDiscreteRule + " " + animationInfiniteRule  + "; ";
 		var animationStylesheetRule = new haxe.Template(animationTpl).execute({
 			id: surface.id,
-			duration: data.length/Lib.current.stage.frameRate,
+			duration: data.length/fps,
 			steps: 1
 		});
 			
@@ -476,7 +476,7 @@ class Lib {
 		return style;
 	}
 
-	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>) : HTMLElement {
+	public static function jeashSetSurfaceSpritesheetAnimation(surface:HTMLCanvasElement, spec:Array<Rectangle>, fps:Float) : HTMLElement {
 		if (spec.length == 0) return surface;
 		var document:HTMLDocument = cast js.Lib.document;
 		var div:HTMLDivElement = cast document.createElement("div");
@@ -495,7 +495,7 @@ class Lib {
 			}
 		}
 
-		jeashCreateSurfaceAnimationCSS(div, spec, keyframeTpl, templateFunc, true, true);
+		jeashCreateSurfaceAnimationCSS(div, spec, keyframeTpl, templateFunc, fps, true, true);
 
 		if (jeashIsOnStage(surface)) {
 			Lib.jeashAppendSurface(div);
