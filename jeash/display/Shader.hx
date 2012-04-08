@@ -26,8 +26,9 @@
 
 package jeash.display;
 
-enum PixelSnapping {
-		NEVER;
-		AUTO;
-		ALWAYS;
+class Shader {
+	public var byteCode(null,default) : flash.utils.ByteArray;
+	public var data : ShaderData;
+	public var precisionHint : ShaderPrecision;
+	public function new(?code : flash.utils.ByteArray) {}
 }

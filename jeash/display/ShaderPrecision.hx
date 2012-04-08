@@ -26,8 +26,7 @@
 
 package jeash.display;
 
-enum PixelSnapping {
-		NEVER;
-		AUTO;
-		ALWAYS;
+enum ShaderPrecision {
+	FAST;
+	FULL;
 }

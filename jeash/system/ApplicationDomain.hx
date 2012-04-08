@@ -24,10 +24,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.system;
 
-enum PixelSnapping {
-		NEVER;
-		AUTO;
-		ALWAYS;
+class ApplicationDomain {
+	public function new(?parentDomain : ApplicationDomain) { }
+	public function getDefinition(name : String) {
+		return Type.getClass(Type.getClassName(name));
+	}
+	public function hasDefinition(name : String) {
+		return Type.getClass(Type.getClassName(name)) != null;
+	}
+	public static var currentDomain : ApplicationDomain = this;
 }

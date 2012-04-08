@@ -26,8 +26,6 @@
 
 package jeash.display;
 
-enum PixelSnapping {
-		NEVER;
-		AUTO;
-		ALWAYS;
+class ShaderData implements Dynamic {
+	public function new(byteCode : flash.utils.ByteArray) {}
 }

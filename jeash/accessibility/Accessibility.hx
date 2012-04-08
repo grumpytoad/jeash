@@ -24,10 +24,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.accessibility;
 
-enum PixelSnapping {
-		NEVER;
-		AUTO;
-		ALWAYS;
+class Accessibility {
+	static var active(default,null) : Bool;
+	static function updateProperties() { return; }
 }
