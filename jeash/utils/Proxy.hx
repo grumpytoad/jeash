@@ -24,22 +24,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.utils;
 
-class BlendMode {
-	public static var ADD = "ADD";
-	public static var ALPHA = "ALPHA";
-	public static var DARKEN = "DARKEN";
-	public static var DIFFERENCE = "DIFFERENCE";
-	public static var ERASE = "ERASE";
-	public static var HARDLIGHT = "HARDLIGHT";
-	public static var INVERT = "INVERT";
-	public static var LAYER = "LAYER";
-	public static var LIGHTEN = "LIGHTEN";
-	public static var MULTIPLY = "MULTIPLY";
-	public static var NORMAL = "NORMAL";
-	public static var OVERLAY = "OVERLAY";
-	public static var SCREEN = "SCREEN";
-	public static var SUBTRACT = "SUBTRACT";
+class Proxy {
+	function new() {}
+	/* TODO
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function callProperty(name : Dynamic, ?p1 : Dynamic, ?p2 : Dynamic, ?p3 : Dynamic, ?p4 : Dynamic, ?p5 : Dynamic) : Dynamic;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function deleteProperty(name : Dynamic) : Bool;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function getDescendants(name : Dynamic) : Dynamic;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function getProperty(name : Dynamic) : Dynamic;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function hasProperty(name : Dynamic) : Bool;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function isAttribute(name : Dynamic) : Bool;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function nextName(index : Int) : String;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function nextNameIndex(index : Int) : Int;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function nextValue(index : Int) : Dynamic;
+	@:ns("http://www.adobe.com/2006/actionscript/flash/proxy") function setProperty(name : Dynamic, value : Dynamic) : Void;
+	*/
 }
 

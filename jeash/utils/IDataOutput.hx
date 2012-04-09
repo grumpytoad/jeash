@@ -24,22 +24,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.utils;
 
-class BlendMode {
-	public static var ADD = "ADD";
-	public static var ALPHA = "ALPHA";
-	public static var DARKEN = "DARKEN";
-	public static var DIFFERENCE = "DIFFERENCE";
-	public static var ERASE = "ERASE";
-	public static var HARDLIGHT = "HARDLIGHT";
-	public static var INVERT = "INVERT";
-	public static var LAYER = "LAYER";
-	public static var LIGHTEN = "LIGHTEN";
-	public static var MULTIPLY = "MULTIPLY";
-	public static var NORMAL = "NORMAL";
-	public static var OVERLAY = "OVERLAY";
-	public static var SCREEN = "SCREEN";
-	public static var SUBTRACT = "SUBTRACT";
+import Html5Dom;
+
+interface IDataOutput {
+	var endian : Endian;
+	var objectEncoding : UInt;
+	function writeBoolean(value : Bool) : Void;
+	function writeByte(value : Int) : Void;
+	function writeBytes(bytes : ByteArray, offset : UInt = 0, length : UInt = 0) : Void;
+	function writeDouble(value : Float) : Void;
+	function writeFloat(value : Float) : Void;
+	function writeInt(value : Int) : Void;
+	function writeMultiByte(value : String, charSet : String) : Void;
+	function writeObject(object : Dynamic) : Void;
+	function writeShort(value : Int) : Void;
+	function writeUTF(value : String) : Void;
+	function writeUTFBytes(value : String) : Void;
+	function writeUnsignedInt(value : UInt) : Void;
 }
 

@@ -36,7 +36,7 @@ class TextLineMetrics {
 	function new(x : Float, width : Float, height : Float, ascent : Float, descent : Float, leading : Float) {
 		this.x = x;
 		this.width = width;
-		this.heash = height;
+		this.height = height;
 		this.ascent = ascent;
 		this.descent = descent;
 		this.leading = leading;

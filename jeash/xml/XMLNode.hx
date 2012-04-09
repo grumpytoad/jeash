@@ -24,22 +24,31 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package jeash.display;
+package jeash.xml;
 
-class BlendMode {
-	public static var ADD = "ADD";
-	public static var ALPHA = "ALPHA";
-	public static var DARKEN = "DARKEN";
-	public static var DIFFERENCE = "DIFFERENCE";
-	public static var ERASE = "ERASE";
-	public static var HARDLIGHT = "HARDLIGHT";
-	public static var INVERT = "INVERT";
-	public static var LAYER = "LAYER";
-	public static var LIGHTEN = "LIGHTEN";
-	public static var MULTIPLY = "MULTIPLY";
-	public static var NORMAL = "NORMAL";
-	public static var OVERLAY = "OVERLAY";
-	public static var SCREEN = "SCREEN";
-	public static var SUBTRACT = "SUBTRACT";
+class XMLNode {
+	/* TODO:
+	var attributes : Dynamic;
+	var childNodes(default,null) : Array<Dynamic>;
+	var firstChild : XMLNode;
+	var lastChild : XMLNode;
+	var localName(default,null) : String;
+	var namespaceURI(default,null) : String;
+	var nextSibling : XMLNode;
+	var nodeName : String;
+	var nodeType : XMLNodeType;
+	var nodeValue : String;
+	var parentNode : XMLNode;
+	var prefix(default,null) : String;
+	var previousSibling : XMLNode;
+	function new(type : XMLNodeType, value : String) : Void;
+	function appendChild(node : XMLNode) : Void;
+	function cloneNode(deep : Bool) : XMLNode;
+	function getNamespaceForPrefix(prefix : String) : String;
+	function getPrefixForNamespace(ns : String) : String;
+	function hasChildNodes() : Bool;
+	function insertBefore(node : XMLNode, before : XMLNode) : Void;
+	function removeNode() : Void;
+	function toString() : String;
+	*/
 }
-
