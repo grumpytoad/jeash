@@ -291,7 +291,7 @@ class Graphics {
 
 		ClosePolygon(true);
 
-		if (jeashExtent.width - jeashExtent.x != jeashSurface.width || jeashExtent.height - jeashExtent.y != jeashSurface.height) {
+		if (jeashExtent.width - jeashExtent.x > jeashSurface.width || jeashExtent.height - jeashExtent.y > jeashSurface.height) {
 			jeashAdjustSurface();
 		}
 
