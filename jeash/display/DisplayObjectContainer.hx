@@ -60,15 +60,6 @@ class DisplayObjectContainer extends InteractiveObject
 			child.jeashBroadcast(event);
 		dispatchEvent(event);
 	}
-	
-	override public function jeashDispatchEvent(event:jeash.events.Event):Bool
-	{
-		if (!mouseChildren && Std.is (event, jeash.events.MouseEvent))
-		{
-			event.target = this;
-		}
-		return super.jeashDispatchEvent(event);
-	}
 
 	override function BuildBounds()
 	{
@@ -385,7 +376,7 @@ class DisplayObjectContainer extends InteractiveObject
 		{
 			var result = jeashChildren[l-i].jeashGetObjectUnderPoint(point);
 			if (result != null)
-				return result;
+				return mouseChildren ? result : this;
 		}
 
 		return super.jeashGetObjectUnderPoint(point);
