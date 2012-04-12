@@ -545,7 +545,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for(obj in stack)
 			{
 				event.currentTarget = obj;
-				obj.dispatchEvent(event);
+				obj.jeashDispatchEvent(event);
 				if (event.jeashGetIsCancelled())
 					return;
 			}
@@ -554,7 +554,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 		// Next, the "target"
 		event.jeashSetPhase(EventPhase.AT_TARGET);
 		event.currentTarget = this;
-		dispatchEvent(event);
+		jeashDispatchEvent(event);
 		if (event.jeashGetIsCancelled())
 			return;
 
@@ -566,7 +566,7 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 			for(obj in stack)
 			{
 				event.currentTarget = obj;
-				obj.dispatchEvent(event);
+				obj.jeashDispatchEvent(event);
 				if (event.jeashGetIsCancelled())
 					return;
 			}
@@ -576,7 +576,32 @@ class DisplayObject extends EventDispatcher, implements IBitmapDrawable
 	// @533
 	public function jeashBroadcast(event:jeash.events.Event)
 	{
-		dispatchEvent(event);
+		jeashDispatchEvent(event);
+	}
+	
+	public function jeashDispatchEvent(event:jeash.events.Event):Bool
+	{
+		if (event.target == null)
+		{
+			event.target = this;
+		}
+		event.currentTarget = this;
+		return super.dispatchEvent(event);
+	}
+	
+	override public function dispatchEvent(event:jeash.events.Event):Bool {
+		
+		var result = jeashDispatchEvent(event);
+		
+		if (event.jeashGetIsCancelled ())
+			return true;
+		
+		if (event.bubbles && parent != null)
+		{
+			parent.dispatchEvent(event);
+		}
+		
+		return result;
 	}
 
 	function jeashAddToStage()
