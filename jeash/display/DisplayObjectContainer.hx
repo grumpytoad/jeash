@@ -376,7 +376,7 @@ class DisplayObjectContainer extends InteractiveObject
 		{
 			var result = jeashChildren[l-i].jeashGetObjectUnderPoint(point);
 			if (result != null)
-				return result;
+				return mouseChildren ? result : this;
 		}
 
 		return super.jeashGetObjectUnderPoint(point);
