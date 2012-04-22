@@ -174,8 +174,10 @@ extern class DOMParser
 * <----------------- TypedArray IDL Port ------------------>
 */
 
-extern interface ArrayBuffer {
+extern class ArrayBuffer {
 	var byteLength(default,null):Int;
+	function new(length:Int):Void;
+	function slice(offset:Int, length:Int):ArrayBuffer;
 }
 
 extern interface ArrayBufferView {
@@ -193,8 +195,9 @@ extern class Int8Array implements ArrayBufferView, implements ArrayAccess<Int> {
 	var length(default,null):Int;
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
-	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Int8Array;
+	@:overload( function set(index:ArrayAccess<Int>, offset:Int):Void {} )
+	function set(index:Int8Array, offset:Int):Void;
+	function subarray(offset:Int, length:Int):Int8Array;
 }
 
 extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -207,7 +210,7 @@ extern class Uint8Array implements ArrayBufferView, implements ArrayAccess<Int> 
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Uint8Array;
+	function subarray(offset:Int, length:Int):Uint8Array;
 }
 
 extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -220,7 +223,7 @@ extern class Int16Array implements ArrayBufferView, implements ArrayAccess<Int> 
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Int16Array;
+	function subarray(offset:Int, length:Int):Int16Array;
 }
 
 extern class Uint16Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -233,7 +236,7 @@ extern class Uint16Array implements ArrayBufferView, implements ArrayAccess<Int>
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Uint16Array;
+	function subarray(offset:Int, length:Int):Uint16Array;
 }
 
 extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -246,7 +249,7 @@ extern class Int32Array implements ArrayBufferView, implements ArrayAccess<Int> 
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Int32Array;
+	function subarray(offset:Int, length:Int):Int32Array;
 }
 
 extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int> {
@@ -259,7 +262,7 @@ extern class Uint32Array implements ArrayBufferView, implements ArrayAccess<Int>
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Int>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Uint32Array;
+	function subarray(offset:Int, length:Int):Uint32Array;
 }
 
 extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Float> {
@@ -272,7 +275,7 @@ extern class Float32Array implements ArrayBufferView, implements ArrayAccess<Flo
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Float>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Float32Array;
+	function subarray(offset:Int, length:Int):Float32Array;
 }
 
 extern class Float64Array implements ArrayBufferView, implements ArrayAccess<Float> {
@@ -285,13 +288,14 @@ extern class Float64Array implements ArrayBufferView, implements ArrayAccess<Flo
 
 	function new(?v1:Dynamic, ?v2:Dynamic, ?v3:Dynamic):Void;
 	function set(index:ArrayAccess<Float>, offset:Int):Void;
-	function slice(offset:Int, length:Int):Float64Array;
+	function subarray(offset:Int, length:Int):Float64Array;
 }
 
 extern class DataView implements ArrayBufferView {
 	var buffer(default,null):ArrayBuffer;
 	var byteOffset(default,null):ArrayBuffer;
 	var byteLength(default,null):ArrayBuffer;
+	function new(buffer:ArrayBuffer, ?byteOffset:Int, ?byteLength:Int):Void;
 
 	function getInt8(byteOffset:Int):Int;
 	function getUint8(byteOffset:Int):Int;
@@ -299,16 +303,16 @@ extern class DataView implements ArrayBufferView {
 	function getUint16(byteOffset:Int, littleEndian:Bool):Int;
 	function getInt32(byteOffset:Int, littleEndian:Bool):Int;
 	function getUint32(byteOffset:Int, littleEndian:Bool):Int;
-	function getFloat(byteOffset:Int, littleEndian:Bool):Float;
-	function getDouble(byteOffset:Int, littleEndian:Bool):Float;
-	function setInt8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
-	function setUint8(byteOffset:Int, value:Int, littleEndian:Bool):Void;
+	function getFloat32(byteOffset:Int, littleEndian:Bool):Float;
+	function getFloat64(byteOffset:Int, littleEndian:Bool):Float;
+	function setInt8(byteOffset:Int, value:Int):Void;
+	function setUint8(byteOffset:Int, value:Int):Void;
 	function setInt16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
 	function setUint16(byteOffset:Int, value:Int, littleEndian:Bool):Void;
 	function setInt32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
 	function setUint32(byteOffset:Int, value:Int, littleEndian:Bool):Void;
-	function setFloat(byteOffset:Int, value:Float, littleEndian:Bool):Void;
-	function setDouble(byteOffset:Int, value:Float, littleEndian:Bool):Void;
+	function setFloat32(byteOffset:Int, value:Float, littleEndian:Bool):Void;
+	function setFloat64(byteOffset:Int, value:Float, littleEndian:Bool):Void;
 }
 
 /*
@@ -3815,6 +3819,7 @@ extern interface XMLHttpRequest implements XMLHttpRequestEventTarget {
     public var statusText       (default, null): DOMString;
     public var responseText     (default, null): DOMString;
     public var responseXML      (default, null): Document;
+    public var response      (default, null): Dynamic;
     
     public var onreadystatechange: Void -> Void;
     

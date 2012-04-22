@@ -29,6 +29,9 @@ package jeash.net;
 import jeash.events.Event;
 import jeash.events.EventDispatcher;
 import jeash.events.IOErrorEvent;
+import jeash.events.HTTPStatusEvent;
+import jeash.events.ProgressEvent;
+import jeash.errors.IOError;
 import jeash.utils.ByteArray;
 
 import Html5Dom;
@@ -36,23 +39,15 @@ import js.Dom;
 import js.Lib;
 import js.XMLHttpRequest;
 
-/**
-* @author	Hugh Sanderson
-* @author	Niel Drummond
-* @author	Russell Weir
-* @todo open and progress events
-* @todo Complete Variables type
-**/
-class URLLoader extends EventDispatcher
-{
-	var http:Http;
+typedef XMLHttpRequestProgressEvent = Dynamic;
+
+class URLLoader extends EventDispatcher {
 	public var bytesLoaded:Int;
 	public var bytesTotal:Int;
 	public var data:Dynamic;
 	public var dataFormat:URLLoaderDataFormat;
 
-	public function new(?request:URLRequest)
-	{
+	public function new(?request:URLRequest) {
 		super();
 		bytesLoaded = 0;
 		bytesTotal = 0;
@@ -63,149 +58,149 @@ class URLLoader extends EventDispatcher
 
 	public function close() { }
 
-	public function load(request:URLRequest)
-	{
-		http = new Http( request.url );
-		http.onData = onData;
-		http.onError = onError;
+	public function load(request:URLRequest) {
+		if( request.contentType == null )
+			switch (dataFormat) {
+				case BINARY:
+					request.requestHeaders.push(new URLRequestHeader("Content-Type","application/octet-stream"));
+				default:
+					request.requestHeaders.push(new URLRequestHeader("Content-Type","application/x-www-form-urlencoded"));
+			}
+		else
+			request.requestHeaders.push(new URLRequestHeader("Content-Type", request.contentType));
 
-		for (header in request.requestHeaders)
-			http.setHeader(header.name, header.value);
-
-		// TODO: make dataFormat uniform with the flash API
-		http.requestUrl( STREAM( (dataFormat == URLLoaderDataFormat.TEXT) ? TEXT : BINARY ) );
-
+		requestUrl(
+			request.url,
+			request.method,
+			request.data,
+			request.requestHeaders
+		);
 	}
 
 	function onData (_) {
-		var content = http.getData();
-		switch(dataFormat) {
-		case BINARY:
-			this.data = new ByteArray();
-			for( i in 0...content.length ) {
-				var c : Int = untyped content["cca"](i) & 0xFF;
-				this.data.writeByte(c);
-			}
-			this.data.position = 0;
-		case TEXT:
-			this.data = content;
-		case VARIABLES:
-			throw "Not complete";
+		var content:Dynamic = getData();
+		if (Std.is(content, ArrayBuffer)) {
+			this.data = ByteArray.jeashOfBuffer(content);
+		} else {
+			this.data = Std.string(content);
 		}
 
 		var evt = new Event(Event.COMPLETE);
+		evt.currentTarget = this;
 		dispatchEvent(evt);
 	}
 
-	function onError (msg) {
-		flash.Lib.trace(msg);
+	function onError (msg:String) {
 		var evt = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+		evt.text = msg;
+		evt.currentTarget = this;
 		dispatchEvent(evt);
 	}
 
-}
-
-private enum HttpType
-{
-	IMAGE;
-	VIDEO;
-	AUDIO;
-	STREAM( format:DataFormat );
-}
-
-private enum DataFormat
-{
-	BINARY;
-	TEXT;
-}
-
-private class Http extends haxe.Http
-{
-
-	public function new( url:String )
-	{
-		super(url);
+	function onOpen () {
+		var evt = new Event(Event.OPEN);
+		evt.currentTarget = this;
+		dispatchEvent(evt);
 	}
 
-	function registerEvents( subject:EventTarget )
-	{
-		untyped subject.onload = onData;
-		untyped subject.onerror = onError;
-		//subject.addEventListener( "load", cast onData, false );
-		//subject.addEventListener( "error", cast onError, false );
+	function onStatus (status:Int) {
+		var evt = new HTTPStatusEvent(HTTPStatusEvent.HTTP_STATUS, false, false, status);
+		evt.currentTarget = this;
+		dispatchEvent(evt);
 	}
 
-	// Always GET, always async
-	public function requestUrl( type:HttpType ) : Void
-	{
+	function onProgress (event:XMLHttpRequestProgressEvent) {
+		var evt = new ProgressEvent(ProgressEvent.PROGRESS);
+		evt.currentTarget = this;
+		evt.bytesLoaded = event.loaded;
+		evt.bytesTotal = event.total;
+		dispatchEvent(evt);
+	}
+
+	function registerEvents( subject:EventTarget ) {
 		var self = this;
 
-		switch (type) 
-		{
-			case STREAM( dataFormat ):
-				var xmlHttpRequest : XMLHttpRequest = untyped __new__("XMLHttpRequest");
+		if (untyped __js__("typeof XMLHttpRequestProgressEvent") != __js__('"undefined"'))
+			subject.addEventListener("progress", onProgress, false);
 
+		untyped subject.onreadystatechange = function() {
+			if( subject.readyState != 4 )
+				return;
+			var s = try subject.status catch( e : Dynamic ) null;
+			if( s == untyped __js__("undefined") )
+				s = null;
+			if( s != null )
+				self.onStatus(s);
+			if( s != null && s >= 200 && s < 400 )
+				self.onData(subject.response);
+			else switch( s ) {
+			case null:
+				self.onError("Failed to connect or resolve host");
+			case 12029:
+				self.onError("Failed to connect to host");
+			case 12007:
+				self.onError("Unknown host");
+			default:
+				self.onError("Http Error #"+subject.status);
+			}
+		};
+	}
+
+	function requestUrl( url:String, method:String, data:Dynamic, requestHeaders:Array<URLRequestHeader> ) : Void {
+		var xmlHttpRequest : XMLHttpRequest = untyped __new__("XMLHttpRequest");
+
+		registerEvents(cast xmlHttpRequest);
+
+		var uri:Dynamic = "";
+		switch (true) {
+			case Std.is(data, ByteArray):
+				var data:ByteArray = cast data;
 				switch (dataFormat) {
-					case BINARY: untyped xmlHttpRequest.overrideMimeType('text/plain; charset=x-user-defined');
+					case BINARY: 
+						uri = data.jeashGetBuffer();
 					default:
+						uri = data.readUTFBytes(data.length);
 				}
-				
-				registerEvents(cast xmlHttpRequest);
-
-				var uri = null;
-				for( p in params.keys() )
-					uri = StringTools.urlDecode(p)+"="+StringTools.urlEncode(params.get(p));
-
-				try {
-					if( uri != null ) {
-						var question = url.split("?").length <= 1;
-						xmlHttpRequest.open("GET",url+(if( question ) "?" else
-									"&")+uri,true);
-						uri = null;
-					} else
-						xmlHttpRequest.open("GET",url,true);
-				} catch( e : Dynamic ) {
-					throw e.toString();
+			case Std.is(data, URLVariables):
+				var data:URLVariables = cast data;
+				for (p in Reflect.fields(data)) {
+					if (uri.length != 0) uri += "&";
+					uri += StringTools.urlEncode(p)+"="+StringTools.urlEncode(Reflect.field(data, p));
 				}
-
-				xmlHttpRequest.send(uri);
-				getData = function () { return xmlHttpRequest.responseText; };
-			case IMAGE:
-				var image : Image = cast Lib.document.createElement("img");
-				registerEvents(cast image);
-
-				image.src = url;
-				#if debug
-				image.style.display = "none";
-				Lib.document.body.appendChild(image);
-				#end
-
-				getData = function () { return image; };
-				
-			case AUDIO:
-				var audio : {src:String, style:Style} = cast Lib.document.createElement("audio");
-				registerEvents(cast audio);
-
-				audio.src = url;
-				#if debug
-				Lib.document.body.appendChild(cast audio);
-				#end
-
-				getData = function () { return audio; }
-				
-			case VIDEO:
-				var video : {src:String, style:Style} = cast Lib.document.createElement("video");
-				registerEvents(cast video);
-
-				video.src = url;
-				#if debug
-				video.style.display = "none";
-				Lib.document.body.appendChild(cast video);
-				#end
-				
-				getData = function () { return video; }
+			default:
+				if (data != null)
+					uri = data.toString();
 		}
 
+		try {
+			if(method == "GET" && uri != null) {
+				var question = url.split("?").length <= 1;
+				xmlHttpRequest.open(method,url+(if( question ) "?" else "&")+uri,true);
+				uri = "";
+			} else 
+				xmlHttpRequest.open(method,url,true);
+		} catch( e : Dynamic ) {
+			onError(e.toString());
+			return;
+		}
+
+		switch (dataFormat) {
+			case BINARY: 
+				untyped xmlHttpRequest.responseType = 'arraybuffer';
+			default:
+		}
+
+		for( header in requestHeaders )
+			xmlHttpRequest.setRequestHeader(header.name, header.value);
+
+		xmlHttpRequest.send(uri);
+
+		onOpen();
+
+		getData = function () { return xmlHttpRequest.response; };
+
 	}
-	public dynamic function getData () : Dynamic { }
+
+	dynamic function getData():Dynamic {}
 }
+

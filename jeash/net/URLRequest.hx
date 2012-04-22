@@ -31,6 +31,7 @@ class URLRequest {
 	public var requestHeaders:Array<URLRequestHeader>;
 	public var method : String;
 	public var data : Dynamic;
+	public var contentType:String;
 
 	public function new(?inURL:String) {
 		if (inURL!=null)

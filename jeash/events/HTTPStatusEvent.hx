@@ -36,6 +36,6 @@ class HTTPStatusEvent extends Event
 		this.status = status;
 		super(type, bubbles, cancelable);
 	}
-	public static var HTTP_RESPONSE_STATUS : String;
-	public static var HTTP_STATUS : String;
+	public static var HTTP_RESPONSE_STATUS : String = "httpResponseStatus";
+	public static var HTTP_STATUS : String = "httpStatus";
 }

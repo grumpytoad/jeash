@@ -37,6 +37,7 @@ import jeash.display.IBitmapDrawable;
 import jeash.display.Loader;
 import jeash.display.LoaderInfo;
 import jeash.events.Event;
+import jeash.errors.IOError;
 import jeash.geom.Matrix;
 import jeash.geom.ColorTransform;
 import jeash.filters.BitmapFilter;
@@ -305,12 +306,12 @@ class BitmapData implements IBitmapDrawable {
 	}
 
 	public function getPixels(rect:Rectangle):ByteArray {
-		var byteArray = new ByteArray();
+		var len = Math.round(4 * rect.width * rect.height);
+		var byteArray = new ByteArray(len);
 
 		rect = clipRect (rect);
 		if (rect == null) return byteArray;
 
-		var len = Math.round(4 * rect.width * rect.height);
 		if (!jeashLocked) {
 			var ctx : CanvasRenderingContext2D = mTextureBuffer.getContext('2d');
 			var imagedata = ctx.getImageData(rect.x, rect.y, rect.width, rect.height);
@@ -742,6 +743,70 @@ class BitmapData implements IBitmapDrawable {
 			return doHitTest(jeashImageData);
 			jeashImageDataChanged = true;
 		}
+	}
+
+	static function jeashBase64Encode(bytes:ByteArray) {
+		var blob = "";
+		var codex = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+		bytes.position = 0;
+		while (bytes.position < bytes.length) {
+			var by1=0, by2=0, by3=0;
+			by1 = bytes.readByte();
+			if (bytes.position < bytes.length) by2 = bytes.readByte();
+			if (bytes.position < bytes.length) by3 = bytes.readByte();
+			var by4=0, by5=0, by6=0, by7=0;
+			by4 = by1>>2;
+			by5 = ((by1 & 0x3) << 4) | (by2 >> 4);
+			by6 = ((by2 & 0xF) << 2) | (by3 >> 6);
+			by7 = by3 & 0x3F;
+			blob += codex.charAt(by4);
+			blob += codex.charAt(by5);
+			if (bytes.position < bytes.length) blob += codex.charAt(by6);
+			else blob += "=";
+			if (bytes.position < bytes.length) blob += codex.charAt(by7);
+			else blob += "=";
+		}
+		return blob;
+	}
+
+	static function jeashIsPNG(bytes:ByteArray) {
+		bytes.position = 0;
+		return (bytes.readByte() == 0x89 && bytes.readByte() == 0x50 && bytes.readByte() == 0x4E && bytes.readByte() == 0x47 && bytes.readByte() == 0x0D && bytes.readByte() == 0x0A && bytes.readByte() == 0x1A && bytes.readByte() == 0x0A);
+	}
+
+	static function jeashIsJPG(bytes:ByteArray) {
+		bytes.position = 0;
+
+		if (bytes.readByte() == 0xFF && bytes.readByte() == 0xD8 && bytes.readByte() == 0xFF && bytes.readByte() == 0xE0) {
+			bytes.readByte();
+			bytes.readByte();
+			if (bytes.readByte() == 0x4A && bytes.readByte() == 0x46 && bytes.readByte() == 0x49 && bytes.readByte() == 0x46 && bytes.readByte() == 0x00) return true;
+		}
+		return false;
+	}
+
+	public static function loadFromBytes(bytes:ByteArray) {
+		// sanity check, must be a PNG or JPG. 
+		var type = switch (true) {
+			case jeashIsPNG(bytes): "image/png";
+			case jeashIsJPG(bytes): "image/jpeg";
+			default: throw new IOError("BitmapData tried to read a PNG/JPG ByteArray, but found an invalid header.");
+		}
+			
+		var document : HTMLDocument = cast js.Lib.document;
+		var img : HTMLImageElement = cast document.createElement("img");
+		img.src = Std.format("data:$type;base64,${jeashBase64Encode(bytes)}");
+
+		var bitmapData = new BitmapData(0, 0);
+
+		var canvas = bitmapData.mTextureBuffer;
+		canvas.width = img.width;
+		canvas.height = img.height;
+		canvas.getContext('2d').drawImage(img, 0, 0);
+
+		bitmapData.jeashImageDataChanged = true;
+
+		return bitmapData;
 	}
 
 	public function scroll(x:Int, y:Int)
