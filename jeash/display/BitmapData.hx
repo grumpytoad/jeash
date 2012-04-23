@@ -785,7 +785,7 @@ class BitmapData implements IBitmapDrawable {
 		return false;
 	}
 
-	public static function loadFromBytes(bytes:ByteArray) {
+	public static function loadFromBytes(bytes:ByteArray, onload:BitmapData->Void) {
 		// sanity check, must be a PNG or JPG. 
 		var type = switch (true) {
 			case jeashIsPNG(bytes): "image/png";
@@ -800,13 +800,14 @@ class BitmapData implements IBitmapDrawable {
 		var bitmapData = new BitmapData(0, 0);
 
 		var canvas = bitmapData.mTextureBuffer;
-		canvas.width = img.width;
-		canvas.height = img.height;
-		canvas.getContext('2d').drawImage(img, 0, 0);
+		var loader = function (_) {
+			canvas.width = img.width;
+			canvas.height = img.height;
+			canvas.getContext('2d').drawImage(img, 0, 0);
+			onload(bitmapData);
+		}
 
-		bitmapData.jeashImageDataChanged = true;
-
-		return bitmapData;
+		if (img.width != 0) loader(null); else img.addEventListener("load", loader, false);
 	}
 
 	public function scroll(x:Int, y:Int)
