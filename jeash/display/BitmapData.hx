@@ -795,19 +795,20 @@ class BitmapData implements IBitmapDrawable {
 			
 		var document : HTMLDocument = cast js.Lib.document;
 		var img : HTMLImageElement = cast document.createElement("img");
-		img.src = Std.format("data:$type;base64,${jeashBase64Encode(bytes)}");
 
 		var bitmapData = new BitmapData(0, 0);
 
 		var canvas = bitmapData.mTextureBuffer;
-		var loader = function (_) {
+		var drawImage = function (_) {
 			canvas.width = img.width;
 			canvas.height = img.height;
 			canvas.getContext('2d').drawImage(img, 0, 0);
 			onload(bitmapData);
 		}
 
-		if (img.width != 0) loader(null); else img.addEventListener("load", loader, false);
+		img.addEventListener("load", drawImage, false);
+		img.src = Std.format("data:$type;base64,${jeashBase64Encode(bytes)}");
+
 	}
 
 	public function scroll(x:Int, y:Int)
